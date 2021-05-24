@@ -24,6 +24,163 @@
 	
       <div class="h-entry">
 		
+			<h1><a href="https://updates.timsherratt.org/2021/05/24/naa-recordsearch-section.html">NAA RecordSearch section of the GLAM Workbench updated!</a></h1>
+		
+
+        <a href="https://updates.timsherratt.org/2021/05/24/naa-recordsearch-section.html" class="u-url"><time class="dt-published" datetime="2021-05-24 10:50:13 &#43;1000">May 24, 2021</time></a>
+
+        <div class="e-content">
+         	
+
+<p>If you work with the collections of the National Archives of Australia, you might find the <a href="https://glam-workbench.net/recordsearch/">RecordSearch section</a> of the GLAM Workbench helpful. I’ve just updated the repository to add new options for running the notebooks, including 1-click installation on Reclaim Cloud. There’s also a few new notebooks.</p>
+
+<h2 id="new-notebooks-and-datasets">New notebooks and datasets</h2>
+
+<ul>
+<li>[Harvest details of all series in RecordSearch](<a href="https://glam-workbench.net/recordsearch/#harvest-details-of-all-series-in-recordsearch">RecordSearch - GLAM Workbench</a> – get details of all series registered in RecordSearch, also generates a summary dataset with the total number of items digitised, described and in each access category</li>
+<li><a href="https://glam-workbench.net/recordsearch/#exploring-harvested-series-data">Exploring harvested series data</a>  – generates some basic statistics from the harvest of series data</li>
+<li><a href="https://github.com/GLAM-Workbench/recordsearch/blob/master/series_totals_May_2021.csv">Summary data about all series in RecordSearch</a>  (15mb CSV) – contains basic descriptive information about all the series currently registered on RecordSearch (May 2021) as well as the total number of items described, digitised, and in each access category</li>
+</ul>
+
+<p><img src="uploads/2021/4239169ca4.png" width="594" height="678" alt="" /></p>
+
+<h2 id="updated">Updated</h2>
+
+<p>I’ve started (but not completed) updating all the notebooks in this repository to use my new <a href="https://wragge.github.io/recordsearch_data_scraper/">RecordSearch Data Scraper</a>. The new scraper is simpler and more efficient, and enables me to get rid of a lot of boilerplate code. Updated notebooks include:</p>
+
+<ul>
+<li><a href="https://glam-workbench.net/recordsearch/#harvest-items-from-a-search-in-recordsearch">Harvest items from a search in RecordSearch</a> – save the results of an item search in RecordSearch as a downloadable dataset, you can also save images and PDFs from digitised files (PDF saving is new!)</li>
+<li><a href="https://glam-workbench.net/recordsearch/#harvest-files-with-the-access-status-of-closed">Harvest files with the access status of ‘closed’</a> – find out what we’re not allowed to see by harvesting details of ‘closed’ files</li>
+</ul>
+
+<p>Other updates include:</p>
+
+<ul>
+<li>Python packages updated</li>
+<li>Integration with Reclaim Cloud allowing 1-click installation of the whole repository and environment</li>
+<li>Automatic creation of Docker images when the repository is updated</li>
+<li>Updated <a href="https://github.com/GLAM-Workbench/recordsearch#readme">README</a> and repository index with list of all notebooks</li>
+<li>Notebooks intended to run as apps now use Voila rather than Appmode for better integration with Jupyter Lab</li>
+<li><code>requirements-unpinned.txt</code> added to repository for people who want to develop the notebooks in their own clean environment</li>
+</ul>
+
+<p>Hope you find these changes useful! #dhhacks</p>
+
+        </div>
+      </div>
+    
+      <div class="h-entry">
+		
+			<h1><a href="https://updates.timsherratt.org/2021/05/17/web-archives-section.html">Web archives section of GLAM Workbench updated!</a></h1>
+		
+
+        <a href="https://updates.timsherratt.org/2021/05/17/web-archives-section.html" class="u-url"><time class="dt-published" datetime="2021-05-17 12:22:00 &#43;1000">May 17, 2021</time></a>
+
+        <div class="e-content">
+         	<p>My program of rolling out new features and integrations across the GLAM Workbench continues. The latest section to be updated is the <a href="https://glam-workbench.net/web-archives/">Web Archives</a> section!</p>
+
+<p>There are no new notebooks with this update, but some important changes under the hood. If you haven’t used it before, the Web Archives section contains 16 notebooks providing documentation, tools, apps, and examples to help you make use of web archives in your research. The notebooks are grouped by the following topics: <strong>Types of data</strong>, <strong>Harvesting data and creating datasets</strong>, and <strong>Exploring change over time</strong>.</p>
+
+<p><img src="uploads/2021/51d0d97ca3.png" width="721" height="622" alt="" /></p>
+
+<p>I’ve updated all the Python packages used in this repository and changed the app-ified notebooks to run using Voila (which is better integrated with Jupyter Lab than Appmode). But most importantly, you can now install the repository into your own persistent environment using <a href="https://reclaim.cloud/">Reclaim Cloud</a> or Docker.</p>
+
+<p>As <a href="https://circulatingnow.nlm.nih.gov/2021/05/13/exploring-the-data-of-web-archives-as-part-of-data-science-nlm/">Christie Moffatt noted recently</a> harvesting data from web archives can take a long time, and you might hit the limits of the free Binder service. These new integrations mean you don’t have to worry about your notebooks timing out. Just click on the <strong>Launch on Reclaim Cloud</strong> button and you can have your own fully-provisioned, persistent environment up and running in minutes!</p>
+
+<p><img src="uploads/2021/bf594af78e.png" width="553" height="343" alt="" /></p>
+
+<p>This is possible because every change to the Web Archives repository now triggers the build of a new Docker image with all the software that you need pre-installed. You can also run this Docker image on your own computer, or using another cloud service.</p>
+
+<p>The Web Archives section now <a href="https://glam-workbench.net/web-archives/#run-these-notebooks">includes documentation</a> on running the notebooks using Binder, Reclaim, Cloud or Docker. #dhhacks</p>
+
+        </div>
+      </div>
+    
+      <div class="h-entry">
+		
+			<h1><a href="https://updates.timsherratt.org/2021/05/12/using-web-archives.html">Using web archives to find out when newspapers were added to Trove</a></h1>
+		
+
+        <a href="https://updates.timsherratt.org/2021/05/12/using-web-archives.html" class="u-url"><time class="dt-published" datetime="2021-05-12 11:36:00 &#43;1000">May 12, 2021</time></a>
+
+        <div class="e-content">
+         	<p>There’s no doubt that Trove’s digitised newspapers have had a significant impact on the practice of history in Australia. But analysing that impact is difficult when Trove itself is always changing – more newspapers and articles are being added all the time.</p>
+
+<p>In an attempt to chart the development of Trove, I’ve created a dataset that shows (approximately) when particular newspaper titles were first added. This gives a rough snapshot of what Trove contained at any point in the last 12 years.</p>
+
+<p><img src="uploads/2021/a272374b48.png" width="519" height="242" alt="" /></p>
+
+<p>I say <em>approximately</em> because the only public source of this information are web archives like the <a href="https://archive.org/web/">Internet Archive’s Wayback Machine</a> and <a href="https://webarchive.nla.gov.au/collection">Trove itself</a>. By downloading <a href="https://web.archive.org/web/*/http://trove.nla.gov.au/ndp/del/titles">captures of Trove’s browse page</a>, I was able to extract a list of newspaper titles available <strong>when that capture was made</strong>. Depending on the frequency of captures, the titles may have been first made available some time earlier.</p>
+
+<p>The <a href="https://glam-workbench.net/trove-newspapers/#gathering-historical-data-about-the-addition-of-newspaper-titles-to-trove">method I used</a> to create the dataset is documented in the Trove Newspapers section of the GLAM Workbench. I used the Internet Archive as my source rather than Trove just because there were more captures available. Most of the code I could conveniently copy from the <a href="https://glam-workbench.net/web-archives/">Web Archives</a> section of the GLAM Workbench, in particular the <a href="https://glam-workbench.net/web-archives/#find-all-the-archived-versions-of-a-web-page">Find all the archived versions of a particular web page</a> notebook.</p>
+
+<p>The result was actually two datasets:</p>
+
+<ul>
+<li><a href="https://github.com/GLAM-Workbench/trove-newspapers/blob/master/trove_newspaper_titles_2009_2021.csv">trove_newspaper_titles_2009_2021.csv</a>  – complete dataset of captures and titles</li>
+<li><a href="https://github.com/GLAM-Workbench/trove-newspapers/blob/master/trove_newspaper_titles_first_appearance_2009_2021.csv">trove_newspaper_titles_first_appearance_2009_2021.csv</a>  – filtered dataset, showing only the first appearance of each title / place / date range combination</li>
+</ul>
+
+<p>There’s also an <a href="https://gist.github.com/wragge/7d80507c3e7957e271c572b8f664031a">alphabetical list of newspaper titles</a> for easy browsing. The list shows the date of the capture in which the title was first recorded, as well as any changes to its date range. #dhhacks</p>
+
+        </div>
+      </div>
+    
+      <div class="h-entry">
+		
+			<h1><a href="https://updates.timsherratt.org/2021/05/12/glam-jupyter-resources.html">GLAM Jupyter Resources</a></h1>
+		
+
+        <a href="https://updates.timsherratt.org/2021/05/12/glam-jupyter-resources.html" class="u-url"><time class="dt-published" datetime="2021-05-12 10:58:29 &#43;1000">May 12, 2021</time></a>
+
+        <div class="e-content">
+         	<p>To make it easier for people to suggest additions, I’ve created a <a href="https://github.com/GLAM-Workbench/GLAM-jupyter-resources">GitHub repository</a> for my list of GLAM Jupyter examples and resources. Contributions are welcome!</p>
+
+<p>This list is automatically pulled into the <a href="https://glam-workbench.net/more-glam-notebooks/">GLAM Workbench&rsquo;s help documentation</a>. #dhhacks</p>
+
+        </div>
+      </div>
+    
+      <div class="h-entry">
+		
+			<h1><a href="https://updates.timsherratt.org/2021/05/12/running-notebooks-a.html">Running notebooks – a sign of things to come in the GLAM Workbench</a></h1>
+		
+
+        <a href="https://updates.timsherratt.org/2021/05/12/running-notebooks-a.html" class="u-url"><time class="dt-published" datetime="2021-05-12 10:51:11 &#43;1000">May 12, 2021</time></a>
+
+        <div class="e-content">
+         	<p>I recently made some changes in the GLAM Workbench’s Help documentation, adding a new <strong>Running notebooks</strong> section. This section provides detailed information of running and managing GLAM Workbench repositories using <a href="https://glam-workbench.net/using-reclaim-cloud/">Reclaim Cloud</a> and <a href="https://glam-workbench.net/using-docker/">Docker</a>.</p>
+
+<p>I’m still rolling out this functionality across all the repositories, but it’s going to take a while. When I’m finished you’ll be able to create your own persistent environment on Reclaim Cloud from any repository with just the click of a button. See the <a href="https://glam-workbench.net/trove-newspapers/">Trove Newspapers</a> section to try this out now! #dhhacks</p>
+
+        </div>
+      </div>
+    
+      <div class="h-entry">
+		
+			<h1><a href="https://updates.timsherratt.org/2021/05/12/sponsor-my-work.html">Sponsor my work on GitHub!</a></h1>
+		
+
+        <a href="https://updates.timsherratt.org/2021/05/12/sponsor-my-work.html" class="u-url"><time class="dt-published" datetime="2021-05-12 10:25:00 &#43;1000">May 12, 2021</time></a>
+
+        <div class="e-content">
+         	<p>As I <a href="https://updates.timsherratt.org/2021/03/26/moving-on-from.html">foreshadowed some weeks ago</a>, I’ve shut down my Patreon page. Thanks to everyone who has supported me there over the last few years!</p>
+
+<p>I’ve now shifted across to GitHub Sponsors, which is focused on supporting open source projects. This seems like a much better fit for the things that I do, which are all <strong>free</strong> and <strong>open</strong> by default.</p>
+
+<p>So if you think things like the <a href="https://glam-workbench.net/">GLAM Workbench</a>, <a href="https://historichansard.net/">Historic Hansard</a>, <a href="https://ozglam.chat/">OzGLAM Help</a>, and <a href="https://www.realfaceofwhiteaustralia.net/">The Real Face of White Australia</a> are worth supporting, you can sign up using my <a href="https://github.com/sponsors/wragge?o=esb"><strong>GitHub Sponsors page</strong></a>. Sponsorship tiers start at just $1 a month. Financially, your contributions help pay some of my cloud hosting bills and keep everything online. But just as important is the encouragement and motivation I get from knowing that there are people out there who think this work is important and useful.</p>
+
+<iframe src="https://github.com/sponsors/wragge/card" title="Sponsor wragge" height="225" width="600" style="border: 0;"></iframe>
+
+<p>To recognise my GitHub sponsors, I&rsquo;ve also created a <a href="https://glam-workbench.net/supporters/">new Supporters page</a> in the GLAM Workbench.</p>
+
+<p>Thanks!</p>
+
+        </div>
+      </div>
+    
+      <div class="h-entry">
+		
 			<h1><a href="https://updates.timsherratt.org/2021/05/12/updates-to-the.html">Updates to the Trove Newspapers section of GLAM Workbench</a></h1>
 		
 
