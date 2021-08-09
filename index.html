@@ -24,6 +24,66 @@
 	
       <div class="h-entry">
 		
+			<h1><a href="https://updates.timsherratt.org/2021/08/06/recent-glam-workbench.html">Recent GLAM Workbench presentations</a></h1>
+		
+
+        <a href="https://updates.timsherratt.org/2021/08/06/recent-glam-workbench.html" class="u-url"><time class="dt-published" datetime="2021-08-06 17:42:17 &#43;1000">Aug 6, 2021</time></a>
+
+        <div class="e-content">
+         	<p>So far this year I’ve given eight workshops or presentations relating to the GLAM Workbench, with probably a few more yet to come. Here’s the latest:</p>
+
+<ul>
+<li><a href="https://slides.com/wragge/gcscr-2021">Introducing the GLAM Workbench</a>, presentation for the Griffith University Centre for Social and Cultural Research, Digital Humanities Seminar Series, 6 August 2021</li>
+<li><a href="https://youtu.be/pkC-seP00Kc">Exploring the GLAM Workbench</a> (<a href="https://slides.com/wragge/uts-dh-2021">slides</a>), presentation for the UTS Digital Histories Seminar Series, 8 July 2021</li>
+<li><a href="https://doi.org/10.5281/zenodo.5121188">The GLAM Workbench: A Labs approach?</a>, presentation for the panel &lsquo;Research use of web archives: A labs approach&rsquo;, at the IIPC Web Archiving Conference, 15 June 2021</li>
+<li><a href="https://slides.com/wragge/pha-workshop-may-2021">Hands-on introduction to the GLAM Workbench</a>, workshop for the Professional Historians Association of Victoria and Tasmania, 27 May 2021</li>
+<li><a href="https://doi.org/10.5281/zenodo.5121224">Exploring collections through the GLAM Workbench</a>, keynote presentation for the XVIII Congrés d&rsquo;Arxvística i Gestió de Documents de Catalunya, 11 May 2021</li>
+<li><a href="https://slides.com/wragge/aha-ecr-workshop">Quick hacks and DIY data: Innovations for the discerning historian</a>, presentation for AHA ECR digital skills seminar, 5 March 2021</li>
+</ul>
+
+<p>You can view <a href="https://glam-workbench.net/presentations/">all the GLAM Workbench presentations</a> here.</p>
+
+        </div>
+      </div>
+    
+      <div class="h-entry">
+		
+			<h1><a href="https://updates.timsherratt.org/2021/08/06/updated-lots-and.html">Updated! Lots and lots of text freshly harvested from Trove periodicals</a></h1>
+		
+
+        <a href="https://updates.timsherratt.org/2021/08/06/updated-lots-and.html" class="u-url"><time class="dt-published" datetime="2021-08-06 09:49:54 &#43;1000">Aug 6, 2021</time></a>
+
+        <div class="e-content">
+         	<p>For a few years now I’ve been harvesting downloadable text from digitised periodicals in Trove and making it easily available for exploration and research. I’ve just completed the latest harvest – here’s the summary:</p>
+
+<ul>
+<li>1,163 digitised periodicals had text available for download</li>
+<li>Text was downloaded from 51,928 individual issues</li>
+<li>Adding up to a total of around 12gb of text</li>
+</ul>
+
+<p>If you want to dive straight in, here’s a <a href="https://github.com/GLAM-Workbench/trove-journals/blob/master/digital-journals-with-text.md">list of all the harvested periodicals</a>, with links to download a summary of available issues, as well as all the harvested text (there’s one file per issue). You’ll notice that the list includes a large number of parliamentary papers and government reports as well as published journals.</p>
+
+<p><img src="https://updates.timsherratt.org/uploads/2021/008359faba.png" alt="List of Trove periodicals with downloadable text" /></p>
+
+<p>All of the harvested text is available from a <a href="https://cloudstor.aarnet.edu.au/plus/s/QOmnqpGQCNCSC2h">public folder on CloudStor</a>.</p>
+
+<p>The harvesting process involves a few different steps:</p>
+
+<ul>
+<li>First I generate a list of periodicals available in digital form from Trove. This includes digitised titles, as well as born-digital titles submitted through e-Legal Deposit. This produced <a href="https://glam-workbench.net/trove-journals/#csv-formatted-list-of-journals-available-from-trove-in-digital-form">a CSV file</a> containing the details of 7,270 titles. See <a href="https://glam-workbench.net/trove-journals/#create-a-list-of-troves-digitised-journals">this notebook</a> for details.</li>
+<li>Then I work through this list of titles to find out how many issues of each title are available through Trove. This information isn’t accessible through the API, so I have to do some screen scraping.</li>
+<li>Next I work through the list of issues and try to download the text contents. Most of the born-digital titles don’t have downloadable text.</li>
+<li>Once I’ve downloaded all the text I can from a title, I create a CSV file for it that lists the available issues and notes whether text is available for each. This file is stored with the text on CloudStor.</li>
+<li>Once I’ve checked all the titles, I generate <a href="https://glam-workbench.net/trove-journals/#csv-formatted-list-of-journals-with-ocrd-text">another CSV file</a> that lists the details of all the periodicals that have downloadable text.</li>
+<li>The code to harvest and document the downloaded text is <a href="https://glam-workbench.net/trove-journals/#download-the-ocrd-text-for-all-the-digitised-journals-in-trove">available in this notebook</a>. #dhhacks</li>
+</ul>
+
+        </div>
+      </div>
+    
+      <div class="h-entry">
+		
 			<h1><a href="https://updates.timsherratt.org/2021/08/02/new-dataset-politicians.html">New dataset – Politicians talking about COVID</a></h1>
 		
 
