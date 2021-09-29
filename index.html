@@ -24,6 +24,222 @@
 	
       <div class="h-entry">
 		
+			<h1><a href="https://updates.timsherratt.org/2021/09/29/more-querypic-in.html">More QueryPic in action</a></h1>
+		
+
+        <a href="https://updates.timsherratt.org/2021/09/29/more-querypic-in.html" class="u-url"><time class="dt-published" datetime="2021-09-29 10:30:26 &#43;1000">Sep 29, 2021</time></a>
+
+        <div class="e-content">
+         	<p>Recently I created a <a href="https://updates.timsherratt.org/2021/08/30/some-research-projects.html">list of publications</a> that made use of <a href="https://glam-workbench.net/trove-newspapers/#querypic">QueryPic</a>, my tool to visualise searches in Trove’s digitised newspapers. Here’s another example of the <a href="https://glam-workbench.net/">GLAM Workbench</a> and QueryPic in action, in Professor Julian Meyrick’s recent keynote lecture, &lsquo;Looking Forward to the 1950s: A Hauntological Method for Investigating Australian Theatre History’.</p>
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/iOLmEBlKeQs" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen\></iframe>
+
+        </div>
+      </div>
+    
+      <div class="h-entry">
+		
+			<h1><a href="https://updates.timsherratt.org/2021/09/10/some-thoughts-on.html">Some thoughts on the ‘Trove Researcher Platform for Advanced Research’ draft plan</a></h1>
+		
+
+        <a href="https://updates.timsherratt.org/2021/09/10/some-thoughts-on.html" class="u-url"><time class="dt-published" datetime="2021-09-10 10:12:00 &#43;1000">Sep 10, 2021</time></a>
+
+        <div class="e-content">
+         	
+
+<p>Late last year the Federal Government <a href="https://ministers.dese.gov.au/tehan/improving-hass-and-indigenous-research-infrastructure">announced</a> it was making an $8.9 million investment in HASS and Indigenous research infrastructure. This program is being managed by the ARDC and will lead to the development of a <a href="https://ardc.edu.au/collaborations/strategic-activities/hass-and-indigenous-research-data-commons/">HASS Research Data Commons</a>. According to the ARDC, a research data commons:</p>
+
+<blockquote>
+<p>brings together people, skills, data, and related resources such as storage, compute, software, and models to enable researchers to conduct world class data-intensive research</p>
+</blockquote>
+
+<p>Sounds awesome!</p>
+
+<p>Based on scoping studies commissioned by the Department of Education, Skills, and Employment (which have not yet been made public), <a href="https://ardc.edu.au/collaborations/strategic-activities/hass-and-indigenous-research-data-commons/recommendations-for-co-investment-in-humanities-arts-and-social-sciences-research-data-commons-program/">four activities were selected for initial funding</a> under this program. Draft project plans for these four activities have now been <a href="https://ardc.edu.au/collaborations/strategic-activities/hass-and-indigenous-research-data-commons/project-plans/">released for public comment</a>.</p>
+
+<p>One of these activities aims to develop a ’Trove researcher platform for advanced research’:</p>
+
+<blockquote>
+<p>Augmenting existing National Library of Australia resources, this platform will enable a focus on the delivery of researcher portals accessible through Trove, Australia’s unique public heritage site. The platform will create tools for visualisation, entity recognition, transcription and geocoding across Trove content and other corpora.</p>
+</blockquote>
+
+<p>You can <a href="https://ardc.edu.au/wp-content/uploads/2021/09/Research_Platform_TROVE.pdf">download the draft project plan</a> for the Trove platform. Funding for this activity will be capped at $2,301,185 across 2021-23. In this post I’ll try to pull together some of my own thoughts on this plan.</p>
+
+<p>I suppose I’d better start with a disclaimer – I’m not a neutral observer in this. I started scraping data from Trove newspapers way back in 2010, building the first versions of tools like QueryPic and the Trove Newspaper Harvester. While I was manager of Trove, from 2013 to 2016, I argued for recognition of Trove as a key part of Australia’s humanities research infrastructure, and highlighted possible research uses of Trove data available through the API. Since then I’ve worked to bring a range of digital tools, examples, tutorials, and hacks together for researchers in the <a href="https://glam-workbench.net/">GLAM Workbench</a> – a <a href="https://updates.timsherratt.org/2021/08/26/glam-workbench-a.html">large number of these</a> work with data from Trove.</p>
+
+<p>I strongly believe that Trove should receive ongoing funding through <a href="https://www.dese.gov.au/ncris">NCRIS</a> as a piece of national research infrastructure. Unfortunately though, the draft project plan does not make a strong case for investment – it’s vague, unimaginative, and makes little attempt to integrate with existing tools and services. I think it scores poorly against the ARDC’s <a href="https://ardc.edu.au/wp-content/uploads/2021/09/Evaluation-Criteria-HASS-RDC-and-Indigenous-Research-Capability-program.pdf">evaluation criteria</a>, and doesn’t seem to offer good value for money. As someone who has championed the use of Trove data for research across the last decade, I’m very disappointed.</p>
+
+<h2 id="what-s-planned">What’s planned?</h2>
+
+<p>So what is being proposed? There seems to be three main components:</p>
+
+<ol>
+<li>Authenticated ‘project’ spaces for researchers where datasets relating to a particular research topic can be stored</li>
+<li>The ability to create custom datasets from a search in Trove</li>
+<li>Tools to visualise stored datasets.</li>
+</ol>
+
+<p>There’s no doubt that these are all useful functions for researchers, but many problems arise when we look at how they’re going to be implemented.</p>
+
+<h3 id="1-authenticated-project-spaces">1. Authenticated project spaces</h3>
+
+<p>The draft plan indicates that authentication of users through the <a href="https://aaf.edu.au/">Australian Access Federation</a> is preferred. Why? Trove already has a system for the creation of user accounts. Using AAF would limit use of the new platform to those attached to universities or research agencies. I don’t understand what the use of AAF adds to the project, except perhaps to provide an example of integration with existing infrastructure services.</p>
+
+<p>The plan notes that project spaces could be ‘public’ or ‘private’. Presumably a ‘public’ space would give access to stored datasets, but what sort of access controls would be available in relation to individual datasets? It’s also noted (Deliverable 7) that researchers would have ‘an option to “publish” their research findings for public consumption‘. Does this mean datasets and visualisations would be assigned a DOI (or other persistent identifier) and preserved indefinitely? How might these spaces integrate with existing data repositories?</p>
+
+<h3 id="2-create-custom-datasets">2. Create custom datasets</h3>
+
+<p>The lack of detail in the plan makes it difficult to assess what’s being proposed here. But it seems that users would be able to construct a search using the Trove web interface (or a new search interface?) and save the results as a dataset.</p>
+
+<p>What data would be searched? It’s not clear, but in reference to the visualisations it’s stated that data would come from ’Trove’s existing full text collections (newspapers and gazettes, magazines and newsletters, books)’. So no web archives, and no metadata from any of Trove’s aggregated collections (even without full text, collection metadata can create interesting research possibilities, see for example the <a href="https://glam-workbench.net/trove-music/">Radio National records</a> in the GLAM Workbench).</p>
+
+<p>What will be included in each dataset? There’s few details, but at a minimum you’d expect something like a CSV containing the metadata of all the matching records, and files containing the full text content of the items. These could potentially be <em>very</em> large. There’s no indication about how storage and processing demands would be managed, but presumably there would be some per user, or per project, limits.</p>
+
+<p>Deliverable 8, ‘Data and visual download’, states that:</p>
+
+<blockquote>
+<p>All query results must be available as downloadable files, this would include CSV, JSON and XML for the query results list.</p>
+</blockquote>
+
+<p>But there’s no mention of the full text content at all. Will it be included in downloadable datasets?</p>
+
+<p>As well as the record metadata and full text, you’d want there to be some metadata captured about the dataset itself – the search query used, when it was captured, the number of records, etc. To support integration and reuse, it would be good to align this with something like <a href="https://www.researchobject.org/ro-crate/">RO Crate</a>.</p>
+
+<p>How will searches be constructed? It’s not clear if this will be integrated with the existing search interface, or be something completely separate; however, the plan does note that ‘limitations are put onto the dataset like keyword search terms and filters corresponding to the filters currently available in the interface’. So it seems that the new platform will be using the existing search indexes. It’s obviously important for the relationship between existing search functions and the new dataset creation tool to be explicit and transparent so that researchers understand what they’re getting.</p>
+
+<p>It’s also worth noting that changes to the search interface last year removed some useful options from the advanced search form. In particular, you can no longer exclude matches in tags or comments. If you’re a researcher looking for the occurrence of a particular word, you generally don’t want to include records where that word only appears in a user added tag (I have a story about ‘Word War I’ that illustrates this!).</p>
+
+<p>This raises a broader issue. There doesn’t seem to be any mention in the project plan of work to improve the metadata and indexing in response to research needs. Even just identifying digitised books in the current web interface can be a bit of a challenge, and digitised books and periodicals can be grouped into work records with other versions. We need to recognise that the needs of discovery sometimes compromise specific research uses.</p>
+
+<p>I’m trying to be constructive in my responses here, but at this point I just have to scream – WHAT ABOUT THE <a href="https://glam-workbench.net/trove-harvester/">TROVE NEWSPAPER HARVESTER</a>? A tool has existed for <em>ten years</em> that lets users create a dataset containing metadata and full text from a search in Trove’s newspapers and gazettes. I’ve spent a lot of time over recent years adding features and making it easier to use. Now you can download not only full text, but also PDFs and images of articles. The latest web app version in the GLAM Workbench runs in the cloud. Just one click to start it up, then all you need to do is paste in your Trove API key and the url of your search. It can’t get much easier.</p>
+
+<p>The GLAM Workbench also includes tools to create datasets and download OCRd text from Trove’s <a href="https://glam-workbench.net/trove-books/">books</a> and digitised <a href="https://glam-workbench.net/trove-journals/">journals</a>. These are still in notebook form, so are not as easy to use, but I have created pre-harvested datasets of all books and periodicals with OCRd text, and stored them on CloudStor. What’s missing at the moment is something to harvest a collection of journal articles, but this would not be difficult. As an added bonus, the GLAM Workbench has tools to <a href="https://glam-workbench.net/web-archives/#harvesting-collections-of-text-from-archived-web-pages">create full text datasets</a> from the Australian Web Archive.</p>
+
+<p>So what is this project really adding? And why is there no attempt to leverage existing tools and resources?</p>
+
+<h3 id="3-visualise-datasets">3. Visualise datasets</h3>
+
+<p>Again, there’s a fair bit of hand waving in the plan, but it seems that users will be able to select a stored dataset and then choose a form of visualisation. The plan says that:</p>
+
+<blockquote>
+<p>An initial pilot would allow users to create line graphs that plot the frequency of a search term over time and maps that display results based on state-level geolocation.</p>
+</blockquote>
+
+<p>Up to three additional visualisations would be created later based on research feedback. It’s not clear which researchers will be consulted and when their feedback will be sought.</p>
+
+<p>The value of these sorts of visualisations is obviously dependent on the quality and consistency of the metadata. There’s nothing built into this plan that would, for example, allow a researcher to clean or normalise any of the saved data. You have to take what you’re given. The newspaper metadata is generally consistent, but books and periodicals less so.</p>
+
+<p>It’s also important to clarify what’s meant by ‘the frequency of a search term over time’. Does this mean the number of records matching a search term, or the number of times that the search term actually appears in the full text of all matched records? If the latter, then this <em>would</em> be a major enrichment of the available data. Though if this data was available it should be pushed through the API and/or made available as a downloadable dataset for integration with other platforms (perhaps along the lines of the Hathi Trust’s <a href="https://analytics.hathitrust.org/datasets">Extracted Features Dataset</a>). I suspect, however, that what is actually meant is the number of matching search results.</p>
+
+<p>Again, the value of any geospatial visualisation depends on what is actually being visualised! The <code>state</code> facet in newspapers indicates place of publication, it’s not clear what the <code>place</code> facet in other categories represents. For this sort of visualisation to be useful in a research context, there would need to be some explanation of how these values were created, and any gaps or uncertainties.</p>
+
+<p>Time for another scream of frustration — WHAT ABOUT <a href="https://glam-workbench.net/trove-newspapers/#querypic">QUERYPIC</a>? Another long-standing tool which has already been <a href="https://updates.timsherratt.org/2021/08/30/some-research-projects.html">cited a number of times</a> in research literature. <a href="https://glam-workbench.net/trove-newspapers/#querypic">QueryPic</a> visualises searches in Trove’s newspapers and gazettes over time. You can adjust time scales and intervals, and download the results as images, a CSV file, and an HTML page. The project plan makes a point of claiming that its tools would not require any coding, but neither does QueryPic. Just plug in an API key and a search URL. I even made <a href="https://www.youtube.com/playlist?list=PLAclcciEeCD2z2BWQ2r3xD_Q8c05HppfP">some videos</a> about it! The GLAM Workbench also includes a number of examples of how you can <a href="https://glam-workbench.net/trove-newspapers/#map-trove-newspaper-results-by-state">visualise places of publication</a> of newspaper articles.</p>
+
+<p>But it’s not just the GLAM Workbench. The <a href="https://ardc.edu.au/wp-content/uploads/2021/09/Language_Commons_Australia.pdf">Linguistics Data Commons of Australia</a>, another activity to be funded as part of the HASS Research Data Commons, will include tools for text analysis and visualisation. The <a href="https://www.tlcmap.org/">Time Layered Cultural Map</a> is developing tools for geospatial visualisation of Australian collections. Surely the focus should be on connecting and reusing what’s available. Again I’m wondering what this project is really adding.</p>
+
+<h2 id="portals-and-platforms">Portals and platforms</h2>
+
+<p>The original language describing the funded activity is interesting — it is intended to ‘focus on the delivery of researcher portals accessible through Trove’.</p>
+
+<p><strong><em>Portals</em> (plural) accessible <em>through</em> (not in) Trove.</strong></p>
+
+<p>The NLA could meet a fair proportion of its stated objectives right now, simply by including links to QueryPic and the Trove Newspaper and Gazette Harvester. Done! There’s a million dollars saved.</p>
+
+<p>More seriously, there’s no reason why the outcome of this activity should be a new interface attached to Trove and managed by the NLA. Indeed, such an approach works against integration, reuse, and data sharing. I believe the basic assumptions of the draft plan are seriously flawed. We need to separate out the strands of what’s meant by a ‘platform for advanced research’, and think more creatively and collaboratively about how we could achieve something useful, flexible, and sustainable.</p>
+
+<h2 id="where-s-the-api">Where’s the API?</h2>
+
+<p>I think the primary role of the NLA in the development of this research platform should be as the data provider. There are numerous ways in which Trove’s data might be improved and enriched in support of new research uses. These improvements could then be pushed through the API to integrate with a range of tools and resources. Which raises the question — where is the API in this plan?</p>
+
+<p>The only mention of the API comes as an option for a user with ‘high technical expertise’ to extend the analysis provided by the built-in visualisations. This is all backwards. The API is the key pipeline for data-sharing and integration and should be at the heart of this plan.</p>
+
+<p>This program offers an opportunity to make some much-needed improvements to the API. Here’s a few possibilities:</p>
+
+<ul>
+<li>Bring the web interface and API back into sync so that researchers can easily transfer queries between the two (Trove’s interface update introduced new categories, while the API still groups resources by the original zones).</li>
+<li>Provide public API access to additional data about digitised items. For example, you can get lists of newspaper titles and issues from the API, but there’s no comparable method to get titles and issues for digitised periodicals. The data’s there – it’s used to generate lists of issues in the browse interface – but it’s not in the API. There’s also other resource metadata, such as parent/child relationships, which are embedded in web pages but not exposed in the API.</li>
+<li>Standardise the delivery of OCRd text for different resource types.</li>
+<li>Finally add the People &amp; Organisations data to the main RESTful API.</li>
+<li>Fix the limitations of the web archives CDX API (<a href="https://nbviewer.jupyter.org/github/GLAM-Workbench/web-archives/blob/master/comparing_cdx_apis.ipynb">documented here</a>).</li>
+<li>Add a search API for the web archives.</li>
+<li>And what about a Write API? Integration between components in the HASS RDC would be greatly enhanced if other projects could automatically add structured annotations to existing Trove resources.</li>
+</ul>
+
+<p>I think the HASS RDC would benefit greatly by thinking much more about the role of the Trove API in establishing reusable data flows, and connecting up components.</p>
+
+<h2 id="pathways">Pathways</h2>
+
+<p>Anyone who’s been to one of my <a href="https://glam-workbench.net/presentations/">GLAM Workbench talks</a> will know that I talk a lot about ‘pathways’. My concern is not just to provide useful tools and examples, but to try and connect them in ways that encourage researchers to develop their skills and confidence. So a researcher with limited digital skills can spin up QueryPic and start making visualisations without any specialised knowledge. But if they want to explore the data and assumptions behind QueryPic, they can view a notebook that walks them through the process of getting data from facets and assembling a time series. If they find something interesting in QueryPic, they can go to the Newspaper Harvester and assemble a dataset that helps them zoom into a particular period. There are places to go.</p>
+
+<p>Similarly, users can start making use of the GLAM Workbench in the cloud using <a href="https://glam-workbench.net/using-binder/">Binder</a> – one click and it’s running. But as their research develops they might find Binder a bit limiting, so there are options to spin up the GLAM Workbench using <a href="https://glam-workbench.net/using-reclaim-cloud/">Reclaim Cloud</a> or <a href="https://glam-workbench.net/using-docker/">Docker</a>. As a researcher’s skills, needs, and questions change, so does their use of the GLAM Workbench. At least that’s the plan – I’m very aware that there’s much, much more to do to build and document these pathways.</p>
+
+<p>The developments described in the draft plan are focused on providing simple tools for non-technical users. That’s fair enough, but you have to give those users somewhere to go, some path beyond, or else it just becomes another dead end. Users can download their data or visualisation, but then what?</p>
+
+<p>Of course you don’t point a non-coder to API documentation and say ‘there you go’. But coders can use the API to build and share a range of tools that introduce people to the possibilities of data, and scaffold their learning. Why should there be just one interface? It’s not too difficult to imagine a range of introductory visualisation tools aimed at different humanities disciplines. Instead of focusing inward on a single Trove Viz Lite tool, why not look outwards at ways of embedding Trove data within a range of research training contexts?</p>
+
+<h2 id="integration">Integration</h2>
+
+<p>A number of the HASS RDC Evaluation Criteria focus on issues of integration, collaboration, and reuse of existing resources. For example:</p>
+
+<blockquote>
+<ul>
+<li>Project plans should display robust proposal planning including the maximisation of the use or re-use of existing research infrastructure, platforms, tools, services, data storage and compute.</li>
+<li>Project plans should display integrated infrastructure layers with other HASS RDC activities, in particular by linking together elements such as data storage, tools, authentication, licensing, networks, cloud and high-performance computing, and access to data resources for reuse.</li>
+<li>Project plans must be robust and contribute to the HASS RDC as a coherent whole that capitalises on existing data collections, adheres to the F.A.I.R. principles, develops collaborative tools, utilises shared underlying infrastructure and has appropriate governance planning.</li>
+</ul>
+</blockquote>
+
+<p>There’s little evidence of this sort of thinking in the draft project plan. I’ve mentioned a few obvious opportunities for integration above, but there are many more. Overall, I think the proposed ‘platform for advanced research’ needs to be designed as a series of interconnected components, and not be seen as the product of a single institution.</p>
+
+<p>We could imagine, for example, a system where the NLA focused on the delivery of research-ready data via the Trove API. A layer of data filtering, cleaning, and packaging tools could be built on top of the API to help users assemble actionable datasets. The packaging processes could use standards such as RO-Crate to prepare datasets for ingest into data repositories. Existing storage services, such as CloudStor, could be used for saving and sharing working datasets. Another layer of visualisation and analysis tools could either process these datasets, or integrate directly with the API. These tools could be spread across different projects including LDaCA, TLCMap, and the GLAM Workbench — using standards such as Jupyter to encourage sharing and reuse of individual components, and running on a variety of cloud-hosted platforms. Instead of just adding another component to Trove, we’d be building a collaborative network of tool builders and data wranglers — developing capacities across the research sector, and spreading the burden of maintenance.</p>
+
+<h2 id="sustainability">Sustainability</h2>
+
+<p>The draft project plan includes some pretty worrying comments about long-term support for the new platform. Work Package 5 notes:</p>
+
+<blockquote>
+<p>The developed product will require support post release which can be guaranteed for a period not exceeding the contracted period for this project</p>
+</blockquote>
+
+<p>And:</p>
+
+<blockquote>
+<p>ARDC will be responsible for providing ongoing financial support for this phase. It has not been included in the proposal.</p>
+</blockquote>
+
+<p>So once the project is over, the NLA will not support the new platform unless the ARDC provides ongoing funding. What researcher would want to ‘publish’ their data on a platform that could disappear at any time? We all know that sustainability is hard, but you would think that the NLA could at least offer to work collaboratively with the research sector to develop a plan for sustainability, instead of just asking for more money. Why would anyone invest so much for so little?</p>
+
+<h2 id="leadership-and-community">Leadership and community</h2>
+
+<p>The development of collaborations and communities also figure prominently in the HASS RDC Evaluation Criteria. For example:</p>
+
+<blockquote>
+<ul>
+<li>Project plans should clearly demonstrate that they enable collaboration and build communities across geographically dispersed research groups through facilitated sharing of high-quality data, particularly for computational analysis; the development of new platforms for collaboration and sharing; and, the encouragement of innovative methodologies through the use of analytic tools.</li>
+<li>Project plans must include a demonstrated commitment to ongoing community development to ensure the sustainability of the development is vital. The deliverables will act as ongoing national research infrastructure. They must be broadly usable by more than just the project partners and serve as input to a wide range of research.</li>
+<li>Project plans, and project leads in particular, should demonstrate the research leadership that will foster and encourage the uptake and use of the HASS RDC.</li>
+</ul>
+</blockquote>
+
+<p>Once again the draft project plan falls short. There are no project partners listed. Instead the plan refers broadly to all of Trove’s content partners, none of whom have direct involvement in this project. Indeed, as noted above, data aggregated from project parters is excluded from the new platform.</p>
+
+<p>There are no new governance arrangements proposed for this project. Instead the plan refers to the Trove Strategic Advisory Committee which includes representatives from partner organisations. But there are no researcher representatives on this committee.</p>
+
+<p>The only consultation with the research sector undertaken in the ‘Consultation Phase’ of the project is that undertaken by the ARDC itself. Does that mean this current process whereby the ARDC is soliciting feedback on the project plans? Whoa, meta…</p>
+
+<p>The plan notes that during the testing phase described in Work Package 3, ‘HASS community members would gain access to a beta version of the product for comment’. However, later it is stated that access would be provided to ’a subset of researchers’, and that only system bugs and ‘high priority improvements’ would be acted upon.</p>
+
+<p>Generally speaking, it seems that the NLA is seeking as little consultation as possible. It’s not exploring options for collaboration. It’s not engaging with the research community about these developments. That doesn’t seem like an effective way to build communities. Nor does it demonstrate leadership.</p>
+
+<h2 id="summing-up">Summing up</h2>
+
+<p>This project plan can’t be accepted in its current form. We’ve had failures and disappointments in the development of HASS research infrastructure in the past. The HASS RDC program gives us a chance to start afresh, and the focus on integration, data-sharing, and reuse give hope that we can build something that will continue to grow and develop, and not wither through lack of engagement and support. So should the NLA be getting $2 million to add a new component to Trove that is not integrated with other HASS RDC projects, and substantially duplicates tools available elsewhere? No, I don’t think so. They need to go back to the drawing board, undertake some real consultation, and build collaborations, not products.</p>
+
+        </div>
+      </div>
+    
+      <div class="h-entry">
+		
 			<h1><a href="https://updates.timsherratt.org/2021/08/30/some-research-projects.html">Some research projects that have used QueryPic </a></h1>
 		
 
