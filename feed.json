@@ -7,6 +7,30 @@
 	"items": [
 		
 			{
+				"id": "http://wragge.micro.blog/2022/04/28/and-cloudstor-is.html",
+				
+				"content_html": "<p>And Cloudstor is down for maintenance. I suppose I wan&rsquo;t be doing that demo then&hellip; #DayofDH2022</p>\n",
+				"content_text": "And Cloudstor is down for maintenance. I suppose I wan't be doing that demo then... #DayofDH2022\n",
+				"date_published": "2022-04-28T12:54:14+10:00",
+				"url": "https://updates.timsherratt.org/2022/04/28/and-cloudstor-is.html"
+			},
+			{
+				"id": "http://wragge.micro.blog/2022/04/28/perhaps-appropriately-for.html",
+				
+				"content_html": "<p>Perhaps appropriately for #DayofDH2022, I&rsquo;ve spent most of the morning trying to hunt down a bug. Everything works perfectly running locally, but fails mysteriously when deployed to the cloud&hellip;</p>\n",
+				"content_text": "Perhaps appropriately for #DayofDH2022, I've spent most of the morning trying to hunt down a bug. Everything works perfectly running locally, but fails mysteriously when deployed to the cloud...\n",
+				"date_published": "2022-04-28T12:01:33+10:00",
+				"url": "https://updates.timsherratt.org/2022/04/28/perhaps-appropriately-for.html"
+			},
+			{
+				"id": "http://wragge.micro.blog/2022/04/26/microblog-offers-another.html",
+				
+				"content_html": "<p>Micro.blog offers another alternative for people wanting more control over their socials. I&rsquo;m posting this from my Micro account – it&rsquo;ll be cross-posted to Mastodon &amp; Twitter, saved to GitHub, syndicated via RSS, and accessible from <a href=\"https://updates.timsherratt.org/\">updates.timsherratt.org</a></p>\n",
+				"content_text": "Micro.blog offers another alternative for people wanting more control over their socials. I'm posting this from my Micro account – it'll be cross-posted to Mastodon & Twitter, saved to GitHub, syndicated via RSS, and accessible from [updates.timsherratt.org](https://updates.timsherratt.org/)\n",
+				"date_published": "2022-04-26T14:55:10+10:00",
+				"url": "https://updates.timsherratt.org/2022/04/26/microblog-offers-another.html"
+			},
+			{
 				"id": "http://wragge.micro.blog/2022/04/20/tracking-trove-changes.html",
 				"title": "Tracking Trove changes over time",
 				"content_html": "<p>I&rsquo;ve been doing a bit of cleaning up, trying to make some old datasets more easily available. In particular I&rsquo;ve been pulling together harvests of the number of newspaper articles in Trove by year and state. My <a href=\"https://timsherratt.org/shed/trove/graphs/\">first harvests</a> date all the way back to 2011, before there was even a Trove API. Unfortunately, I didn&rsquo;t run the harvests as often as I should&rsquo;ve and there are some big gaps. Nonetheless, if you&rsquo;re interested in how Trove&rsquo;s newspaper corpus has grown and changed over time, you might find them useful. They&rsquo;re available in <a href=\"https://github.com/wragge/trove-newspaper-totals-historical\">this repository</a> and also <a href=\"https://doi.org/10.5281/zenodo.6471544\">in Zenodo</a>.</p>\n\n<p><img src=\"https://updates.timsherratt.org/uploads/2022/2c1e7dd328.png\" alt=\"Chart showing number of newspaper articles per year available in Trove – harvested multiple times from 2011 to 2022\" /></p>\n\n<p><em>This chart shows how the number of newspaper articles per year in Trove has changed from 2011 to 2022. Note the rapid growth between 2011 and 2015.</em></p>\n\n<p>To try and make sure that there&rsquo;s a more consistent record from now on, I&rsquo;ve also created a new Git Scraper – <a href=\"https://github.com/wragge/trove-newspaper-totals\">a GitHub repository</a> that automatically harvests and saves data at weekly intervals. As well as the number of articles by <a href=\"https://github.com/wragge/trove-newspaper-totals/blob/master/data/total_articles_by_year.csv\">year</a> and <a href=\"https://github.com/wragge/trove-newspaper-totals/blob/master/data/total_articles_by_year_and_state.csv\">state</a>, it also harvests the number of articles by <a href=\"https://github.com/wragge/trove-newspaper-totals/blob/master/data/total_articles_by_newspaper.csv\">newspaper</a> and <a href=\"https://github.com/wragge/trove-newspaper-totals/blob/master/data/total_articles_by_category.csv\">category</a>. As mentioned, these four datasets are updated weekly. If you want to get all the changes over time, you can retrieve earlier versions from the repository&rsquo;s commit history.</p>\n\n<p>All the datasets are CC-0 licensed and validated with Frictionless.</p>\n\n<p>There&rsquo;s also a <a href=\"https://glam-workbench.net/trove-newspapers/#visualise-the-total-number-of-newspaper-articles-in-trove-by-year-and-state\">notebook in the GLAM Workbench</a> that explores this sort of data.</p>\n",
