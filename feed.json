@@ -7,6 +7,39 @@
 	"items": [
 		
 			{
+				"id": "http://wragge.micro.blog/2022/06/13/ok-ive-submitted.html",
+				
+				"content_html": "<p>Ok, I&rsquo;ve submitted my Libraries Tasmania translator to the Zotero repository for inclusion. No doubt a bit of additional tweaking will be required. <a href=\"https://github.com/zotero/translators/pull/2832\">github.com/zotero/tr&hellip;</a></p>\n",
+				"content_text": "Ok, I've submitted my Libraries Tasmania translator to the Zotero repository for inclusion. No doubt a bit of additional tweaking will be required. [github.com/zotero/tr...](https://github.com/zotero/translators/pull/2832)\n",
+				"date_published": "2022-06-13T17:49:33+10:00",
+				"url": "https://updates.timsherratt.org/2022/06/13/ok-ive-submitted.html"
+			},
+			{
+				"id": "http://wragge.micro.blog/2022/06/05/getting-to-work.html",
+				
+				"content_html": "<p>Getting to work migrating the Real Face of White Australia transcription site from scribeAPI (no longer maintained) to Zooniverse Panoptes. First the workflows and config, then the subjects, then the current transcription data&hellip;</p>\n",
+				"content_text": "Getting to work migrating the Real Face of White Australia transcription site from scribeAPI (no longer maintained) to Zooniverse Panoptes. First the workflows and config, then the subjects, then the current transcription data...\n",
+				"date_published": "2022-06-05T16:08:23+10:00",
+				"url": "https://updates.timsherratt.org/2022/06/05/getting-to-work.html"
+			},
+			{
+				"id": "http://wragge.micro.blog/2022/06/01/its-getting-there.html",
+				
+				"content_html": "<p>It&rsquo;s getting there – new Real Face of White Australia site using Datasette, IIIF, and Universal Viewer&hellip;</p>\n\n<p><img src=\"uploads/2022/f48342b79f.png\" width=\"600\" height=\"305\" alt=\"Screenshot of new site for displaying records relating to the White Australia Policy from the National Archives of Australia. On the left is the Universal viewer showing page images. On the right is the file metadata in tabular format.\" /></p>\n",
+				"content_text": "It's getting there – new Real Face of White Australia site using Datasette, IIIF, and Universal Viewer...\n\n<img src=\"uploads/2022/f48342b79f.png\" width=\"600\" height=\"305\" alt=\"Screenshot of new site for displaying records relating to the White Australia Policy from the National Archives of Australia. On the left is the Universal viewer showing page images. On the right is the file metadata in tabular format.\" />\n",
+				"date_published": "2022-06-01T17:43:26+10:00",
+				"url": "https://updates.timsherratt.org/2022/06/01/its-getting-there.html"
+			},
+			{
+				"id": "http://wragge.micro.blog/2022/06/01/ordering-some-glamworkbench.html",
+				
+				"content_html": "<p>Ordering some #GLAMWorkbench stickers&hellip;</p>\n\n<p><img src=\"uploads/2022/da543e0090.png\" width=\"324\" height=\"340\" alt=\"Proof image of a hexagonal sticker. The sticker has white lettering on a blue blackground which reads GLAM Workbench. In the centre is a crossed hammer and wrench icon.\" /></p>\n",
+				"content_text": "Ordering some #GLAMWorkbench stickers...\n\n<img src=\"uploads/2022/da543e0090.png\" width=\"324\" height=\"340\" alt=\"Proof image of a hexagonal sticker. The sticker has white lettering on a blue blackground which reads GLAM Workbench. In the centre is a crossed hammer and wrench icon.\" />\n",
+				"date_published": "2022-06-01T16:43:27+10:00",
+				"url": "https://updates.timsherratt.org/2022/06/01/ordering-some-glamworkbench.html",
+				"tags": ["glamworkbench"]
+			},
+			{
 				"id": "http://wragge.micro.blog/2022/05/29/after-much-faffing.html",
 				
 				"content_html": "<p>After much faffing about today I&rsquo;ve got the latest version of the UniversalViewer building locally, and I also know how to listen for changes in the canvas index. Next, I have to do something about the CSS name clashes with Bulma&hellip;</p>\n",
@@ -17,8 +50,8 @@
 			{
 				"id": "http://wragge.micro.blog/2022/05/29/files-digitised-by.html",
 				
-				"content_html": "<p>Files digitised by the National Archives of Australia this week: 25,981</p>\n\n<p>Top series:</p>\n\n<p>+14,025 in B884 (CMF personnel dossiers)</p>\n\n<p>+7,652 in A2572 (Bonegilla name index cards)</p>\n\n<p>See: <a href=\"https://github.com/wragge/naa-recently-digitised/blob/master/data/digitised-week-ending-20220529.csv\">github.com/wragge/na&hellip;</a></p>\n\n<p><img src=\"uploads/2022/8d20b455bb.png\" width=\"600\" height=\"464\" alt=\"Screenshot of the twenty NAA series that had the most files digitised this week.\" /></p>\n",
-				"content_text": "Files digitised by the National Archives of Australia this week: 25,981\r\n\r\nTop series:\r\n\r\n+14,025 in B884 (CMF personnel dossiers)\r\n\r\n+7,652 in A2572 (Bonegilla name index cards)\r\n\r\nSee: [github.com/wragge/na...](https://github.com/wragge/naa-recently-digitised/blob/master/data/digitised-week-ending-20220529.csv)\n\n<img src=\"uploads/2022/8d20b455bb.png\" width=\"600\" height=\"464\" alt=\"Screenshot of the twenty NAA series that had the most files digitised this week.\" />\n",
+				"content_html": "<p>Files digitised by the National Archives of Australia this week: 25,981</p>\n\n<p>Top series:</p>\n\n<p>+14,025 in B884 (CMF personnel dossiers)</p>\n\n<p>+7,652 in A2572 (Bonegilla name index cards)</p>\n\n<p>See: <a href=\"https://github.com/wragge/naa-recently-digitised/blob/master/data/digitised-week-ending-20220529.csv\">github.com/wragge/na&hellip;</a></p>\n\n<p><img src=\"https://updates.timsherratt.org/uploads/2022/8d20b455bb.png\" width=\"600\" height=\"464\" alt=\"Screenshot of the twenty NAA series that had the most files digitised this week.\" /></p>\n",
+				"content_text": "Files digitised by the National Archives of Australia this week: 25,981\r\n\r\nTop series:\r\n\r\n+14,025 in B884 (CMF personnel dossiers)\r\n\r\n+7,652 in A2572 (Bonegilla name index cards)\r\n\r\nSee: [github.com/wragge/na...](https://github.com/wragge/naa-recently-digitised/blob/master/data/digitised-week-ending-20220529.csv)\n\n<img src=\"https://updates.timsherratt.org/uploads/2022/8d20b455bb.png\" width=\"600\" height=\"464\" alt=\"Screenshot of the twenty NAA series that had the most files digitised this week.\" />\n",
 				"date_published": "2022-05-29T14:40:08+10:00",
 				"url": "https://updates.timsherratt.org/2022/05/29/files-digitised-by.html"
 			},
