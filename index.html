@@ -24,6 +24,102 @@
 	
 	  <div class="h-entry">
 		
+			<h1><a href="https://updates.timsherratt.org/2022/09/15/from-pdfs-to.html">From 48 PDFs to one searchable database – opening up the Tasmanian Post Office Directories with the GLAM Workbench</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2022/09/15/from-pdfs-to.html" class="u-url"><time class="dt-published" datetime="2022-09-15 22:15:21 &#43;1000">Sep 15, 2022</time></a>
+
+		<div class="e-content">
+			 
+
+<p>A few weeks ago I <a href="https://updates.timsherratt.org/2022/09/01/making-nsw-postal.html">created a new search interface</a> to the <a href="https://glam-workbench.net/trove-journals/nsw-post-office-directories/">NSW Post Office Directories from 1886 to 1908</a>. Since then, I’ve used the same process on the <a href="https://glam-workbench.net/trove-journals/sydney-telephone-directories/">Sydney Telephone Directories from 1926 to 1954</a>. Both of these publications had been digitised by the State Library of NSW and made available through Trove. To build the new interfaces I downloaded the text from Trove and linked it to the online page images.</p>
+
+<p>But there are similar directories from other states that are not available through Trove. The Tasmanian Post Office Directory, for example, has been <a href="https://stors.tas.gov.au/ILS/SD_ILS-981598">digitised between 1890 and 1948</a> and made available as 48 individual PDF files from Libraries Tasmania. While it’s great that they’ve been digitised, it’s not really possible to search them without downloading all the PDFs.</p>
+
+<p>As part of the <a href="https://everydayheritage.au/">Everyday Heritage</a> project, <a href="https://katebagnall.com/">Kate Bagnall</a> and I are working on mapping Tasmania’s Chinese history – finding new ways of connecting people and places. The Tasmanian Post Office Directories will be a useful source for us, so I thought I’d try converting them into a database I had with the NSW directories. But how?</p>
+
+<p>There were several stages involved:</p>
+
+<ul>
+<li>Downloading the 48 PDF files</li>
+<li>Extracting the text and images from the PDFs</li>
+<li>Making the separate images available online so they could be integrated with the search interface</li>
+<li>Loading all the text and image links into a SQLite database for online delivery using Datasette</li>
+</ul>
+
+<p>And here’s the result!</p>
+
+<p><img class="u-photo" src="https://updates.timsherratt.org/uploads/2022/91aff3faba.png" width="600" height="326" alt="Screenshot of search interface for the Tasmanian Post Office Directories." /></p>
+
+<p><a href="https://glam-workbench.net/tasmanian-post-office-directories/"><strong>Search for people and places in Tasmania from 1890 to 1948!</strong></a></p>
+
+<p>The complete process is documented in a <a href="https://glam-workbench.net/libraries-tasmania/#tasmanian-post-office-directories">series of notebooks</a>, shared through the brand new <a href="https://glam-workbench.net/libraries-tasmania/">Libraries Tasmania section</a> of the GLAM Workbench. As with the NSW directories, the processing pipeline I developed could be reused with similar publications in PDF form. Any suggestions?</p>
+
+<h2 id="some-technical-details">Some technical details</h2>
+
+<p>There were some interesting challenges in connecting up all the pieces. <a href="https://glam-workbench.net/libraries-tasmania/tas-pod-save-text-images/">Extracting the text and images from the PDFs</a> was remarkably easy using <a href="https://pymupdf.readthedocs.io/en/latest/">PyMuPDF</a>, but the quality of the text wasn’t great. In particular, I had trouble with columns – values from neighbouring columns would be munged together, upsetting the order of the text. I tried working with the positional information provided by PyMuPDF to improve column detection, but every improvement seemed to raise another issue. I was also worried that too much processing might result in some text being lost completely.</p>
+
+<p>I tried a few experiments re-OCRing the images with <a href="https://aws.amazon.com/textract/">Textract</a> ( a paid service from Amazon) and <a href="https://github.com/tesseract-ocr/tesseract">Tesseract</a>. The basic Textract product provides good OCR, but again I needed to work with the positional information to try and reassemble the columns. On the other hand, Tesseract’s automatic layout detection seemed to work pretty well with just the default settings. It wasn’t perfect, but good enough to support search and navigation. So I decided to <a href="https://glam-workbench.net/libraries-tasmania/tas-pod-ocr-with-tesseract/">re-OCR all the images using Tesseract</a>. I’m pretty happy with the result.</p>
+
+<p>The search interfaces for the NSW directories display page images loaded directly from Trove into an <a href="https://openseadragon.github.io/">OpenSeadragon viewer</a>. The Tasmanian directories have no online images to integrate in this way, so I had to set up some hosting for the images I extracted from the PDFs. I could have just loaded them from an Amazon s3 bucket, but I wanted to use IIIF to deliver the images. Fortunately there’s a great project that uses Amazon’s Lambda service to provide a <a href="https://github.com/samvera-labs/serverless-iiif">Serverless IIIF Image API</a>. To prepare the images for IIIF, you convert them to pyramidal TIFFs (a format that contains an image at a number of different resolutions) using <a href="https://github.com/libvips/libvips">VIPS</a>. Then you upload the TIFFs to an s3 bucket and point the Serverless IIIF app at the bucket. There’s <a href="https://glam-workbench.net/libraries-tasmania/tas-pod-upload-images/">more details in this notebook</a>. It’s very easy and seems to deliver images amazingly quickly.</p>
+
+<p>The rest of the processing followed the process I used with the NSW directories – <a href="https://glam-workbench.net/libraries-tasmania/tas-pod-add-to-datasette/">using SQLite-utils and Datasette to package the data</a> and deliver it online via Google Cloudrun.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
+			<h1><a href="https://updates.timsherratt.org/2022/09/05/fresh-harvest-of.html">Fresh harvest of OCRd text from Trove&#39;s digitised periodicals – 9gb of text to explore and analyse!</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2022/09/05/fresh-harvest-of.html" class="u-url"><time class="dt-published" datetime="2022-09-05 16:13:16 &#43;1000">Sep 5, 2022</time></a>
+
+		<div class="e-content">
+			 <p>I’ve updated the GLAM Workbench’s harvest of OCRd text from Trove&rsquo;s digitised periodicals. This is a completely fresh harvest, so should include any corrections made in recent months. It includes:</p>
+
+<ul>
+<li>1,430 periodicals</li>
+<li>OCRd text from 41,645 issues</li>
+<li>About 9gb of text</li>
+</ul>
+
+<p>The easiest way to explore the harvest is probably this <a href="https://glam-workbench.net/trove-journals/journals-with-ocr/">human-readable list</a>. The list of periodicals with OCRd text is also <a href="https://glam-workbench.net/trove-journals/csv-journals-with-ocr/">available as a CSV</a>. You can find <a href="https://glam-workbench.net/trove-journals/ocrd-text-all-journals/">more details</a> in the Trove journals section of the GLAM Workbench, and <a href="https://cloudstor.aarnet.edu.au/plus/s/QOmnqpGQCNCSC2h">download the complete corpus</a> from CloudStor.</p>
+
+<p>Finding which periodical issues in Trove have OCRd text you can download is not as easy as it should be. The <code>fullTextInd</code> index doesn&rsquo;t seem to distinguish between digitised works (with OCR)  and born-digital publications (like PDFs) without downloadable text. You can use <code>has:correctabletext</code> to find articles with OCR, but you can&rsquo;t get a full list of the periodicals the articles come from using the <code>title</code> facet. As <a href="https://glam-workbench.net/trove-journals/create-list-digitised-journals/">this notebook explains</a>, you can search for <code>nla.obj</code>, but this returns both digitised works and publications supplied through edeposit. In previous harvests of OCRd text I processed all of the  titles returned by the <code>nla.obj</code> search, finding out whether  there was any OCRd text by just requesting it and seeing what came back. But the number of non-digitised works on the list of periodicals in  digital form has skyrocketed through the edeposit scheme and this  approach is no longer practical. It just means you waste a lot of time  asking for things that don&rsquo;t exist.</p>
+
+<p>For the latest harvest I took a different approach. I only processed periodicals in digital form that <em>weren&rsquo;t</em> identified as coming through edeposit. These are the publications with a <code>fulltext_url_type</code> value of either &lsquo;digitised&rsquo; or &lsquo;other&rsquo; in my <a href="https://glam-workbench.net/trove-journals/csv-digital-journals/">dataset of digital periodicals</a>. Is it possible that there&rsquo;s some downloadable text in edeposit works  that&rsquo;s now missing from the harvest? Yep, but I think this is a much  more sensible, straightforward, and reproduceable approach.</p>
+
+<p>That&rsquo;s not the only problem. As I noted when creating the list of  periodicals in digital form, there are duplicates in the list, so they  have to be removed. You then have to find information about the issues  available for each title. This is not provided by the Trove API, but  there is an internal API used in the web interface that you can access – see <a href="https://glam-workbench.net/trove-journals/get-ocrd-text-from-digitised-journal/">this notebook for details</a>. I also noticed that sometimes where there&rsquo;s a single issue of a title,  it&rsquo;s presented as if each page is an issue. I think I&rsquo;ve found a work  around for that as well.</p>
+
+<p>All these doubts, inconsistencies and workarounds mean that I&rsquo;m fairly certain I don&rsquo;t have <em>everything</em>. But I do think I have <em>most</em> of the OCRd text available from digitised periodicals, and I do have a  methodology, <a href="https://glam-workbench.net/trove-journals/get-ocrd-text-from-all-journals/">documented in this notebook</a>, that at least provides a  starting point for further investigation. As I noted in my <a href="https://updates.timsherratt.org/2022/05/11/my-trove-researcher.html">wishlist for a Trove Researcher Platform</a>, it would be great if more  metadata for digitised works, other than newspapers, was made available  through the API.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
+			<h1><a href="https://updates.timsherratt.org/2022/09/05/explore-troves-digitised.html">Explore Trove&#39;s digitised newspapers by place</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2022/09/05/explore-troves-digitised.html" class="u-url"><time class="dt-published" datetime="2022-09-05 15:34:05 &#43;1000">Sep 5, 2022</time></a>
+
+		<div class="e-content">
+			 <p>I&rsquo;ve updated my map displaying places where Trove digitised newspapers were published or distributed. You can view <a href="https://troveplaces.herokuapp.com/all/">all the places on single map</a> – zoom in for more markers, and click on a marker for title details and a link back to Trove.</p>
+
+<p><img class="u-photo" src="https://updates.timsherratt.org/uploads/2022/e91962f3b3.png" width="600" height="552" alt="A map of Australia with coloured markers indicating the number of Trove’s digitised newspapers published in different locations around the country." /></p>
+
+<p>If you want to find newspapers from a particular area, just click on a location <a href="https://troveplaces.herokuapp.com/map/">using this map</a> to view the 10 closest titles.</p>
+
+<p><img src="uploads/2022/cccbceaddd.png" width="600" height="316" alt="A map section focused on Walhalla in eastern Victoria with markers indicating nearby places where Trove’s digitised newspapers were published. A column on the right lists the newspaper titles." /></p>
+
+<p>You can <a href="https://docs.google.com/spreadsheets/d/1rURriHBSf3MocI8wsdl1114t0YeyU0BVSXWeg232MZs/edit?usp=sharing">view or download the dataset</a> used to construct the map. Place names were extracted from the newspaper titles using the Geoscience Gazetteer.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
 			<h1><a href="https://updates.timsherratt.org/2022/09/01/making-nsw-postal.html">Making NSW Postal Directories (and other digitised directories) easier to search with the GLAM Workbench and Datasette</a></h1>
 		
 
@@ -36,7 +132,7 @@
 
 <p>The idea of ‘articles’ is really not very useful for publications like the Post Office Directories where information is mostly organised by column, row or line. You want to be able to search for a name, and go directly to the line in the directory where that name is mentioned. And now you can! Using Datasette, I’ve created an interface that searches <em>by line</em> across all 54 volumes of the NSW Post Office Directory from 1886 to 1950 (that’s over 30 million lines of text).</p>
 
-<p><a href="https://nsw-post-office-directories-yajhxrvxsa-ts.a.run.app/"><img src="uploads/2022/cb7e107b84.png" width="600" height="400" alt="Screenshot of home page for the NSW Post Office Directories. There’s a search box to search across all 54 volumes, some search tips, and a summary of the data that notes there are more than 30 million rows." /></a></p>
+<p><a href="https://nsw-post-office-directories-yajhxrvxsa-ts.a.run.app/"><img class="u-photo" src="https://updates.timsherratt.org/uploads/2022/cb7e107b84.png" width="600" height="400" alt="Screenshot of home page for the NSW Post Office Directories. There’s a search box to search across all 54 volumes, some search tips, and a summary of the data that notes there are more than 30 million rows." /></a></p>
 
 <p><a href="https://nsw-post-office-directories-yajhxrvxsa-ts.a.run.app/"><strong>Try it now!</strong></a></p>
 
