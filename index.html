@@ -24,6 +24,66 @@
 	
 	  <div class="h-entry">
 		
+			<h1><a href="https://updates.timsherratt.org/2023/02/17/maps-people-lists.html">Maps, people, lists &amp; more – recent updates to Trove resources in the GLAM Workbench</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2023/02/17/maps-people-lists.html" class="u-url"><time class="dt-published" datetime="2023-02-17 16:53:07 &#43;1100">Feb 17, 2023</time></a>
+
+		<div class="e-content">
+			 <p>Once again I’ve gotten a bit behind in noting <a href="https://glam-workbench.net/">GLAM Workbench</a> updates, so here’s a quick catch up on some Trove-related changes from the last couple of months.</p>
+<h2 id="trove-api-introduction">Trove API introduction</h2>
+<p>The <a href="https://glam-workbench.net/trove/">section that introduces the Trove API</a> (or APIs!) hasn’t had much love over recent years. I’m hoping to add some more content in the coming months, but for now I just did a bit of maintenance – updating Python packages and config files, including tests, and setting up automated builds of Docker containers. The documentation pages have also had a bit of a refresh. More soon!</p>
+<h2 id="trove-lists-and-tags">Trove lists and tags</h2>
+<p>For the Everyday Heritage digital workshop last November, I added a new notebook to <a href="https://glam-workbench.net/trove-lists/convert-list-to-cb-exhibition/">convert a Trove list into a CollectionBuilder exhibition</a>. The notebook harvests metadata and images from the items in a Trove list, then packages everything up in a form that can be uploaded to a <a href="https://github.com/CollectionBuilder/collectionbuilder-gh">CollectionBuilder-GH</a> repository. Just upload the files to create your own instant exhibition! For example, <a href="https://wragge.github.io/trove-wragge-list-demo/">this exhibition</a> was generated from this <a href="https://trove.nla.gov.au/list/83777">Trove list</a>.</p>
+<!-- raw HTML omitted -->
+<p>More recently, I updated and reorganised <a href="https://glam-workbench.net/trove-lists/">the documentation pages</a>. In particular, I updated the links to the pre-harvested datasets which are now all saved in Zenodo:</p>
+<ul>
+<li><a href="https://doi.org/10.5281/zenodo.6827253">Trove lists metadata</a></li>
+<li><a href="https://doi.org/10.5281/zenodo.6814722">Trove public tags</a></li>
+<li><a href="https://doi.org/10.5281/zenodo.7563995">Trove tag counts</a></li>
+</ul>
+<p>These datasets have also been added to the <a href="https://zenodo.org/communities/trove-historical-data/?page=1&amp;size=20">Trove historical data collection</a> in Zenodo.</p>
+<h2 id="trove-maps">Trove maps</h2>
+<p>The <a href="https://glam-workbench.net/trove-maps/">Trove Maps</a> section also needed a refresh and rebuild. The <a href="https://glam-workbench.net/trove-maps/exploring-digitised-maps/">existing notebook</a> harvested metadata about digitised maps to build an overview of what was available. I updated the harvesting code to capture a bit more information, including spatial coordinates where available. These coordinates aren’t available through the API, and aren’t visible on a map’s web page, but they <em>are</em> embedded within the HTML (this is a <a href="https://glam-workbench.net/trove-books/metadata-for-digital-works/">little trick</a> I’ve used with other digitised materials to get additional metadata). You can download the <a href="https://glam-workbench.net/trove-maps/single-maps-data/">updated dataset</a>.</p>
+<p>I also added a new notebook that attempts to parse the spatial data strings and convert the coordinates into decimal values that we can display on a map. Some of the coordinates were bounding boxes, while others were just points. If there was a bounding box, I calculated the centre point and saved that as well. I ended up with decimal coordinates for 26,591 digitised maps. You can download the <a href="https://glam-workbench.net/trove-maps/single-maps-coordinates-data/">parsed and converted coordinates</a> as a dataset.</p>
+<p>From this data I was able generate some interesting visualisations. I used <a href="https://python-visualization.github.io/folium/index.html">Folium</a> and the <a href="https://python-visualization.github.io/folium/plugins.html#folium.plugins.FastMarkerCluster">FastMarkerCluster</a> plugin to map all of the centre points. I’ve had trouble before displaying lots of markers in Jupyter, but FastMarkerCluster handled it easily. I also saved the Folium map as <a href="https://glam-workbench.net/trove-maps/trove-map-clusters.html">a HTML page</a> to make it easy for people to explore. Just zoom around and click on markers to display the map’s title and a link to Trove.</p>
+<p><a href="https://glam-workbench.net/trove-maps/trove-map-clusters.html"><!-- raw HTML omitted --></a></p>
+<p>Where there are bounding boxes, you can overlay the map images themselves on a modern map. Of course, this isn’t as accurate as georectifying the map, particularly if the map doesn’t fill the whole image, but it’s still pretty fun. There’s a demonstration in the notebook that selects a random map and overlays the image on a modern basemap using <a href="https://ipyleaflet.readthedocs.io/en/latest/">IPyleaflet</a>. It includes a widget to adjust the opacity of the map image (something I didn’t seem to be able to include using Folium?).</p>
+<!-- raw HTML omitted -->
+<h2 id="trove-people--organisations">Trove People &amp; Organisations</h2>
+<p>I’ve finally added a <a href="https://glam-workbench.net/trove-people/">section for the Trove People &amp; Organisations zone</a>! This has been in the works for a while, but thanks to the <a href="https://www.acd-engine.org/">Australian Cultural Data Engine</a> I was able to devote some time to it. Trove&rsquo;s People and Organisations zone aggregates information about  individuals and organisations, bringing multiple sources together under a single identifier. Data is available from a series of APIs, which are not well-documented. The notebooks show you how to <a href="https://glam-workbench.net/trove-people/complete_harvest/">harvest all the available people and organisations data</a> as EAC-CPF encoded XML files. Once you have the data, you can extract some summary information about sources and occupations, and use this to <a href="https://glam-workbench.net/trove-people/intersections/">explore the way that records from different sources have been merged into unique identities</a>. For example you can create a network graph of relationships between sources.</p>
+<!-- raw HTML omitted -->
+<p>Or use an UpSet chart to show the most common groupings of sources.</p>
+<!-- raw HTML omitted -->
+<p>There’s also a couple of notebooks with some handy examples of code to <a href="https://glam-workbench.net/trove-people/get_sru_results_as_json/">convert the XML results from the SRU API to JSON</a>, and to <a href="https://glam-workbench.net/trove-people/viaf/">find extra identity links through VIAF</a>. I’ve also shared a pre-harvested version of the <a href="https://glam-workbench.net/trove-people/complete_harvest_dataset/">complete dataset</a> and the <a href="https://glam-workbench.net/trove-people/aggregated_datasets/">extracted summaries</a>.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
+			<h1><a href="https://updates.timsherratt.org/2022/12/11/real-face-of.html">Real Face of White Australia – updated site to transcribe records from the National Archives of Australia</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2022/12/11/real-face-of.html" class="u-url"><time class="dt-published" datetime="2022-12-11 13:17:57 &#43;1100">Dec 11, 2022</time></a>
+
+		<div class="e-content">
+			 <p>Back in 2017, I worked with students from my <a href="https://2017.exploringdigitalheritage.net/">‘Exploring Digital Heritage’</a> class at the University of Canberra to develop and launch a site to transcribe records from the National Archives of Australia relating to the administration of the White Australia Policy. The highlight was a <a href="https://www.abc.net.au/news/2017-09-04/white-australia-policy-project-transcribes-history/8868680">weekend-long ‘transcribe-a-thon’</a> held in Kings Hall at Old Parliament House.</p>
+<!-- raw HTML omitted -->
+<p>This was part of the <a href="https://www.realfaceofwhiteaustralia.net/">Real Face of White Australia</a> project – an ongoing effort by Kate Bagnall and me to increase awareness and understanding of the White Australia Policy records held by the NAA. For an introduction to the project and its origins, see our chapter <a href="https://doi.org/10.5281/zenodo.3579530">&lsquo;The people inside&rsquo;</a>, published in <em>Seeing the Past with Computers: Experiments with Augmented Reality and Computer Vision for History</em>, edited by Kevin Kee and Tim Compeau.</p>
+<p>The original transcription site was built using <a href="https://scribeproject.github.io/">Scribe</a>, a community transcription platform developed by the New York Public Library and Zooniverse. Unfortunately Scribe is no longer being supported or developed, and, with the infrastructure slowly degrading, I needed to find an alternative before the whole thing fell over.</p>
+<p>I decided to use <a href="https://www.zooniverse.org/lab">Zooniverse’s Project Builder</a>, which itself is implemented using their <a href="https://panoptes.docs.apiary.io/#">Panoptes API</a>. The basic structure of a Project Builder project is similar to Scribe, with ‘tasks’, ‘workflows’, ‘subjects’, and ‘classifications’. The Project Builder web interface makes it easy to get started, though defining workflows for complicated transcription tasks – like extracting structured information from a form or certificate – can get a bit messy. You can also access the Panoptes API directly, which means you can code your own pipelines for uploading and downloading data from your transcription project.</p>
+<p>The documents I uploaded to the new site have no transcriptions from the old system. Some have been digitised since the first site was created. I’m still working through the transcription data from the original site, and will be adding new records over time. At the moment, all the records come from Series ST84/1 – there’s some <a href="https://www.zooniverse.org/projects/wragge/the-real-face-of-white-australia/about/research">background information</a> about the records on the projects ‘about’ page.</p>
+<!-- raw HTML omitted -->
+<p>The new, Zooniverse-powered, <a href="https://www.zooniverse.org/projects/wragge/the-real-face-of-white-australia">Real Face of White Australia transcription site</a> was launched on 30 October at a transcription event organised by CAFHOV (<a href="https://www.cafhov.com/">Chinese Australian Family Historians of Victoria</a>). On that first day, 16 volunteers transcribed 880 documents, and they’ve kept going – the total’s now up to 6,749! If you want to help, just <a href="https://www.zooniverse.org/projects/wragge/the-real-face-of-white-australia">head along to the site</a> and click on the <strong>Get Started</strong> button!</p>
+<!-- raw HTML omitted -->
+<p>All the data extracted by the Real Face of White Australia project is available for further research through <a href="https://github.com/wragge/realface-data">this GitHub repository</a>. You can follow <a href="https://twitter.com/InvisibleAus">@invisibleaus</a> on Twitter for twice-daily mini stories drawn from the transcribed data.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
 			<h1><a href="https://updates.timsherratt.org/2022/12/10/recent-presentations-library.html">Recent presentations – Library of Congress Data Jam, Everyday Heritage, Wikidata, and GLAM Workbench!</a></h1>
 		
 
@@ -44,7 +104,7 @@
 </ul>
 <h2 id="wikimedia-australia-community-meeting">Wikimedia Australia Community Meeting</h2>
 <!-- raw HTML omitted -->
-<p>Thanks to a grant from Wikimedia Australia, I’ve been able to spend some time this year working to align information about government agencies in Wikidata with details from the National Archives of Australia’s RecordSearch database. You can read about the project in this <a href="https://wikimedia.org.au/wiki/Exploring_government_departments_by_linking_Wikidata_to_the_National_Archives_of_Australia">blog post</a>. In November, I gave a report on the project at Wikimedia Australia’s monthly Community Meeting. You can watch the <a href="https://youtu.be/XkQ_-QgUOBw">video on YouTube</a>.</p>
+<p>Thanks to a grant from Wikimedia Australia, I’ve been able to spend some time this year working to align information about government agencies in Wikidata with details from the National Archives of Australia’s RecordSearch database. You can read about the project in this <a href="https://wikimedia.org.au/wiki/Exploring_government_departments_by_linking_Wikidata_to_the_National_Archives_of_Australia">blog post</a>. In November, I gave a report on the project at Wikimedia Australia’s monthly Community Meeting. You can watch the <a href="https://youtu.be/XkQ_-QgUOBw">video on YouTube</a>. You can also explore the <a href="https://glam-workbench.net/wikidata/">new Wikidata section</a> of the GLAM Workbench.</p>
 <h2 id="everyday-heritage-workshop-and-symposium">Everyday Heritage workshop and symposium</h2>
 <p>November also brought the first of what will be a series of annual symposia relating to the ARC-funded <a href="https://everydayheritage.au/">Everyday Heritage project</a>. On 9 November, Kate Bagnall and I ran a <a href="https://everydayheritage.au/events/workshop-november/">Connecting People and Place</a> workshop at the University of Canberra. We walked participants through some ways of finding and using digital collections such as Trove, and worked with them to create projects based on their own research using <a href="https://storymap.knightlab.com/">StoryMapJS</a> and <a href="https://collectionbuilder.github.io/">CollectionBuilder</a>. You can view the <a href="https://slides.com/wragge/trove-newspapers-tips-tricks">slides of my Trove tips &amp; tricks presentation</a>. In preparation for the workshop I also created a new notebook in the GLAM Workbench that <a href="https://glam-workbench.net/trove-lists/#convert-a-trove-list-into-a-collectionbuilder-exhibition">converts a Trove List into a Collection Builder exhibition</a>.</p>
 <!-- raw HTML omitted -->
