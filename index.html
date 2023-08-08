@@ -24,6 +24,27 @@
 	
 	  <div class="h-entry">
 		
+			<h1><a href="https://updates.timsherratt.org/2023/08/08/exploring-the-front.html">Exploring the front pages of newspapers (10 years on)</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2023/08/08/exploring-the-front.html" class="u-url"><time class="dt-published" datetime="2023-08-08 16:28:18 &#43;1000">Aug 8, 2023</time></a>
+
+		<div class="e-content">
+			 <p>Way back in 2012, I used the <em>brand new</em> Trove API to download the details of 4 million  articles published on the front pages of newspapers. I did it for two reasons: first, I wanted to see how the content of front pages changed over time; and second, I wanted to show that large-scale data wrangling was entirely possible using nothing more than a laptop and a home broadband connection. I described my adventures in <a href="https://discontents.com.au/4-million-articles-later/index.html">this blog post</a>, but if you look at it now you’ll see lots of sad, empty boxes where live charts used to be. This is because I shared my results though a custom web application which, 10 years later, seems like a really, really dumb idea. Needless to say the app fell foul of web hosting changes and is no more. Nowadays I use GitHub and Jupyter notebooks to share my data noodling, so I thought it was time to revisit the topic of newspaper front pages, and create something a bit more robust.</p>
+<p>If you just want the data and code, head over to the <a href="https://github.com/wragge/newspaper-front-pages/">GitHub repository</a>. I’ve shared the notebooks used to <a href="https://github.com/wragge/newspaper-front-pages/blob/main/large-harvest-example.ipynb">harvest</a>, <a href="https://github.com/wragge/newspaper-front-pages/blob/main/convert-front-pages-harvest.ipynb">convert</a>, and <a href="https://github.com/wragge/newspaper-front-pages/blob/main/explore-front-pages.ipynb">explore</a> the data, as well as two parquet formatted datasets.</p>
+<p>As you might expect, there are a <strong>lot more</strong> articles now, as new articles and newspapers are added to Trove every week (see the <a href="https://wragge.github.io/trove-newspaper-totals/">Trove Newspaper Data Dashboard</a> for details). Instead of 4 million articles, I ended up downloading details of more than <strong>19 million articles</strong>! I used my trusty <a href="https://glam-workbench.net/trove-harvester/">Trove Newspaper Harvester</a> as a library so I could more easily manage the way the data was saved. After several days I had a 14.6gb newline-delimited JSON file. I pared the data down to only the necessary fields, and used DuckDB to create two parquet files – <a href="https://github.com/wragge/newspaper-front-pages/blob/main/front_pages.parquet">one with the article data</a>, and <a href="https://github.com/wragge/newspaper-front-pages/blob/main/front_pages_totals.parquet">another that added up the number of words on each page in the different article categories</a>.</p>
+<p>One nifty thing about the Trove API is that it tells you the number of words in each newspaper article. Articles are also assigned to a series of categories, such as ‘Article’ (your standard news-type piece) and ‘Advertising’. By adding up the number of words in each category I could explore how the front page’s mix of articles and advertising changed over time. Here, for example, is what happened to the front page of the <em>Sydney Morning Herald</em>.</p>
+<!-- raw HTML omitted -->
+<p>The first chart shows the average number of words per page in the ‘Article’ and ‘Advertising’ categories across the full span of the <em>SMH’s</em> publication run digitised in Trove. The second focuses in on the point where the number of words in articles overtakes the number of words in advertisements. You can see that for most of the publication run, the front page was dominated by advertising. But when change came it was quite abrupt. Sydney-siders awoke on 15 April 1944 to a new look newspaper. Here’s what the front page looked like at the beginning and end of the period represented by the second chart.</p>
+<!-- raw HTML omitted -->
+<p>Different newspapers have different histories. I’ve created <a href="https://nbviewer.org/github/wragge/newspaper-front-pages/blob/main/explore-front-pages.ipynb">a notebook that generates more of these visualisations</a> for a range of different newspapers, and tries to provide a bit more context around the changes taking place.</p>
+<p>As I continue my work on the <a href="https://wragge.github.io/trove-data-guide/home.html">Trove Data Guide</a> for the <a href="https://ardc.edu.au/project/hass-community-data-lab/">HASS Community Data Lab</a>, I’m discovering more and more inconsistencies, oddities, and undocumented possibilities. As I was finishing up the work on front pages, I realised there was another way of exploring the same topic – by looking at the <em>space</em> articles take up. This data isn’t in the API, but it can be scraped from the web site. Hmmm, interesting…</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
 			<h1><a href="https://updates.timsherratt.org/2023/07/18/trove-api-console.html">Trove API Console updates</a></h1>
 		
 
