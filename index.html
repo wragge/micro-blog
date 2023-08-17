@@ -24,6 +24,20 @@
 	
 	  <div class="h-entry">
 		
+			<h1><a href="https://updates.timsherratt.org/2023/08/17/bye-bye-birdsite.html">Bye bye birdsite</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2023/08/17/bye-bye-birdsite.html" class="u-url"><time class="dt-published" datetime="2023-08-17 11:53:47 &#43;1000">Aug 17, 2023</time></a>
+
+		<div class="e-content">
+			 <p>In early June I finally pinned a &ldquo;nobody&rsquo;s home&rdquo; post to my profile and said goodbye to Twitter. After 15 years, I was sad to leave behind friends and colleagues, but glad to get away from the hate, the nazis, and the transphobes. I hadn&rsquo;t been posting much since Elno took over anyway, and was happily building a new network over on Mastodon. This morning I finally removed the Twitter links from my <a href="https://timsherratt.org">home page</a>. Bye bye birdsite.</p>
+<p>If you want to find me now I&rsquo;m <a href="https://hcommons.social/@wragge">@wragge@hcommons.social</a>. If you&rsquo;re still wondering about making the move to Mastodon, I can heartily recommend <a href="http://hcommons.social">hcommons.social</a> as a friendly, well run instance. They also have a <a href="https://hcommons.org/docs/mastodon-quick-start-guide-for-humanities-scholars/">really useful guide to Mastodon for humanities scholars</a>.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
 			<h1><a href="https://updates.timsherratt.org/2023/08/08/exploring-the-front.html">Exploring the front pages of newspapers (10 years on)</a></h1>
 		
 
@@ -35,9 +49,9 @@
 <p>As you might expect, there are a <strong>lot more</strong> articles now, as new articles and newspapers are added to Trove every week (see the <a href="https://wragge.github.io/trove-newspaper-totals/">Trove Newspaper Data Dashboard</a> for details). Instead of 4 million articles, I ended up downloading details of more than <strong>19 million articles</strong>! I used my trusty <a href="https://glam-workbench.net/trove-harvester/">Trove Newspaper Harvester</a> as a library so I could more easily manage the way the data was saved. After several days I had a 14.6gb newline-delimited JSON file. I pared the data down to only the necessary fields, and used DuckDB to create two parquet files – <a href="https://github.com/wragge/newspaper-front-pages/blob/main/front_pages.parquet">one with the article data</a>, and <a href="https://github.com/wragge/newspaper-front-pages/blob/main/front_pages_totals.parquet">another that added up the number of words on each page in the different article categories</a>.</p>
 <p>One nifty thing about the Trove API is that it tells you the number of words in each newspaper article. Articles are also assigned to a series of categories, such as ‘Article’ (your standard news-type piece) and ‘Advertising’. By adding up the number of words in each category I could explore how the front page’s mix of articles and advertising changed over time. Here, for example, is what happened to the front page of the <em>Sydney Morning Herald</em>.</p>
 <!-- raw HTML omitted -->
-<p>The first chart shows the average number of words per page in the ‘Article’ and ‘Advertising’ categories across the full span of the <em>SMH’s</em> publication run digitised in Trove. The second focuses in on the point where the number of words in articles overtakes the number of words in advertisements. You can see that for most of the publication run, the front page was dominated by advertising. But when change came it was quite abrupt. Sydney-siders awoke on 15 April 1944 to a new look newspaper. Here’s what the front page looked like at the beginning and end of the period represented by the second chart.</p>
+<p>The first chart shows the average number of words per page in the ‘Article’ and ‘Advertising’ categories across the full span of the <em>SMH’s</em> publication run digitised in Trove (advertising is blue, and articles orange). The second focuses in on the point where the number of words in articles overtakes the number of words in advertisements. You can see that for most of the publication run, the front page was dominated by advertising. But when change came it was quite abrupt. Sydney-siders awoke on 15 April 1944 to a new look newspaper. Here’s what the front page looked like at the beginning and end of the period represented by the second chart.</p>
 <!-- raw HTML omitted -->
-<p>Different newspapers have different histories. I’ve created <a href="https://nbviewer.org/github/wragge/newspaper-front-pages/blob/main/explore-front-pages.ipynb">a notebook that generates more of these visualisations</a> for a range of different newspapers, and tries to provide a bit more context around the changes taking place.</p>
+<p>Different newspapers have different histories. I’ve created <a href="https://nbviewer.org/github/wragge/newspaper-front-pages/blob/main/explore-front-pages.ipynb">a notebook that generates more of these visualisations</a> for a range of newspapers, and tries to provide a bit more context around the changes taking place.</p>
 <p>As I continue my work on the <a href="https://wragge.github.io/trove-data-guide/home.html">Trove Data Guide</a> for the <a href="https://ardc.edu.au/project/hass-community-data-lab/">HASS Community Data Lab</a>, I’m discovering more and more inconsistencies, oddities, and undocumented possibilities. As I was finishing up the work on front pages, I realised there was another way of exploring the same topic – by looking at the <em>space</em> articles take up. This data isn’t in the API, but it can be scraped from the web site. Hmmm, interesting…</p>
 
 		</div>
