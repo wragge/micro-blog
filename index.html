@@ -24,13 +24,74 @@
 	
 	  <div class="h-entry">
 		
+			<h1><a href="https://updates.timsherratt.org/2023/08/26/trove-query-parser.html">Trove Query Parser updated!</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2023/08/26/trove-query-parser.html" class="u-url"><time class="dt-published" datetime="2023-08-26 17:21:23 &#43;1000">Aug 26, 2023</time></a>
+
+		<div class="e-content">
+			 <p>I&rsquo;ve just updated the <a href="https://github.com/wragge/trove_query_parser/">Trove Query Parser</a> to work with version 3 of the Trove API. You just give it the url of a search in Trove&rsquo;s newspapers, and it translates the search into a set of parameters that the API will understand. So this:</p>
+<p><code>parse_query(&quot;https://trove.nla.gov.au/search/category/newspapers?keyword=wragge&amp;l-artType=newspapers&amp;l-state=Queensland&amp;l-category=Article&amp;l-illustrationType=Cartoon&quot;, 3)</code></p>
+<p>Produces this:</p>
+<p><code>{'q': 'wragge', 'l-artType': 'newspapers', 'l-state': ['Queensland'], 'l-category': ['Article'], 'l-illustrated': 'true', 'l-illtype': ['Cartoon'], 'category': 'newspaper'}</code></p>
+<p>You can then feed the parameters to the Trove API with your API key and you&rsquo;ll get data back. Easy! It&rsquo;s simple but handy – I use the Query Parser in other tools like the <a href="https://glam-workbench.net/trove-harvester/">Trove Newspaper Harvester</a> and <a href="https://glam-workbench.net/trove-newspapers/querypic/">QueryPic</a>.</p>
+<p>This version adds a second parameter to the <code>parse_query()</code> function so you can specify the version of the Trove API you&rsquo;re using. The default value is <code>2</code> for backwards compatibility. See <a href="https://wragge.github.io/trove_query_parser/">the documentation</a> for more information.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
+			<h1><a href="https://updates.timsherratt.org/2023/08/18/family-history-resources.html">Family history resources in the GLAM Workbench</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2023/08/18/family-history-resources.html" class="u-url"><time class="dt-published" datetime="2023-08-18 14:06:21 &#43;1000">Aug 18, 2023</time></a>
+
+		<div class="e-content">
+			 <p>It’s Family History Month, so I thought a brief post was in order describing some of the family history related resources in the GLAM Workbench.</p>
+<h2 id="glam-name-index-search">GLAM Name Index Search</h2>
+<p>This is the biggie (in more ways than one). I’ve brought 263 datasets from 10 Australian GLAM organisations together into a single search interface. All these datasets index collections by people’s names, so with one search you can find information about individuals across a broad range of records, locations, and periods. There’s more than 10 million rows of data to explore!</p>
+<p><a href="https://glam-workbench.net/name-search/"><strong>Try it now!</strong></a></p>
+<!-- raw HTML omitted -->
+<h2 id="nsw-post-office-and-sydney-telephone-directories">NSW Post Office and Sydney Telephone Directories</h2>
+<p>Many volumes of the NSW Post Office and Sydney Telephone Directories have been digitised and made available through Trove. However, they’re not easy to search. I’ve taken the text from these volumes and indexed it by line to make it easier to find people and places. There’s two databases to explore:</p>
+<ul>
+<li><a href="https://glam-workbench.net/trove-journals/nsw-post-office-directories/"><strong>New South Wales Post Office Directories</strong></a> (54 volumes from 1886 to 1950)</li>
+<li><a href="https://glam-workbench.net/trove-journals/sydney-telephone-directories/"><strong>Sydney Telephone Directories</strong></a> (44 volumes from 1926 to 1954)</li>
+</ul>
+<!-- raw HTML omitted -->
+<h2 id="tasmanian-post-office-directories">Tasmanian Post Office Directories</h2>
+<p>The Tasmanian Post Office Directories have been digitised by Libraries Tasmania, but each volume is available as a separate PDF, making it difficult to search across the collection. I’ve downloaded all the PDFs, extracted the text and images, and indexed the content by line. Now you can search all <strong>48 volumes,  from 1890 to 1948</strong>, at once!</p>
+<p><a href="https://glam-workbench.net/tasmanian-post-office-directories/"><strong>Try it now!</strong></a></p>
+<!-- raw HTML omitted -->
+<h2 id="trove-places">Trove Places</h2>
+<p>If your family history research is focused on a particular region, it can be useful to know what newspapers from that region are digitised in Trove. Trove Places is a map interface to Trove’s digitised newspapers, just click on a place to find newspapers published or distributed nearby.</p>
+<p><a href="https://troveplaces.herokuapp.com/map/"><strong>Try it now!</strong></a></p>
+<!-- raw HTML omitted -->
+<h2 id="save-a-trove-newspaper-article-as-an-image">Save a Trove newspaper article as an image</h2>
+<p>You might have noticed that Trove’s download option for digitised newspaper articles can slice articles up in unfortunate ways. This simple web app saves the complete article as a single image (or multiple images if the article is split across different pages). Simple, but very useful.</p>
+<p><a href="https://trove-newspaper-apps.uw.r.appspot.com/voila/render/Save-Trove-newspaper-article-as-image.ipynb"><strong>Try it now!</strong></a></p>
+<!-- raw HTML omitted -->
+<h2 id="trove-newspapers-data-dashboard">Trove Newspapers Data Dashboard</h2>
+<p>Just about every week more digitised newspaper articles are added to Trove. The search you tried a couple of months ago might now produce different results. How can you keep track of these changes? The Trove Data Dashboard uses weekly snapshots of the digitised newspapers to visualise changes over time. It’s updated every Sunday!</p>
+<p><a href="https://wragge.github.io/trove-newspaper-totals/"><strong>Try it now!</strong></a></p>
+<!-- raw HTML omitted -->
+<h2 id="and-more">And more!</h2>
+<p>The <a href="https://glam-workbench.net/"><strong>GLAM Workbench</strong></a> provides a wide range of tools and examples to help you work with data from libraries, archives, and museums.</p>
+<p>The resources above cost money to keep online. If you find them useful, you might like to <a href="https://github.com/sponsors/wragge">sponsor me on GitHub</a> or <a href="https://www.buymeacoffee.com/wragge">buy me a coffee</a>.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
 			<h1><a href="https://updates.timsherratt.org/2023/08/17/bye-bye-birdsite.html">Bye bye birdsite</a></h1>
 		
 
 		<a href="https://updates.timsherratt.org/2023/08/17/bye-bye-birdsite.html" class="u-url"><time class="dt-published" datetime="2023-08-17 11:53:47 &#43;1000">Aug 17, 2023</time></a>
 
 		<div class="e-content">
-			 <p>In early June I finally pinned a &ldquo;nobody&rsquo;s home&rdquo; post to my profile and said goodbye to Twitter. After 15 years, I was sad to leave behind friends and colleagues, but glad to get away from the hate, the nazis, and the transphobes. I hadn&rsquo;t been posting much since Elno took over anyway, and was happily building a new network over on Mastodon. This morning I finally removed the Twitter links from my <a href="https://timsherratt.org">home page</a>. Bye bye birdsite.</p>
+			 <p>In early June I pinned a &ldquo;nobody&rsquo;s home&rdquo; post to my profile and said goodbye to Twitter. After 15 years, I was sad to leave behind friends and colleagues, but glad to get away from the hate, the nazis, and the transphobes. I hadn&rsquo;t been posting much since Elno took over anyway, and was happily building a new network over on Mastodon. This morning I finally removed the Twitter links from my <a href="https://timsherratt.org">home page</a>. Bye bye birdsite.</p>
 <p>If you want to find me now I&rsquo;m <a href="https://hcommons.social/@wragge">@wragge@hcommons.social</a>. If you&rsquo;re still wondering about making the move to Mastodon, I can heartily recommend <a href="http://hcommons.social">hcommons.social</a> as a friendly, well run instance. They also have a <a href="https://hcommons.org/docs/mastodon-quick-start-guide-for-humanities-scholars/">really useful guide to Mastodon for humanities scholars</a>.</p>
 
 		</div>
