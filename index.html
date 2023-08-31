@@ -24,6 +24,53 @@
 	
 	  <div class="h-entry">
 		
+			<h1><a href="https://updates.timsherratt.org/2023/08/31/some-important-updates.html">Some important updates for the Trove Newspaper &amp; Gazette Harvester </a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2023/08/31/some-important-updates.html" class="u-url"><time class="dt-published" datetime="2023-08-31 17:00:54 &#43;1000">Aug 31, 2023</time></a>
+
+		<div class="e-content">
+			 <p><a href="https://glam-workbench.net/trove-api-v3/">Version 3</a> of the Trove API is out, and version 2 is scheduled to be decommissioned in early 2023 – that means I have a lot of code to update! First cab of the rank is the <a href="https://wragge.github.io/trove-newspaper-harvester/">Trove Newspaper &amp; Gazette Harvester</a> with version <a href="https://github.com/wragge/trove-newspaper-harvester/releases/tag/v0.7.1">0.7.1</a> now available.</p>
+<!-- raw HTML omitted -->
+<p>The Harvester is a Python package that can be used as either a library or a command-line tool. It’s been around in some form for more than 10 years. The latest updates include:</p>
+<ul>
+<li>support for version 3 of the Trove API</li>
+<li>automatic creation of a metadata file describing each harvest according to the <a href="https://www.researchobject.org/ro-crate/">RO-Crate</a> format</li>
+<li>automatic creation of a harvester config file, capturing the query parameters sent to Trove as well as the Harvester options</li>
+<li>the ability to initiate a harvest from an existing config file</li>
+<li>more memory-friendly generation of CSV result files (no loading everything into Pandas)</li>
+</ul>
+<p>The <a href="https://www.researchobject.org/ro-crate/">RO-Crate</a> integration was part of my work for the ARDC’s <a href="https://ardc.edu.au/project/hass-community-data-lab/">HASS Community Data Lab</a>. The Harvester was already generating a simple metadata file that captured <em>some</em> of the harvest parameters, but now it documents the context of the harvest in much more detail, and saves it in a standard, Linked Open Data based, format.</p>
+<p>Every harvest now creates an <code>ro-crate-metadata.json</code> file. This  file includes details of the datasets created by the Harvester, such as the <code>results.csv</code> file that includes article metadata, and the <code>text</code> directory that contains the OCRd text. It also captures contextual information about the Harvester itself. The Harvester and the datasets are linked through a <code>CreateAction</code> that describes the harvesting process. The <code>harvester_config.json</code> file that saves the query parameters and Harvester options is also linked as an input to this process. In this way, all the components of the harvest are described and linked.</p>
+<p>Here’s an <a href="https://gist.github.com/wragge/23f88bf4c5945174a0986dad91691b06">example RO-Crate file</a>.</p>
+<p>Trove is changing all the time. By capturing information such as the query, the harvester version, the date, and the number of results, the RO-Crate file will help researchers document, manage, and share their research. And now that you can start a new harvest with an existing config file, it’s easy for researchers to re-run a harvest to see what changes over time.</p>
+<p>As well as updating the Python package, I’ve also updated the <a href="https://glam-workbench.net/trove-harvester/">Trove Newspaper &amp; Gazette Harvester</a> section of the GLAM Workbench. Here you’ll find examples of the Harvester in action, as well as some ways of exploring the harvested data. If you’d like to take the Harvester for a spin, the easiest way to start is with <a href="https://glam-workbench.net/trove-harvester/harvester-web-app/">web app version</a> – no software to install, no code to navigate! If you’re an Australian university researcher you can spin it up on the new <a href="https://updates.timsherratt.org/2023/08/31/run-glam-workbench.html">ARDC Binder service</a> in seconds.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
+			<h1><a href="https://updates.timsherratt.org/2023/08/31/run-glam-workbench.html">Run GLAM Workbench notebooks on the ARDC’s new Binder service</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2023/08/31/run-glam-workbench.html" class="u-url"><time class="dt-published" datetime="2023-08-31 12:52:11 &#43;1000">Aug 31, 2023</time></a>
+
+		<div class="e-content">
+			 <p>There are a number of different ways to <a href="https://glam-workbench.net/getting-started/#using-the-glam-workbench">run the Jupyter notebooks</a> in the <a href="https://glam-workbench.net/">GLAM Workbench</a> depending on your needs and technical skills. But the easiest and quickest has always been the public, <a href="https://mybinder.org/">international Binder service</a>, based in Europe. One click in the GLAM Workbench and Binder prepares a customised computing environment and loads up the Jupyter notebooks ready for you to explore. Unfortunately, the public Binder service has been having some capacity issues in the last few months, and sometimes repositories fail to run. The good news is that Australian university researchers now have another option with the launch of the <a href="https://ardc.edu.au/services/ardc-nectar-research-cloud/ardc-binderhub-service/">Australian Research Data Commons Binder service</a>!</p>
+<p>The big difference between the ARDC’s Binder service and the international version is that you need to log in using your university credentials. While that’s an extra hassle, the service itself should be faster and more reliable for Australian researchers. For this reason, I’ve started making ARDC Binder links the default in a number of GLAM Workbench sections. Of course, not all GLAM Workbench users are attached to Australian universities, so the international Binder links remain – it’s just a matter of emphasis.</p>
+<p>For example, near the top of many GLAM Workbench pages you’ll see <strong>Explore live on Binder</strong> buttons that launch the current repository. I’ve now added an <strong>Explore live on ARDC Binder</strong> option.</p>
+<!-- raw HTML omitted -->
+<p>Most notebooks in the GLAM Workbench now have their own documentation page with a big blue button to launch the notebook on Binder. I’ve started changing these buttons to use the ARDC Binder service but, as you can see in the screenshot below, there’s also a link to run the notebook on the original Binder service, with no authentication required.</p>
+<!-- raw HTML omitted -->
+<p>I’ve added some <a href="https://glam-workbench.net/using-ardc-binder/">information on using the ARDC Binder service</a> to the GLAM Workbench help pages.</p>
+<p>I’ll be continuing to explore new options for running GLAM Workbench notebooks (I’m particularly interested in the possibilities of <a href="https://jupyterlite.readthedocs.io/en/latest/">Jupyter Lite</a>). Also the ARDC’s <a href="https://ardc.edu.au/project/ardc-community-data-lab/">HASS Community Data Lab project</a> is currently investigating ways of adding more authentication options to the Binder service to open it up to researchers outside of universities.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
 			<h1><a href="https://updates.timsherratt.org/2023/08/26/trove-query-parser.html">Trove Query Parser updated!</a></h1>
 		
 
@@ -33,7 +80,7 @@
 			 <p>I&rsquo;ve just updated the <a href="https://github.com/wragge/trove_query_parser/">Trove Query Parser</a> to work with version 3 of the Trove API. You just give it the url of a search in Trove&rsquo;s newspapers, and it translates the search into a set of parameters that the API will understand. So this:</p>
 <p><code>parse_query(&quot;https://trove.nla.gov.au/search/category/newspapers?keyword=wragge&amp;l-artType=newspapers&amp;l-state=Queensland&amp;l-category=Article&amp;l-illustrationType=Cartoon&quot;, 3)</code></p>
 <p>Produces this:</p>
-<p><code>{'q': 'wragge', 'l-artType': 'newspapers', 'l-state': ['Queensland'], 'l-category': ['Article'], 'l-illustrated': 'true', 'l-illtype': ['Cartoon'], 'category': 'newspaper'}</code></p>
+<p><code>{'q': 'wragge', 'l-artType': 'newspapers', 'l-state': ['Queensland'], 'l-category': ['Article'], 'l-illustrated': 'true', 'l-illustrationType': ['Cartoon'], 'category': 'newspaper'}</code></p>
 <p>You can then feed the parameters to the Trove API with your API key and you&rsquo;ll get data back. Easy! It&rsquo;s simple but handy – I use the Query Parser in other tools like the <a href="https://glam-workbench.net/trove-harvester/">Trove Newspaper Harvester</a> and <a href="https://glam-workbench.net/trove-newspapers/querypic/">QueryPic</a>.</p>
 <p>This version adds a second parameter to the <code>parse_query()</code> function so you can specify the version of the Trove API you&rsquo;re using. The default value is <code>2</code> for backwards compatibility. See <a href="https://wragge.github.io/trove_query_parser/">the documentation</a> for more information.</p>
 
