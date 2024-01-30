@@ -24,6 +24,73 @@
 	
 	  <div class="h-entry">
 		
+			<h1><a href="https://updates.timsherratt.org/2024/01/30/exploring-troves-digitised.html">Exploring Trove’s digitised periodicals</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2024/01/30/exploring-troves-digitised.html" class="u-url"><time class="dt-published" datetime="2024-01-30 22:53:14 &#43;1100">Jan 30, 2024</time></a>
+
+		<div class="e-content">
+			 <p>While Trove’s digitised newspapers get all the attention, there are many other digitised periodicals to explore. But it’s not easy to find them from the Trove web interface – unlike the newspapers, there’s no list of digitised titles. So to help researchers find and use Trove’s digitised periodicals, I’ve created a searchable database using Datasette-Lite. <a href="https://glam-workbench.net/datasette-lite/?url=https://github.com/GLAM-Workbench/trove-periodicals-data/blob/main/periodicals.db&amp;install=datasette-json-html&amp;install=datasette-template-sql&amp;metadata=https://github.com/GLAM-Workbench/trove-periodicals-data/blob/main/metadata.json"><strong>Try it out!</strong></a></p>
+<p><a href="https://glam-workbench.net/datasette-lite/?url=https://github.com/GLAM-Workbench/trove-periodicals-data/blob/main/periodicals.db&amp;install=datasette-json-html&amp;install=datasette-template-sql&amp;metadata=https://github.com/GLAM-Workbench/trove-periodicals-data/blob/main/metadata.json#/periodicals/titles"><!-- raw HTML omitted --></a></p>
+<p><em><a href="https://glam-workbench.net/datasette-lite/?url=https://github.com/GLAM-Workbench/trove-periodicals-data/blob/main/periodicals.db&amp;install=datasette-json-html&amp;install=datasette-template-sql&amp;metadata=https://github.com/GLAM-Workbench/trove-periodicals-data/blob/main/metadata.json#/periodicals/titles">Search for the titles of digitised periodicals</a></em></p>
+<!-- raw HTML omitted -->
+<p><em>View the details of an individual title (note the link to available issues at the bottom)</em></p>
+<!-- raw HTML omitted -->
+<p><em>Browse a list of available issues</em></p>
+<p>The database currently contains details of 923 different titles, and over 37,000 individual issues. You can search for titles by keyword, then click through to view a full list of issues from a periodical. As well as basic descriptive metadata and links back to Trove, there’s a couple of other handy inclusions:</p>
+<ul>
+<li>Titles include a ‘Search for articles in Trove’ link that opens up the Trove interface and pre-populates the search box with the title’s identifier. By adding some keywords you can search for articles within the publication.</li>
+<li>Issues include a <code>text_download_url</code> link that downloads all the OCRd text from the issue.</li>
+</ul>
+<p>Regular viewers might be thinking ­– wasn’t there already something like this? Yes indeed, for several years I’ve been maintaining the <a href="https://trove-titles.herokuapp.com/">Trove Titles</a> app, which provides a similar list. I’ve also provided <a href="https://glam-workbench.net/trove-journals/journals-with-ocr/">harvests of OCRd text</a>. So why the new database? First of all, I’ve harvested the data in a different way – making use of the new <code>/magazine/titles</code> API endpoint. This had several problems (see below), but I’m hoping that in the long term it will make updates easier.</p>
+<p>Second, I’m exploring ways to make these sorts of resources available in a more sustainable way. The current Trove Titles app runs on the Heroku platform and there are costs associated with the app and the databases it uses. It just seems a bit silly for a relatively small amount of data. Datasette-Lite takes a very different approach – there’s no constantly running server, just a static site pointing at a dataset. All the magic happens within your browser!</p>
+<p>I’ve written previously about how I’ve been <a href="https://updates.timsherratt.org/2024/01/12/customising-datasettelite-to.html">customising Datasette-Lite for use within the GLAM Workbench</a>, but I had to handle the periodicals data a bit differently. Because there’s a foreign key relationship between the titles and the issues (each issue is linked back to a title), I loaded the harvested data into a SQLite database (using <a href="https://sqlite-utils.datasette.io/en/stable/index.html">sqlite-utils</a>), defined the foreign key, and built a fulltext index on the periodical titles. Then I just saved the whole SQLite database to a GitHub repository and pointed Datasette-Lite at it.</p>
+<p>I had to modify the GLAM Workbench template a bit to insert links back to the title when you view an individual issue. This happens automatically when you view a list of results, but not when you view an individual item. First I used the <code>install</code> parameter to tell Datasette-Lite to install the <a href="https://datasette.io/plugins/datasette-template-sql">datasette-template-sql</a> plugin. This plugin lets you run SQL queries within a template. Then I could run a query to see if there was a foreign key associated with the current item:</p>
+<pre tabindex="0"><code class="language-jinja2" data-lang="jinja2">{% set fk = sql(&quot;SELECT * FROM pragma_foreign_key_list(?)&quot;, [table]) %}
+</code></pre><p>If there is a foreign key, I run another query to get the title of the linked title:</p>
+<pre tabindex="0"><code class="language-jinja2" data-lang="jinja2">{% if fk %}
+    {% set flinks = sql(&quot;select title, &quot; + fk.0.to + &quot; from &quot; + fk.0.table + &quot; where id = ?&quot;, [display_rows.0[fk.0.from]]) %}
+    {% set ftitle = flinks.0.title %}
+{% endif %}
+</code></pre><p>Then when rendering the column containing the linked value I can insert the title and a link:</p>
+<pre tabindex="0"><code class="language-jinja2" data-lang="jinja2">{% if fk and cell.column == fk.0.from %}
+	&lt;a href=&quot;/{{database}}/{{fk.0.table}}/{{cell.value}}&quot;&gt;{{ftitle}}&lt;/a&gt; &lt;em&gt;{{cell.value}}&lt;/em&gt;
+{% else %}
+	{{ row.display(cell.column) }}
+{% endif %}
+</code></pre><p>It seems to work ok, and doesn’t cause problems on databases where there’s no foreign keys.</p>
+<p>I’m also using the <a href="https://datasette.io/plugins/datasette-json-html">datasette-json-html</a> plugin to render the thumbnails. I’m also using the <code>metadata</code> parameter to point Datasette-Lite at a custom metadata file – this was primarily to define a custom sort order for the tables.</p>
+<h2 id="the-data">The data</h2>
+<p>I’ll write up more about the data and the harvesting process in coming weeks. There’ll also be a new section in the <a href="https://tdg.glam-workbench.net/home.html">Trove Data Guide</a> and some updated notebooks in the <a href="https://glam-workbench.net/trove-journals/">journals section of the GLAM Workbench</a>. But a few notes about the <code>/magazine/titles</code> API endpoint:</p>
+<ul>
+<li>there are a few hundred duplicate records ­– I’ve removed these from the dataset</li>
+<li>the API doesn’t provide full information about issues, in particular undated issues are not returned – I’ve tried to fill these gaps</li>
+<li>the data includes a thousand or more Parliamentary Papers – I’ve harvested these separately and thought it was best to exclude them from this dataset</li>
+<li>some titles are actually nested collections, so the ‘issues’ are actually another level of title, while alternatively some titles are actually issues – I’ve tried to sort as much of this out as I can, but it gets confusing!</li>
+</ul>
+<p>So I’m not confident that I’ve got everything, but I think it’s a useful start. I’ve reported the API problems to Trove but haven’t heard anything back yet.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
+			<h1><a href="https://updates.timsherratt.org/2024/01/15/the-trove-newspaper.html">The Trove Newspaper Data Dashboard now has an archive!</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2024/01/15/the-trove-newspaper.html" class="u-url"><time class="dt-published" datetime="2024-01-15 10:51:58 &#43;1100">Jan 15, 2024</time></a>
+
+		<div class="e-content">
+			 <p>Since July 2022 I’ve been generating weekly snapshots of the contents of the Trove newspaper corpus. Every Sunday a new version of the <a href="https://wragge.github.io/trove-newspaper-totals/">Trove Newspaper Data Dashboard</a> is created, highlighting what’s changed over the previous week, and visualising trends since April 2022 (when I first started <a href="https://github.com/wragge/trove-newspaper-totals/">regular data harvests</a>).</p>
+<!-- raw HTML omitted -->
+<p>All of the past versions of the dashboard are preserved in GitHub, but there wasn’t an easy way to browse them, until now. If you want to find out what changed in any week since July 2022, you can now visit the <a href="https://wragge.github.io/trove-newspaper-totals/archive/index.html">Trove Data Dashboard Archive</a> and select a date from the list!</p>
+<p>I created the archive by pulling all the versions from GitHub and saving them as individual files. I’ve also added some code to the weekly process that should automatically archive the past week from now on – we’ll see if it works next Sunday…</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
 			<h1><a href="https://updates.timsherratt.org/2024/01/12/customising-datasettelite-to.html">Customising Datasette-Lite to explore datasets in the GLAM Workbench</a></h1>
 		
 
@@ -38,20 +105,20 @@
 <p>I’ve made a few changes to the standard Datasette-Lite application for use with the GLAM Workbench. These are all included in the <a href="https://github.com/GLAM-Workbench/datasette-lite">GLAM Workbench’s Datasette-Lite fork</a> and described below.</p>
 <h2 id="custom-theme">Custom theme</h2>
 <p>I’d already created a custom Datasette theme for use in other projects. The question was how do I get it to work with Datasette-Lite? Just putting a <code>templates</code> folder in the repository wasn’t enough, as the virtual environment created within the browser doesn’t have direct access to all the files. I eventually figured out that I could zip up the templates folder, fetch the zip file using Javascript, and then unzip the folder into the browser’s virtual environment. This is the code in <code>webworker.js</code> that does all that:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">let</span> <span style="color:#a6e22e">templateResponse</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">fetch</span>(<span style="color:#e6db74">&#34;templates.zip&#34;</span>);
-<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">templateBinary</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">templateResponse</span>.<span style="color:#a6e22e">arrayBuffer</span>();
-<span style="color:#a6e22e">pyodide</span>.<span style="color:#a6e22e">unpackArchive</span>(<span style="color:#a6e22e">templateBinary</span>, <span style="color:#e6db74">&#34;zip&#34;</span>);
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#000;font-weight:bold">let</span> templateResponse <span style="color:#000;font-weight:bold">=</span> <span style="color:#000;font-weight:bold">await</span> fetch(<span style="color:#d14">&#34;templates.zip&#34;</span>);
+<span style="color:#000;font-weight:bold">let</span> templateBinary <span style="color:#000;font-weight:bold">=</span> <span style="color:#000;font-weight:bold">await</span> templateResponse.arrayBuffer();
+pyodide.unpackArchive(templateBinary, <span style="color:#d14">&#34;zip&#34;</span>);
 </code></pre></div><p>Then it’s just a matter of changing the Datasette initialisation to point to the <code>templates</code> directory:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">ds <span style="color:#f92672">=</span> Datasette(
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">ds <span style="color:#000;font-weight:bold">=</span> Datasette(
     names, 
-    settings<span style="color:#f92672">=</span>{
-    	<span style="color:#e6db74">&#34;num_sql_threads&#34;</span>: <span style="color:#ae81ff">0</span>, 
-    	<span style="color:#e6db74">&#34;truncate_cells_html&#34;</span>: <span style="color:#ae81ff">100</span> <span style="color:#75715e"># truncate cells</span>
+    settings<span style="color:#000;font-weight:bold">=</span>{
+    	<span style="color:#d14">&#34;num_sql_threads&#34;</span>: <span style="color:#099">0</span>, 
+    	<span style="color:#d14">&#34;truncate_cells_html&#34;</span>: <span style="color:#099">100</span> <span style="color:#998;font-style:italic"># truncate cells</span>
     }, 
-    metadata<span style="color:#f92672">=</span>metadata, 
-    template_dir<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;templates&#34;</span>, <span style="color:#75715e"># point to custom templates directory</span>
-    plugins_dir<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;plugins&#34;</span>, <span style="color:#75715e"># point to custom plugins directory</span>
-    memory<span style="color:#f92672">=</span><span style="color:#960050;background-color:#1e0010">$</span>{settings<span style="color:#f92672">.</span>memory <span style="color:#960050;background-color:#1e0010">?</span> <span style="color:#e6db74">&#39;True&#39;</span> : <span style="color:#e6db74">&#39;False&#39;</span>}
+    metadata<span style="color:#000;font-weight:bold">=</span>metadata, 
+    template_dir<span style="color:#000;font-weight:bold">=</span><span style="color:#d14">&#34;templates&#34;</span>, <span style="color:#998;font-style:italic"># point to custom templates directory</span>
+    plugins_dir<span style="color:#000;font-weight:bold">=</span><span style="color:#d14">&#34;plugins&#34;</span>, <span style="color:#998;font-style:italic"># point to custom plugins directory</span>
+    memory<span style="color:#000;font-weight:bold">=</span><span style="color:#a61717;background-color:#e3d2d2">$</span>{settings<span style="color:#000;font-weight:bold">.</span>memory <span style="color:#a61717;background-color:#e3d2d2">?</span> <span style="color:#d14">&#39;True&#39;</span> : <span style="color:#d14">&#39;False&#39;</span>}
 )
 </code></pre></div><p>As you can see, I’ve also added the <code>&quot;truncate_cells_html&quot;: 100</code> setting to truncate the contents of cells in the table view.</p>
 <h2 id="custom-plugins">Custom plugins</h2>
@@ -62,21 +129,21 @@
 <h2 id="full-text-indexing">Full text indexing</h2>
 <p>One really cool things about Datasette is the ability to run full text searches across specified columns. If Datasette detects a full text index, it automatically adds a keyword search box.</p>
 <p>There wasn’t a way of adding full text indexes to CSV datasets in Datasette-Lite, so I added a new <code>fts</code> url parameter and used the value in <code>webworker.js</code> to modify the database using <a href="https://sqlite-utils.datasette.io/en/stable/">SQLite-utils</a>.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">fts_cols <span style="color:#f92672">=</span> <span style="color:#960050;background-color:#1e0010">$</span>{JSON<span style="color:#f92672">.</span>stringify(settings<span style="color:#f92672">.</span>ftsCols <span style="color:#f92672">||</span> <span style="color:#e6db74">&#34;&#34;</span>)} 
-<span style="color:#66d9ef">try</span>:
-    db[bit]<span style="color:#f92672">.</span>enable_fts(fts_cols<span style="color:#f92672">.</span>split(<span style="color:#e6db74">&#34;,&#34;</span>)) <span style="color:#75715e"># add full text indexes to columns</span>
-<span style="color:#66d9ef">except</span> sqlite3<span style="color:#f92672">.</span>OperationalError:
-    print(<span style="color:#e6db74">&#34;Column not found&#34;</span>)
-    <span style="color:#66d9ef">pass</span>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">fts_cols <span style="color:#000;font-weight:bold">=</span> <span style="color:#a61717;background-color:#e3d2d2">$</span>{JSON<span style="color:#000;font-weight:bold">.</span>stringify(settings<span style="color:#000;font-weight:bold">.</span>ftsCols <span style="color:#000;font-weight:bold">||</span> <span style="color:#d14">&#34;&#34;</span>)} 
+<span style="color:#000;font-weight:bold">try</span>:
+    db[bit]<span style="color:#000;font-weight:bold">.</span>enable_fts(fts_cols<span style="color:#000;font-weight:bold">.</span>split(<span style="color:#d14">&#34;,&#34;</span>)) <span style="color:#998;font-style:italic"># add full text indexes to columns</span>
+<span style="color:#000;font-weight:bold">except</span> sqlite3<span style="color:#000;font-weight:bold">.</span>OperationalError:
+    <span style="color:#0086b3">print</span>(<span style="color:#d14">&#34;Column not found&#34;</span>)
+    <span style="color:#000;font-weight:bold">pass</span>
 </code></pre></div><p>For example, adding <code>fts=title</code> to a Datasette-Lite url will automatically add a full text index to the title column. You can also index multiple columns – just separate the column names with commas.</p>
 <p>This url opens a CSV dataset with oral history metadata harvested from Trove and indexes the <code>title</code> and <code>contributor</code> columns: <a href="https://glam-workbench.net/datasette-lite/?csv=https://github.com/GLAM-Workbench/trove-oral-histories-data/blob/main/trove-oral-histories.csv&amp;fts=title,contributor">https://glam-workbench.net/datasette-lite/?csv=https://github.com/GLAM-Workbench/trove-oral-histories-data/blob/main/trove-oral-histories.csv&amp;fts=title,contributor</a></p>
 <p>Datasette converts your CSV file to a SQLite database, and SQLite supports a number of <a href="https://www.sqlite.org/fts5.html#full_text_query_syntax">advanced search options</a>. These options aren’t enabled by default in Datasette – you need to set <code>searchmode</code> to <code>raw</code> in the table metadata. To enable advanced searches, I’ve added a line in <code>webworker.js</code> to modify the default metadata:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">metadata[<span style="color:#e6db74">&#34;databases&#34;</span>][<span style="color:#e6db74">&#34;data&#34;</span>][<span style="color:#e6db74">&#34;tables&#34;</span>][bit] <span style="color:#f92672">=</span> {<span style="color:#e6db74">&#34;searchmode&#34;</span>: <span style="color:#e6db74">&#34;raw&#34;</span>}
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">metadata[<span style="color:#d14">&#34;databases&#34;</span>][<span style="color:#d14">&#34;data&#34;</span>][<span style="color:#d14">&#34;tables&#34;</span>][bit] <span style="color:#000;font-weight:bold">=</span> {<span style="color:#d14">&#34;searchmode&#34;</span>: <span style="color:#d14">&#34;raw&#34;</span>}
 </code></pre></div><h2 id="drop-unwanted-columns">Drop unwanted columns</h2>
 <p>Not all the columns in pre-harvested datasets are useful or interesting. To remove selected columns from Datasette-Lite, I  added a <code>drop</code> url parameter. Once again, you can submit multiple values separated by commas.</p>
 <p>In <code>webworker.js</code> the <code>drop</code> values are used with the SQLite-utils <code>transform()</code> function to remove the columns from the database.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">drop_cols <span style="color:#f92672">=</span> <span style="color:#960050;background-color:#1e0010">$</span>{JSON<span style="color:#f92672">.</span>stringify(settings<span style="color:#f92672">.</span>dropCols <span style="color:#f92672">||</span> <span style="color:#e6db74">&#34;&#34;</span>)}
-db[bit]<span style="color:#f92672">.</span>transform(drop<span style="color:#f92672">=</span>set(drop_cols<span style="color:#f92672">.</span>split(<span style="color:#e6db74">&#34;,&#34;</span>)))
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">drop_cols <span style="color:#000;font-weight:bold">=</span> <span style="color:#a61717;background-color:#e3d2d2">$</span>{JSON<span style="color:#000;font-weight:bold">.</span>stringify(settings<span style="color:#000;font-weight:bold">.</span>dropCols <span style="color:#000;font-weight:bold">||</span> <span style="color:#d14">&#34;&#34;</span>)}
+db[bit]<span style="color:#000;font-weight:bold">.</span>transform(drop<span style="color:#000;font-weight:bold">=</span><span style="color:#0086b3">set</span>(drop_cols<span style="color:#000;font-weight:bold">.</span>split(<span style="color:#d14">&#34;,&#34;</span>)))
 </code></pre></div><p>This url opens a CSV dataset with oral history metadata harvested from Trove and drops the <code>publisher</code> and <code>work_type</code> columns: <a href="https://glam-workbench.net/datasette-lite/?csv=https://github.com/GLAM-Workbench/trove-oral-histories-data/blob/main/trove-oral-histories.csv&amp;drop=publisher,work_type">https://glam-workbench.net/datasette-lite/?csv=https://github.com/GLAM-Workbench/trove-oral-histories-data/blob/main/trove-oral-histories.csv&amp;drop=publisher,work_type</a></p>
 
 		</div>
