@@ -24,6 +24,55 @@
 	
 	  <div class="h-entry">
 		
+			<h1><a href="https://updates.timsherratt.org/2024/03/26/more-tools-and.html">More tools and data for working with Trove&#39;s digitised periodicals</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2024/03/26/more-tools-and.html" class="u-url"><time class="dt-published" datetime="2024-03-26 15:35:02 &#43;1100">Mar 26, 2024</time></a>
+
+		<div class="e-content">
+			 <p>The <a href="https://glam-workbench.net/trove-journals/">Trove Periodicals</a> section of the GLAM Workbench has been updated! Some changes were necessary to make use of version 3 of the Trove API, but I&rsquo;ve also taken the chance to reorganise things a bit – starting with the name. This section used to be called &lsquo;Trove journals&rsquo;, reflecting the naming of Trove&rsquo;s &lsquo;Journals&rsquo; zone. But zones have gone, and periodicals are now spread across multiple categories, so I thought a name change was necessary to better reflect the type of content being examined.</p>
+<h2 id="what-periodicals-have-been-digitised">What periodicals have been digitised?</h2>
+<p>It&rsquo;s surprising difficult to find out what periodicals have actually been digitised in Trove. There&rsquo;s no straightforward list of titles as there is in the newspapers category. Over the years I&rsquo;ve created a variety of lists and tools to try and overcome this. I&rsquo;m now trying to consolidate these efforts into <a href="https://updates.timsherratt.org/2024/01/30/exploring-troves-digitised.html">a single dataset which you can explore using Datasette-Lite</a>. I&rsquo;ve made a few improvements to this in recent weeks, in particular, title records now include a link to download <em>all</em> the OCRd text from periodical.</p>
+<!-- raw HTML omitted -->
+<h2 id="new-notebooks">New notebooks</h2>
+<p>The notebook pages in the GLAM Workbench now include previews of the notebook&rsquo;s content. There are a number of new notebooks:</p>
+<ul>
+<li>
+<p><a href="https://glam-workbench.net/trove-journals/periodicals-from-api/">Get details of periodicals from the <code>/magazine/titles</code> API endpoint</a> – shows how you can get a list of titles from version 3 of the Trove API and explores some of the problems with the data</p>
+</li>
+<li>
+<p><a href="https://glam-workbench.net/trove-journals/periodicals-enrich-for-datasette/">Enrich the list of periodicals from the Trove API</a> – shows how to work around some of the problems with the titles data, adds some extra metadata, and generates the database described above</p>
+</li>
+<li>
+<p><a href="https://glam-workbench.net/trove-journals/harvest-illustrations-from-periodicals/">Harvest illustrations from periodicals</a> – extract illustrations for periodical pages, issues, articles and searches using a OCR layout data</p>
+</li>
+</ul>
+<p>If you&rsquo;d like an example of the sorts of illustrations you can extract from the digitised periodicals, here&rsquo;s a <a href="https://www.dropbox.com/scl/fo/60imdoyf4ss2b6vh01q1w/h?rlkey=zuwbjaqnmr7qvkuinovdu5ot0&amp;dl=0">collection of photos</a> found by searching for periodical articles with <code>cat</code> or <code>kitten</code> in their titles.</p>
+<!-- raw HTML omitted -->
+<h2 id="updated-and-reorganised-datasets">Updated and reorganised datasets</h2>
+<p>I&rsquo;ve moved all the datasets out of the main GitHub repository into their own separate repositories. Some large collections that were previously stored on the sadly-deceased Cloudstor service are now sitting in an Amazon s3 bucket. These include:</p>
+<ul>
+<li>
+<p><a href="https://glam-workbench.net/trove-journals/periodicals-data-api/">Details of digitised periodicals from the <code>/magazine/titles</code> API endpoint</a> – these are the datasets created by harvesting and enriching titles and issues data from the Trove API</p>
+</li>
+<li>
+<p><a href="https://glam-workbench.net/trove-journals/csv-digital-journals/">CSV formatted list of journals available from Trove in digital form</a> – this is an update of an older dataset of titles created by searching for digitised works with the format <code>Periodical</code></p>
+</li>
+<li>
+<p><a href="https://glam-workbench.net/trove-journals/bulletin-cartoons-collection/">Editorial cartoons from The Bulletin, 1886 to 1952</a> – the cartoons haven&rsquo;t been updated, but I&rsquo;ve created a new metadata file and fixed up some problems with page numbering</p>
+</li>
+<li>
+<p><a href="https://glam-workbench.net/trove-journals/ocrd-text-all-journals/">OCRd text from Trove digitised journals</a> – I&rsquo;ve reharvested all of the OCRd text and made it available as individual zip files for each title, and one <em>big</em> zip file with everything!</p>
+</li>
+</ul>
+<p>As previously noted, I&rsquo;ve also <a href="https://updates.timsherratt.org/2024/03/19/a-new-way.html">made the Bulletin cartoons available through Datasette-Lite for easy exploration</a>.</p>
+<!-- raw HTML omitted -->
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
 			<h1><a href="https://updates.timsherratt.org/2024/03/19/a-new-way.html">A new way to explore editorial cartoons from *The Bulletin*</a></h1>
 		
 
