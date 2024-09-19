@@ -24,6 +24,34 @@
 	
 	  <div class="h-entry">
 		
+			<h1><a href="https://updates.timsherratt.org/2024/09/19/saving-troves-digitised.html">Saving Trove&#39;s digitised periodicals as PDFs</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2024/09/19/saving-troves-digitised.html" class="u-url"><time class="dt-published" datetime="2024-09-19 12:46:22 &#43;1000">Sep 19, 2024</time></a>
+
+		<div class="e-content">
+			 <p>I was recently contacted by a researcher who wanted to be able to automatically download the issues of a digitised periodical in Trove as PDFs. There was already a <a href="https://glam-workbench.net/trove-newspapers/harvest_newspaper_issues_as_pdfs/">notebook in the GLAM Workbench</a> that downloads the issues of a digitised <em>newspaper</em> as PDFs, but newspapers work differently to other digitised periodicals in Trove. While there was no corresponding notebook for other types of periodicals, all the necessary steps were documented in the <a href="https://tdg.glam-workbench.net/home.html">Trove Data Guide</a>, so it was just a matter of pulling together a few blocks of code.</p>
+<p>There are three main steps:</p>
+<ul>
+<li>get the <code>nla.obj</code> identifiers for all the periodical&rsquo;s issues</li>
+<li>get the number of pages in each issue</li>
+<li>construct a url to download each issue as a PDF using the <code>nla.obj</code> identifier and the number of pages</li>
+</ul>
+<h2 id="get-issue-identifiers">Get issue identifiers</h2>
+<p>Version 3 of the Trove API added a new endpoint to <a href="https://tdg.glam-workbench.net/other-digitised-resources/periodicals/accessing-data.html#using-the-magazine-titles-api-endpoint">provide information about periodical titles and issues</a>. However, the issues data provided by the API is incomplete. A more  reliable alternative is to scrape the list of issues from the browse  window in the digitised object viewer – see <a href="https://tdg.glam-workbench.net/other-digitised-resources/how-to/get-collection-items.html">HOW TO: Get a list of items from a digitised collection</a> in the <em>Trove Data Guide</em>.</p>
+<h2 id="get-number-of-pages-in-each-issue">Get number of pages in each issue</h2>
+<p>It&rsquo;s possible to scrape the number of pages along with the identifiers  in the previous step. However, I&rsquo;m not certain that the information is  displayed consistently across all periodicals. To play it safe, you can extract embedded metadata from the digitised object viewer and  get the number of pages, issue dates, and publication details (if  available). See <a href="https://tdg.glam-workbench.net/other-digitised-resources/how-to/extract-embedded-metadata.html">HOW TO: Extract additional metadata from the digitised resource viewer</a> in the <em>Trove Data Guide</em>.</p>
+<h2 id="download-pdfs">Download PDFs</h2>
+<p>Once you have an issue&rsquo;s identifier and number of pages you can construct a url to download it as a PDF. See: <a href="https://tdg.glam-workbench.net/other-digitised-resources/how-to/get-downloads.html">HOW TO: Get text, images, and PDFs using Trove’s download link</a> in the <em>Trove Data Guide</em>.</p>
+<h2 id="putting-it-all-together">Putting it all together</h2>
+<!-- raw HTML omitted -->
+<p>It seemed like this would be useful to other researchers as well, so I&rsquo;ve created a new notebook in the Trove Periodicals section of the GLAM Workbench that puts all of this together, see: <a href="https://glam-workbench.net/trove-journals/save-issues-as-pdfs/">Download issues of a periodical as PDFs</a>.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
 			<h1><a href="https://updates.timsherratt.org/2024/08/29/the-future-and.html">The future (and past) of Historic Hansard</a></h1>
 		
 
