@@ -24,6 +24,412 @@
 	
 	  <div class="h-entry">
 		
+			<h1><a href="https://updates.timsherratt.org/2024/09/26/wheres-missing-volume.html">Where&#39;s 1920? Missing volume added to Tasmanian Post Office Directories!</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2024/09/26/wheres-missing-volume.html" class="u-url"><time class="dt-published" datetime="2024-09-26 12:58:54 &#43;1000">Sep 26, 2024</time></a>
+
+		<div class="e-content">
+			 <p>Visualisation is a great way to find problems in your data.</p>
+<p>As part of the <a href="https://everydayheritage.au/">Everyday Heritage project</a>, I&rsquo;m working with a team to document the lives of Tasmania&rsquo;s Chinese residents in the 19th and early 20th centuries. We&rsquo;re <a href="https://everydayheritage.au/blog/from-the-archive-uncovering-the-everyday-heritage-of-chinese-tasmanians/">using a variety of sources</a> such as Trove&rsquo;s newspapers, the Tasmanian Names Index, and the Tasmanian Post Office Directories. To help with the research, I <a href="https://updates.timsherratt.org/2022/09/15/from-pdfs-to.html">converted all the PDF volumes of the Post Office Directories into a public, online, searchable database</a>. Or at least, I thought I had.</p>
+<p>The Tasmanian Post Office Directories database embeds metadata about each line of text in its results, so it&rsquo;s easy to save items of interest using Zotero. A member of our team has already saved hundreds of entries this way. The other day I started pulling these entries out of Zotero using its web API, and thought I&rsquo;d get an overview by charting the number of results per year. It was then I noticed that 1920 was missing&hellip;</p>
+<p>I checked <a href="https://stors.tas.gov.au/ILS/SD_ILS-981598">the PDF volumes in Libraries Tasmania</a> and the 1920 volume was there, so I worked back through my processing code to figure out why I&rsquo;d missed it. It turns out the 1920 volume is named using a different pattern, and the regular expression I used to scrape the list of volumes was a little too specific. At least that was easy to rectify.</p>
+<p>However, it wasn&rsquo;t just a matter of feeding the 1920 volume through my <a href="https://glam-workbench.net/libraries-tasmania/">processing notebooks</a>, because the <em>content</em> of the 1920 PDF was also quite different to all the other volumes. Most of the PDFs made available from Libraries Tasmania have a single page per image, and the images have been pre-processed for OCR. The PDFs also include searchable, OCRd text. Here&rsquo;s an example of one of the images from 1921:</p>
+<!-- raw HTML omitted -->
+<p>The images in the 1920 volume are double page spreads, in colour, without any pre-processing. The PDF doesn&rsquo;t include any OCRd text, so it&rsquo;s not searchable. The quality of the images is also quite variable: tight bindings mean some text is cut off, pages are sometimes skewed, and bad lighting causes shadows across the right hand page – when converted to black and white for OCR, these shadows become black blobs that completely obscure the text. Here&rsquo;s an example of one of the images from 1920:</p>
+<!-- raw HTML omitted -->
+<p>All this meant I had to do a lot of additional processing of the images before I could extract useful text via OCR. Here&rsquo;s a summary of the image pre-processing:</p>
+<ul>
+<li>extracted all the images from the PDF</li>
+<li>sliced all the images roughly in half and saved the results as separate files, so I had one image per page</li>
+<li>manually cropped all 800 pages to get them as clean as possible</li>
+<li>removed the shadows from the images thanks to <a href="https://stackoverflow.com/questions/44752240/how-to-remove-shadow-from-scanned-images-using-opencv">this recipe in Stack Overflow</a></li>
+<li>binarized and deskewed the images ready for OCR</li>
+</ul>
+<p>From then on I could apply the processes in my <a href="https://glam-workbench.net/libraries-tasmania/">existing notebooks</a>:</p>
+<ul>
+<li>OCRd the images using Tesseract</li>
+<li>uploaded the cropped, colour images to the AWS bucket for delivery using <a href="https://github.com/samvera/serverless-iiif">serveless-IIIF</a></li>
+<li>added the volume metadata and OCRd text to the <a href="https://datasette.io/">Datasette</a> database, generating a full-text index on the text column</li>
+<li>updated the application on Google Cloudrun</li>
+</ul>
+<p>I also took the chance to tweak the theme a bit, including a new dark mode.</p>
+<p>The updated database <a href="https://glam-workbench.net/libraries-tasmania/tasmanian-post-office-directories/">is live</a>, now containing <strong>49 volumes</strong> from 1890 to 1948 including 1920!</p>
+<p><a href="https://glam-workbench.net/libraries-tasmania/tasmanian-post-office-directories/"><strong>Try it now!</strong></a></p>
+<p><a href="https://glam-workbench.net/libraries-tasmania/tasmanian-post-office-directories/"><!-- raw HTML omitted --></a></p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
+			<h1><a href="https://updates.timsherratt.org/2024/09/23/major-update-for.html">Major update for the Trove Newspapers section of the GLAM Workbench</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2024/09/23/major-update-for.html" class="u-url"><time class="dt-published" datetime="2024-09-23 11:15:42 &#43;1000">Sep 23, 2024</time></a>
+
+		<div class="e-content">
+			 <p>The <a href="https://glam-workbench.net/trove-newspapers/">Trove newspapers</a> section of the <a href="https://glam-workbench.net/">GLAM Workbench</a> was updated last week. Over the last year I&rsquo;ve been gradually updating notebooks to use <a href="https://glam-workbench.net/trove-api-v3/">version 3 of the Trove API</a>, but when version 2 suddenly disappeared a couple of weeks ago I had to hurriedly pull everything together. The Trove newspapers section includes 23 notebooks and 6 datasets, so it&rsquo;s not a small job. The changes include:</p>
+<ul>
+<li>updated all notebooks to use version 3 of the Trove API</li>
+<li>removed remaining datasets from the <a href="https://github.com/GLAM-Workbench/trove-newspapers">code repository</a> and created dedicated data repositories for them, integrating them with Zenodo where appropriate</li>
+<li>added metadata to all the notebooks – this is used to build an <a href="https://github.com/GLAM-Workbench/trove-newspapers/blob/master/ro-crate-metadata.json">RO-Crate metadata file</a> for the code repository</li>
+<li>updated all the Python packages</li>
+<li>added a <code>voila.json</code> file to configure Voilá</li>
+</ul>
+<p>None of the functionality of the notebooks should have changed. There&rsquo;s a slight difference in the <a href="https://glam-workbench.net/trove-newspapers/find-non-english-newspapers/">Finding non-English newspapers in Trove</a> notebook because the language detection library I was using is no longer maintained. I&rsquo;ve swapped in <a href="https://pypi.org/project/py3langid/">py3langid</a> and it seems to work well, though the results are a little different. Interestingly, where the previous library thought that bad OCR was &lsquo;Maltese&rsquo;, the new one detects it as &lsquo;Latin&rsquo;! There&rsquo;s no change to the list of newspapers with non-English language content detected by the notebook.</p>
+<!-- raw HTML omitted -->
+<p>The <a href="https://glam-workbench.net/trove-newspapers/">documentation pages</a> have also been updated. The notebook pages are now built using data from the code repository&rsquo;s RO-Crate file. They also include embedded HTML previews of the notebooks. If a notebook generates visualisations, the visualisations are usually included in the HTML, so you can explore the outputs without running the notebook – see, for example, the charts in <a href="https://glam-workbench.net/trove-newspapers/visualise-total-newspaper-articles-by-state-year/">Visualise the total number of newspaper articles in Trove by year and state</a>. Most of the dataset pages now include links to explore the contents <a href="https://updates.timsherratt.org/2024/07/19/share-your-spreadsheet.html">using Datasette-Lite</a>.</p>
+<p>I still have to generate RO-Crate files for all the data repositories, but I wanted to get the code stuff finished first.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
+			<h1><a href="https://updates.timsherratt.org/2024/09/20/preserving-the-history.html">Preserving the history of online collections (my love letter to future historians)</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2024/09/20/preserving-the-history.html" class="u-url"><time class="dt-published" datetime="2024-09-20 15:18:34 &#43;1000">Sep 20, 2024</time></a>
+
+		<div class="e-content">
+			 <p>It&rsquo;s pretty obvious that access to digitised resources, like Trove&rsquo;s newspapers, has changed the practice of history in Australia. But how? I&rsquo;m certain that the historiographical implications of the growth and development of online collections will become a topic of increasing interest to historians, and that exploration of this topic will lead to important insights into the relationship between what we keep, what we value, and what we know. But for this to happen we need to have data documenting changes in online collections. What became available when? How was it delivered to users? How did the search indexing work?</p>
+<p>In general, GLAM collection interfaces exist in an eternal present – they&rsquo;re not good at explaining changes, or communicating their own histories. Australian GLAM organisations also share little statistical information. If you&rsquo;re lucky, you might get something useful out of annual reports, but that&rsquo;s about it. Trove, in fact, removed all their online collection statistics in the 2020 interface update. Web archives capture individual pages, but not complete systems. If we don&rsquo;t document the shape and structure of online collections now, how will future historians understand their impact?</p>
+<p>A couple of years ago I gave a short talk entitled &lsquo;Living archaeologies of online collections&rsquo; <a href="https://www.dpconline.org/events/past-events/event-watch-party-comp-access-launch">for the Digital Preservation Coalition</a> (<a href="https://youtu.be/HHdYi4LjDJk">video</a> &amp; <a href="https://slides.com/wragge/dpc-living-archaeologies">slides</a>).</p>
+<!-- raw HTML omitted -->
+<p>In the talk, I described some of my piecemeal and inconsistent attempts to capture this history – starting <a href="https://timsherratt.org/shed/trove/graphs/">back in 2011</a> when I first harvested data from Trove about the number of digitised newspaper articles. I&rsquo;ve been continuing to create and update datasets, and have been trying to improve the way they&rsquo;re organised and described – making them more FAIR – but I&rsquo;ve still got a long way to go. At the moment there&rsquo;s information spread across the <a href="https://glam-workbench.net/">GLAM Workbench</a>, GitHub repositories, and <a href="https://zenodo-rdm.web.cern.ch/communities/trove-historical-data/records">Zenodo records</a>, so I thought it might be useful if I pulled everything together into one big list. Hence this post. I often forget about what I&rsquo;ve done in the past, so it&rsquo;ll help me keep track of where the gaps are and what&rsquo;s left to do. And hopefully it&rsquo;ll encourage others to think about the significance and possibilities of this data, and perhaps share their own datasets.</p>
+<!-- raw HTML omitted -->
+<p><em>There&rsquo;s also a growing list of datasets in the <a href="https://zenodo.org/communities/trove-historical-data/records">Trove Historical Data</a> community on Zenodo</em></p>
+<p>I suppose I could also add the <a href="https://tdg.glam-workbench.net/home.html">Trove Data Guide</a> to this list. It&rsquo;s not a dataset, but it is a snapshot of the current state of Trove. I&rsquo;ll continue to update it, and these updates will themselves be saved as versions in GitHub and Zenodo, allowing future researchers to dig back through the layers.</p>
+<p>A lot of what I do is focused on the present – building tools and resources that help researchers make use of GLAM collections right now. Those tools and resources will eventually decay as I shuffle off, as collections evolve, and as technologies change. But I&rsquo;m hoping that these datasets will grow in value over time. I think it was <a href="https://en.wikipedia.org/wiki/Jason_Scott">Jason Scott</a> who coined the phrase &lsquo;metadata is a love letter to the future&rsquo;. I suppose this is my love letter to future historians.</p>
+<h2 id="1-trove-zones-categories-and-formats">1. Trove zones, categories, and formats</h2>
+<h3 id="trove-zone-totals">trove-zone-totals</h3>
+<p><a href="https://github.com/wragge/trove-zone-totals">https://github.com/wragge/trove-zone-totals</a></p>
+<p>This repository contains an automated git scraper that uses the Trove API to save data about the contents of Trove&rsquo;s zones and categories. It runs every week and updates the following data files:</p>
+<ul>
+<li><a href="https://github.com/wragge/trove-zone-totals/blob/main/data/trove-category-totals.csv">Total number of resources by Trove category</a>, weekly updates, 13 June 2023 to present</li>
+<li><a href="https://github.com/wragge/trove-zone-totals/blob/main/data/trove-category-formats.csv">Total number of resources by Trove category and format</a>, weekly updates, 13 June 2023 to present</li>
+</ul>
+<p>In the web interface, &lsquo;zones&rsquo; were replaced by &lsquo;categories&rsquo; in 2020. However, categories were not available through the Trove API until the release of version 3 in June 2023. To try and document the differences between zones and categories, totals from both were captured until version 2 of the API was switched off in September 2024.</p>
+<ul>
+<li><a href="https://github.com/wragge/trove-zone-totals/blob/main/data/trove-zone-totals.csv">Total number of resources by Trove zone</a>, weekly updates, 9 March 2023 to 1 September 2024</li>
+<li><a href="https://github.com/wragge/trove-zone-totals/blob/main/data/trove-zone-formats.csv">Total number of resources by Trove zone and format</a>, weekly updates, 9 March 2023 to 1 September 2024</li>
+</ul>
+<h2 id="2-trove-newspapers">2. Trove newspapers</h2>
+<h3 id="trove-newspaper-totals-historical">trove-newspaper-totals-historical</h3>
+<p><a href="https://github.com/wragge/trove-newspaper-totals-historical/">https://github.com/wragge/trove-newspaper-totals-historical/</a></p>
+<p><a href="https://doi.org/10.5281/zenodo.6471544"><img src="https://zenodo-rdm.web.cern.ch/badge/DOI/10.5281/zenodo.6471544.svg" alt="DOI"></a></p>
+<p>The files in this dataset were created at irregular intervals between 2011 and 2022 for use in visualising Trove&rsquo;s newspaper corpus. Harvests from 2011 were screen scraped from the Trove website. Harvests after 2012 make use of the <code>year</code> and <code>state</code> facets from the Trove API. There are 9 versions:</p>
+<ul>
+<li>12 April 2011</li>
+<li>4 August 2011</li>
+<li>12 September 2014</li>
+<li>29 November 2015</li>
+<li>14 December 2016</li>
+<li>28 July 2019</li>
+<li>10 July 2020</li>
+<li>27 April 2021</li>
+<li>21 January 2022</li>
+</ul>
+<p>Each version includes two data files:</p>
+<ul>
+<li>Total number of newspaper articles by year</li>
+<li>Total number of newspaper articles by year and state</li>
+</ul>
+<h3 id="trove-newspaper-totals">trove-newspaper-totals</h3>
+<p><a href="https://github.com/wragge/trove-newspaper-totals">https://github.com/wragge/trove-newspaper-totals</a></p>
+<p>This repository contains an automated git scraper that uses the Trove API to save information about the number of digitised newspaper articles currently available through Trove. It runs every week and updates four data files:</p>
+<ul>
+<li><a href="https://github.com/wragge/trove-newspaper-totals/blob/master/data/total_articles_by_year.csv">Total number of newspaper articles by year</a>, weekly updates, 19 April 2022 to present</li>
+<li><a href="https://github.com/wragge/trove-newspaper-totals/blob/master/data/total_articles_by_year_and_state.csv">Total number of newspaper articles by year and state</a>, weekly updates, 19 April 2022 to present</li>
+<li><a href="https://github.com/wragge/trove-newspaper-totals/blob/master/data/total_articles_by_newspaper.csv">Total number of articles by newspaper</a>, weekly updates, 20 April 2022 to present</li>
+<li><a href="https://github.com/wragge/trove-newspaper-totals/blob/master/data/total_articles_by_category.csv">Total number of newspaper articles by category</a>, weekly updates, 20 April 2022 to present</li>
+</ul>
+<p>By retrieving all versions of these files from the commit history, you can analyse changes in Trove over time.</p>
+<p>A weekly summary of the harvested data is presented in the <a href="https://wragge.github.io/trove-newspaper-totals/">Trove Newspapers Data Dashboard</a>.</p>
+<h3 id="trove-newspaper-titles-web-archives">trove-newspaper-titles-web-archives</h3>
+<p><a href="https://github.com/GLAM-Workbench/trove-newspaper-titles-web-archives">https://github.com/GLAM-Workbench/trove-newspaper-titles-web-archives</a></p>
+<p><a href="https://doi.org/10.5281/zenodo.13761732"><img src="https://zenodo-rdm.web.cern.ch/badge/DOI/10.5281/zenodo.13761732.svg" alt="DOI"></a></p>
+<p>These datasets were created by  harvesting information about newspaper titles in Trove from web archives. The harvesting method is documented by <a href="https://glam-workbench.net/trove-newspapers/historical-data-newspaper-titles/">Gathering historical data about the addition of newspaper titles to Trove</a> in the GLAM Workbench.</p>
+<ul>
+<li><a href="https://github.com/GLAM-Workbench/trove-newspaper-titles-web-archives/blob/main/trove_newspaper_titles_2009_2021.csv">All web archive captures of Trove newspaper titles, 2009 to 2021</a></li>
+<li><a href="https://github.com/GLAM-Workbench/trove-newspaper-titles-web-archives/blob/main/trove_newspaper_titles_first_appearance_2009_2021.csv">First appearance of each newspaper title in web archive captures, 2009 to 2021</a></li>
+<li><a href="https://github.com/GLAM-Workbench/trove-newspaper-titles-web-archives/blob/v1.2/titles_list.md">Alphabetical list of newspaper titles showing approximately when they first appeared in Trove, 2009 to 2021</a></li>
+</ul>
+<h3 id="trove-newspapers-corrections">trove-newspapers-corrections</h3>
+<p><a href="https://github.com/GLAM-Workbench/trove-newspapers-corrections">https://github.com/GLAM-Workbench/trove-newspapers-corrections</a></p>
+<p><a href="https://doi.org/10.5281/zenodo.13761546"><img src="https://zenodo-rdm.web.cern.ch/badge/DOI/10.5281/zenodo.13761546.svg" alt="DOI"></a></p>
+<p>OCR errors in Trove&rsquo;s digitised newspapers can be corrected by users. To help understand patterns in newspaper correction, this dataset has been created to record information about the number of articles with  corrections. The data was extracted from the Trove API using <a href="https://glam-workbench.net/trove-newspapers/Analysing_OCR_corrections/">this notebook</a>.</p>
+<ul>
+<li><a href="https://github.com/GLAM-Workbench/trove-newspapers-corrections/blob/main/corrections_by_title.csv">Number of corrections by newspaper</a>, 7 versions:
+<ul>
+<li>13 August 2019</li>
+<li>10 July 2020</li>
+<li>27 April 2021</li>
+<li>21 January 2022</li>
+<li>24 June 2022</li>
+<li>14 September 2024</li>
+</ul>
+</li>
+<li><a href="https://github.com/GLAM-Workbench/trove-newspapers-corrections/blob/main/corrections_by_year.csv">Number of corrections by year</a>, 2 versions:
+<ul>
+<li>24 June 2024</li>
+<li>14 September 2024</li>
+</ul>
+</li>
+<li><a href="https://github.com/GLAM-Workbench/trove-newspapers-corrections/blob/main/corrections_by_category.csv">Number of corrections by category</a>, 2 versions:
+<ul>
+<li>24 June 2024</li>
+<li>14 September 2024</li>
+</ul>
+</li>
+</ul>
+<h3 id="trove-newspapers-data-post-54">trove-newspapers-data-post-54</h3>
+<p><a href="https://github.com/GLAM-Workbench/trove-newspapers-data-post-54/">https://github.com/GLAM-Workbench/trove-newspapers-data-post-54/</a></p>
+<p><a href="https://doi.org/10.5281/zenodo.13761534"><img src="https://zenodo-rdm.web.cern.ch/badge/DOI/10.5281/zenodo.13761534.svg" alt="DOI"></a></p>
+<p>Due to copyright restrictions, most of the digitised  newspaper articles on Trove were published before 1955. However, some  articles published after 1954 have been made available. This repository  provides data about digitised newspapers in Trove that have articles  available from after 1954 (the &lsquo;copyright cliff of death&rsquo;). The data was extracted from the Trove API using <a href="https://glam-workbench.net/trove-newspapers/Beyond_the_copyright_cliff_of_death/">this notebook</a>.</p>
+<p>There are 8 versions of this dataset:</p>
+<ul>
+<li>7 June 2019</li>
+<li>12 August 2019</li>
+<li>10 July 2020</li>
+<li>11 November 2020</li>
+<li>27 April 2021</li>
+<li>21 January 2022</li>
+<li>27 June 2024</li>
+<li>14 September 2024</li>
+</ul>
+<h3 id="trove-newspapers-non-english">trove-newspapers-non-english</h3>
+<p><a href="https://github.com/GLAM-Workbench/trove-newspapers-non-english">https://github.com/GLAM-Workbench/trove-newspapers-non-english</a></p>
+<p><a href="https://doi.org/10.5281/zenodo.13761509"><img src="https://zenodo-rdm.web.cern.ch/badge/DOI/10.5281/zenodo.13761509.svg" alt="DOI"></a></p>
+<p>This dataset contains information about newspapers published in  languages other than English that have been digitised and made available through Trove. Data about the languages present in newspapers was  generated by harvesting a sample of articles from each newspaper using  the Trove API, and then using language detection software on the OCRd  text of each article. The method is documented in <a href="https://glam-workbench.net/trove-newspapers/find-non-english-newspapers/">this notebook</a> in the GLAM Workbench.</p>
+<p>There are two data files:</p>
+<ul>
+<li><a href="https://github.com/GLAM-Workbench/trove-newspapers-non-english/blob/main/newspapers_non_english.csv">CSV data file of the main languages detected for each newspaper with non-English language content</a></li>
+<li><a href="https://github.com/GLAM-Workbench/trove-newspapers-non-english/blob/main/non-english-newspapers.md">A markdown formatted list of all newspapers found with non-English language content</a></li>
+</ul>
+<p>There are two versions of this dataset:</p>
+<ul>
+<li>9 July 2024</li>
+<li>14 September 2024</li>
+</ul>
+<h3 id="trove-newspaper-issues">trove-newspaper-issues</h3>
+<p><a href="https://doi.org/10.5281/zenodo.13761491"><img src="https://zenodo-rdm.web.cern.ch/badge/DOI/10.5281/zenodo.13761491.svg" alt="DOI"></a></p>
+<p>This dataset contains information about the published issues of  newspapers digitised and made available through Trove. The data was  harvested from the Trove API, using <a href="https://glam-workbench.net/trove-newspapers/harvest_newspaper_issues/">this notebook in the GLAM Workbench</a>.</p>
+<p>There are two data files in this dataset:</p>
+<ul>
+<li>Total number of newspaper issues per year for each digitised newspaper</li>
+<li>A complete list of newspaper issues available from Trove</li>
+</ul>
+<p>There are 5 versions of this dataset:</p>
+<ul>
+<li>18 October 2021</li>
+<li>20 January 2022</li>
+<li>3 August 2023</li>
+<li>26 June 2024</li>
+<li>13 September 2024</li>
+</ul>
+<h2 id="3-trove-lists-and-tags">3. Trove lists and tags</h2>
+<h3 id="trove-lists-metadata">trove-lists-metadata</h3>
+<p><a href="https://github.com/GLAM-Workbench/trove-lists-metadata/">https://github.com/GLAM-Workbench/trove-lists-metadata/</a></p>
+<p><a href="https://doi.org/10.5281/zenodo.11504501"><img src="https://zenodo-rdm.web.cern.ch/badge/DOI/10.5281/zenodo.11504501.svg" alt="DOI"></a></p>
+<p>Trove users can create collections of resources using  Trove&rsquo;s &lsquo;lists&rsquo;. This dataset contains metadata describing all public lists, harvested via the Trove API. To reduce file size, the details of the resources collected by each list  are not included, just the total number of resources. The data was extracted using <a href="https://glam-workbench.net/trove-lists/#harvest-summary-data-from-trove-lists">this notebook</a> from the <a href="https://glam-workbench.net/trove-lists/">Trove lists and tags</a> section of the GLAM Workbench.</p>
+<p>There are 4 versions of this dataset:</p>
+<ul>
+<li>20 September 2018</li>
+<li>22 September 2020</li>
+<li>5 July 2022</li>
+<li>6 June 2024</li>
+</ul>
+<h3 id="public-tags-added-to-resources-in-trove-2008-to-2024">Public tags added to resources in Trove, 2008 to 2024</h3>
+<p><a href="https://doi.org/10.5281/zenodo.11496377"><img src="https://zenodo-rdm.web.cern.ch/badge/DOI/10.5281/zenodo.11496377.svg" alt="DOI"></a></p>
+<p>This dataset contains details of 2,495,958 unique public tags added to 10,403,650 resources in Trove between August 2008 and June 2024.</p>
+<p>There are 3 versions of this dataset:</p>
+<ul>
+<li>10 July 2021</li>
+<li>6 July 2022</li>
+<li>6 June 2024</li>
+</ul>
+<h3 id="tag-counts">Tag counts</h3>
+<p><a href="https://doi.org/10.5281/zenodo.11496519"><img src="https://zenodo-rdm.web.cern.ch/badge/DOI/10.5281/zenodo.11496519.svg" alt="DOI"></a></p>
+<p>This dataset was derived from the full harvest of Trove public tags. It contains a list of unique tags and the total number of resources in Trove each tag is attached to.</p>
+<p>There are 3 versions of this dataset:</p>
+<ul>
+<li>10 July 2021</li>
+<li>6 July 2022</li>
+<li>6 June 2024</li>
+</ul>
+<h2 id="4-trove-contributors">4. Trove contributors</h2>
+<p><a href="https://github.com/wragge/trove-contributor-totals">https://github.com/wragge/trove-contributor-totals</a></p>
+<p>This repository contains an automated git scraper that uses the Trove API to save details of organisations and projects that contribute metadata to Trove. As well as counts of total resources by contributor, this dataset includes counts of resources from each contributor by format and category. It runs every week and updates the following data files:</p>
+<ul>
+<li><a href="https://github.com/wragge/trove-contributor-totals/blob/main/data/trove-contributors.json">Number of resources by contributor (unmodified JSON from API)</a>, weekly updates, 9 March 2023 to present</li>
+<li><a href="https://github.com/wragge/trove-contributor-totals/blob/main/data/trove-contributors.csv">Number of resources by contributor (flattened data as CSV)</a>, weekly updates, 9 March 2023 to present</li>
+<li><a href="https://github.com/wragge/trove-contributor-totals/blob/main/data/trove-contributors-categories.csv">Number of resources by contributor and category</a>, weekly updates, 21 June 2024 to present</li>
+<li><a href="https://github.com/wragge/trove-contributor-totals/blob/main/data/trove-contributors-categories-formats.csv">Number of resources by contributor, category, and format</a>, weekly updates, 21 June 2024 to present</li>
+</ul>
+<p>These data files were generated using version 2 of the Trove API:</p>
+<ul>
+<li><a href="https://github.com/wragge/trove-contributor-totals/blob/main/data/trove-contributors-zones.csv">Number of resources by contributor and zone</a>, weekly updates, 9 March 2023 to 12 May 2024</li>
+<li><a href="https://github.com/wragge/trove-contributor-totals/blob/main/data/trove-contributors-formats.csv">Number of resources by contributor, zone, and format</a>,  weekly updates, 9 March 2023 to 12 May 2024</li>
+</ul>
+<h2 id="5-trove-digitised-resources-other-than-newspapers">5. Trove digitised resources (other than newspapers)</h2>
+<p>To help people find and use digitised resources other than newspapers in Trove, I&rsquo;ve been harvesting, sharing, and visualising metadata relating to specific formats, such as books and periodicals. The methods I&rsquo;ve used have changed over time, and there are some earlier versions that I still need to extract from the Git repositories, but these are the current datasets. I&rsquo;m planning to set up automatic re-harvests for some or all of these, so there&rsquo;ll be a better record of change over time.</p>
+<p>There&rsquo;s more information about these datasets in both the <a href="https://glam-workbench.net/">GLAM Workbench</a> and the <a href="https://tdg.glam-workbench.net/home.html">Trove Data Guide</a>.</p>
+<h3 id="books">Books</h3>
+<p><a href="https://github.com/GLAM-Workbench/trove-books-data">https://github.com/GLAM-Workbench/trove-books-data</a></p>
+<p>There are 2 versions of this dataset:</p>
+<ul>
+<li>20 November 2023</li>
+<li>14 February 2024</li>
+</ul>
+<h3 id="periodicals">Periodicals</h3>
+<p><a href="https://github.com/GLAM-Workbench/trove-periodicals-data">https://github.com/GLAM-Workbench/trove-periodicals-data</a></p>
+<p>This dataset was created by checking, correcting, and enriching data  about digitised periodicals obtained from the Trove API. Additional  metadata describing periodical titles and issues was extracted from the  Trove website and used to check the API results. Where titles were  wrongly described as issues, and vice versa, the records were corrected. Additional descriptive metadata was also added into the records.  Separate CSV formatted data files were created for titles and issues.  Finally, the titles and issues data was loaded into an SQLite database  for use with Datasette.</p>
+<p>There are 4 data files in this repository:</p>
+<ul>
+<li><a href="https://github.com/GLAM-Workbench/trove-periodicals-data/raw/main/titles-issues-added.ndjson">NDJSON file of titles and issues harvested from Trove API</a></li>
+<li><a href="https://github.com/GLAM-Workbench/trove-periodicals-data/raw/main/periodical-titles.csv">CSV file of periodical titles enriched with additional metadata</a></li>
+<li><a href="https://github.com/GLAM-Workbench/trove-periodicals-data/raw/main/periodical-issues.csv">CSV file of periodical issues</a></li>
+<li><a href="https://github.com/GLAM-Workbench/trove-periodicals-data/raw/main/periodicals.db">SQLite database with linked titles and issues data</a></li>
+</ul>
+<p>There are two versions of this dataset:</p>
+<ul>
+<li>29 February 2024</li>
+<li>12 March 2024</li>
+</ul>
+<h3 id="parliamentary-papers">Parliamentary Papers</h3>
+<p><a href="https://github.com/GLAM-Workbench/trove-parliamentary-papers-data">https://github.com/GLAM-Workbench/trove-parliamentary-papers-data</a></p>
+<p>This dataset contains metadata describing Commonwealth Parliamentary  Papers that have been digitised and are made available through Trove.</p>
+<p>There&rsquo;s one version of this dataset:</p>
+<ul>
+<li>23 February 2024</li>
+</ul>
+<h3 id="maps">Maps</h3>
+<p><a href="https://github.com/GLAM-Workbench/trove-maps-data">https://github.com/GLAM-Workbench/trove-maps-data</a></p>
+<p><a href="https://doi.org/10.5281/zenodo.11526486"><img src="https://zenodo-rdm.web.cern.ch/badge/DOI/10.5281/zenodo.11526486.svg" alt="DOI"></a></p>
+<p>This dataset contains metadata describing digitised maps in Trove, harvested from the Trove API and other sources.</p>
+<p>There are 2 data files in this dataset:</p>
+<ul>
+<li><a href="https://github.com/GLAM-Workbench/trove-maps-data/raw/main/single_maps.csv">Metadata of single maps</a></li>
+<li><a href="https://github.com/GLAM-Workbench/trove-maps-data/raw/main/single_maps_coordinates.csv">Parsed geospatial coordinates of single maps</a></li>
+</ul>
+<p>There are 2 versions of this dataset:</p>
+<ul>
+<li>1 February 2023</li>
+<li>8 June 2024</li>
+</ul>
+<h3 id="oral-histories">Oral histories</h3>
+<p><a href="https://github.com/GLAM-Workbench/trove-oral-histories-data">https://github.com/GLAM-Workbench/trove-oral-histories-data</a></p>
+<p>There are 2 data files in this dataset:</p>
+<ul>
+<li><a href="https://github.com/GLAM-Workbench/trove-oral-histories-data/blob/main/trove-oral-histories.csv">Metadata describing NLA oral histories</a></li>
+<li><a href="https://github.com/GLAM-Workbench/trove-oral-histories-data/blob/main/trove-oral-history-series.txt">List of series containing oral histories</a></li>
+</ul>
+<p>There are 2 versions of this dataset:</p>
+<ul>
+<li>16 November 2023</li>
+<li>15 December 2024</li>
+</ul>
+<h3 id="images">Images</h3>
+<p><a href="https://github.com/GLAM-Workbench/trove-images-rights-data/">https://github.com/GLAM-Workbench/trove-images-rights-data/</a></p>
+<p>This dataset includes information about the application of licences and rights statements to images by Trove contributors.</p>
+<p>There are 2 data files in this repository:</p>
+<ul>
+<li><a href="https://github.com/GLAM-Workbench/trove-images-rights-data/raw/main/rights-on-images.csv">Number of images by licence type and contributor</a></li>
+<li><a href="https://github.com/GLAM-Workbench/trove-images-rights-data/raw/main/rights-on-out-of-copyright-photos.csv">Number of out-of-copyright images by licence type and contributor</a></li>
+</ul>
+<p>There are 3 versions of this dataset:</p>
+<ul>
+<li>17 February 2020</li>
+<li>9 March 2022</li>
+<li>24 April 2024</li>
+</ul>
+<h3 id="finding-aids">Finding aids</h3>
+<p><a href="https://github.com/GLAM-Workbench/nla-finding-aids-data/">https://github.com/GLAM-Workbench/nla-finding-aids-data/</a></p>
+<p>This repository contains data about the National Library of Australia&rsquo;s digitised manuscript finding aids, harvested from Trove.</p>
+<p>This dataset contains 2 data files:</p>
+<ul>
+<li><a href="https://github.com/GLAM-Workbench/nla-finding-aids-data/blob/main/finding-aids.csv">List of urls of digitised finding aids in Trove</a></li>
+<li><a href="https://github.com/GLAM-Workbench/nla-finding-aids-data/blob/main/finding-aids-totals.csv">Summary information describing each digitised finding aid</a></li>
+</ul>
+<p>There is one version of this dataset:</p>
+<ul>
+<li>1 March 2023</li>
+</ul>
+<h2 id="6-trove-born-digital-resources">6. Trove born digital resources</h2>
+<h3 id="pandora-web-archive-collections">Pandora web archive collections</h3>
+<p><a href="https://github.com/GLAM-Workbench/trove-web-archives-collections">https://github.com/GLAM-Workbench/trove-web-archives-collections</a></p>
+<p>This dataset contains details of the subject and collection groupings used by Pandora to organise archived web resource titles.</p>
+<p>There are two data files in this dataset:</p>
+<ul>
+<li><a href="https://github.com/GLAM-Workbench/trove-web-archives-collections/raw/main/pandora-subjects.ndjson">List of subject groupings</a></li>
+<li><a href="https://github.com/GLAM-Workbench/trove-web-archives-collections/raw/main/pandora-collections.ndjson">List of collection groupings</a></li>
+</ul>
+<p>There are 2 versions of this dataset:</p>
+<ul>
+<li>2 May 2024</li>
+<li>7 May 2024</li>
+</ul>
+<h3 id="ned-periodicals">NED periodicals</h3>
+<p><a href="https://github.com/GLAM-Workbench/trove-ned-periodicals-data">https://github.com/GLAM-Workbench/trove-ned-periodicals-data</a></p>
+<p>This dataset contains details of periodical titles and issues submitted to the Trove through the NLA&rsquo;s National edeposit scheme.</p>
+<p>There are 3 data files in this dataset:</p>
+<ul>
+<li><a href="https://github.com/GLAM-Workbench/trove-ned-periodicals-data/raw/main/ned-periodicals.csv">Metadata of periodical titles submitted through NED</a></li>
+<li><a href="https://github.com/GLAM-Workbench/trove-ned-periodicals-data/raw/main/ned-periodical-issues.csv">Metadata of periodical issues submitted through NED</a></li>
+<li><a href="https://github.com/GLAM-Workbench/trove-ned-periodicals-data/raw/main/ned-periodicals.db">SQLite database combining linked titles and issues data</a></li>
+</ul>
+<p>There is one version of this dataset:</p>
+<ul>
+<li>10 April 2024</li>
+</ul>
+<h2 id="7-national-archives-of-australia">7. National Archives of Australia</h2>
+<p>The NAA datasets are all over the place at present and I need to do a lot of work to get them standardised and organised. These are the main datasets, but there are others I need to add.</p>
+<h3 id="records-with-the-access-status-closed">Records with the access status &lsquo;Closed&rsquo;</h3>
+<p><a href="https://github.com/wragge/closed_access">https://github.com/wragge/closed_access</a></p>
+<p><a href="https://github.com/GLAM-Workbench/recordsearch">https://github.com/GLAM-Workbench/recordsearch</a></p>
+<p>Versions in Figshare:</p>
+<ul>
+<li><a href="https://doi.org/10.6084/m9.figshare.3443867.v1">Files in the National Archives of Australia currently withheld from public access</a></li>
+<li><a href="https://doi.org/10.6084/m9.figshare.2060052.v1">Files in the National Archives of Australia withheld from public access in 2015</a></li>
+<li><a href="https://doi.org/10.6084/m9.figshare.4530851.v1">Files in the National Archives of Australia withheld from public access in 2016</a></li>
+<li><a href="https://doi.org/10.6084/m9.figshare.5900125.v1">Files in the National Archives of Australia withheld from public access in 2017</a></li>
+</ul>
+<p>Versions in GitHub:</p>
+<ul>
+<li><a href="https://github.com/GLAM-Workbench/recordsearch/blob/master/data/closed-20160101.csv">January 2016</a></li>
+<li><a href="https://github.com/GLAM-Workbench/recordsearch/blob/master/data/closed-20170109.csv">January 2017</a></li>
+<li><a href="https://github.com/GLAM-Workbench/recordsearch/blob/master/data/closed-20180101.csv">January 2018</a></li>
+<li><a href="https://github.com/GLAM-Workbench/recordsearch/blob/master/data/closed-20190101.csv">January 2019</a></li>
+<li><a href="https://github.com/GLAM-Workbench/recordsearch/blob/master/data/closed-20200101.csv">January 2020</a></li>
+<li><a href="https://github.com/GLAM-Workbench/recordsearch/blob/master/data/closed-20210101.csv">January 2021</a></li>
+<li><a href="https://github.com/GLAM-Workbench/recordsearch/blob/master/data/closed-20220101.csv">January 2022</a></li>
+<li>January 2023 (harvested but not in repo yet)</li>
+<li>January 2024 (harvested but not in repo yet)</li>
+</ul>
+<h3 id="summary-data-about-all-series-in-recordsearch">Summary data about all series in RecordSearch</h3>
+<p><a href="https://github.com/GLAM-Workbench/recordsearch">https://github.com/GLAM-Workbench/recordsearch</a></p>
+<p>CSV file containing basic descriptive information about all the series currently registered on RecordSearch as well as the total number of items described, digitised, and in each access category.</p>
+<ul>
+<li><a href="https://github.com/GLAM-Workbench/recordsearch/blob/master/series_totals_May_2021.csv">Summary data about all series in RecordSearch, May 2021</a></li>
+<li><a href="https://github.com/GLAM-Workbench/recordsearch/blob/master/series_totals_April_2022.csv">Summary data about all series in RecordSearch, April 2022</a></li>
+</ul>
+<h3 id="recently-digitised-files">Recently digitised files</h3>
+<p><a href="https://github.com/GLAM-Workbench/recordsearch">https://github.com/GLAM-Workbench/recordsearch</a></p>
+<ul>
+<li><a href="https://github.com/GLAM-Workbench/recordsearch/blob/master/data/recently-digitised-20210327">Details of files digitised between 25 February and 26 March 2020</a></li>
+</ul>
+<h3 id="recently-digitised-files--weekly-snapshots">Recently digitised files – weekly snapshots</h3>
+<p><a href="https://github.com/wragge/naa-recently-digitised">https://github.com/wragge/naa-recently-digitised</a></p>
+<p>This dataset contains weekly harvests of newly digitised files in RecordSearch. The  automated scraper is currently scheduled to run each Sunday, saving a  list of files that have been digitised in the previous week.</p>
+<p>There are 177 data files, created between 28 March 2021 and the present.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
 			<h1><a href="https://updates.timsherratt.org/2024/09/19/saving-troves-digitised.html">Saving Trove&#39;s digitised periodicals as PDFs</a></h1>
 		
 
