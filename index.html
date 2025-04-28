@@ -24,6 +24,288 @@
 	
 	  <div class="h-entry">
 		
+			<h1><a href="https://updates.timsherratt.org/2025/04/28/the-glam-workbench-introduction-to.html">The GLAM Workbench introduction to how notebooks work now runs in Jupyter Lite</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2025/04/28/the-glam-workbench-introduction-to.html" class="u-url"><time class="dt-published" datetime="2025-04-28 11:51:42 &#43;1000">Apr 28, 2025</time></a>
+
+		<div class="e-content">
+			 <p>I&rsquo;ve just updated my introduction to <a href="https://glam-workbench.net/getting-started-jlite/lab/index.html?path=using_jupyter_notebooks.ipynb">using Jupyter notebooks in the GLAM Workbench</a> so that it runs in <a href="https://jupyterlite.readthedocs.io/en/latest/">Jupyter Lite</a> – that means no more waiting for cloud services to spin up, it all happens in your browser!</p>
+<p>All the Jupyter notebooks in <a href="https://glam-workbench.net/">GLAM Workbench</a> can be run in the cloud using the free Binder service – either <a href="https://binderhub.rc.nectar.org.au/">through the ARDC</a> (requires authentication), or through the <a href="https://mybinder.org/">public, community-run service</a>. While it&rsquo;s usually just a matter of clicking a link, Binder can take a while to build the necessary computing environment, and sometimes it just fails. <a href="https://jupyterlite.readthedocs.io/en/latest/">Jupyter Lite</a> takes a different approach. Instead of building things in the cloud, it sets up everything it needs to run notebooks <em>within your own browser</em>.</p>
+<p>I&rsquo;ve been experimenting with Jupyter Lite a bit over the past couple of years, waiting for the technology to reach the point where I could integrate it into the GLAM Workbench without greatly multiplying the maintenance burden. The obvious place to start was my introductory notebook, which demonstrates how Jupyter notebooks themselves work. Using live data from the <a href="https://www.nma.gov.au/about/our-collection/museum-api">National Museum of Australia API</a>, it describes the basic structure of notebooks, and shows you how to edit and run code within them. I&rsquo;ve now set things up so <a href="https://glam-workbench.net/getting-started-jlite/lab/index.html?path=using_jupyter_notebooks.ipynb">this notebook runs in Jupyter Lite</a>.</p>
+<p>What does this mean? Previously, the link to the introductory notebook spun up a new Binder instance. Now, the link retrieves a static web page hosted on GitHub. As this page loads, it installs a Python kernel and everything else it needs to run the notebook within your browser. It&rsquo;s a lot faster than waiting for Binder, and provides a smoother experience for new users. And because it&rsquo;s just an ordinary web page, I can even embed a live, working version of the notebook within this blog post. Try it out!</p>
+<!-- raw HTML omitted -->
+<p>Jupyter Lite won&rsquo;t currently work with every notebook in the GLAM Workbench. Some Python packages are difficult to install, and some data sources can&rsquo;t be accessed due to CORS problems. But I&rsquo;m planning to add Jupyter Lite options where I can.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
+			<h1><a href="https://updates.timsherratt.org/2025/04/11/update-on-trove-data-access.html">Update on Trove data access and my suspended API keys</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2025/04/11/update-on-trove-data-access.html" class="u-url"><time class="dt-published" datetime="2025-04-11 15:27:16 &#43;1000">Apr 11, 2025</time></a>
+
+		<div class="e-content">
+			 <p>On 21 February, my Trove API keys were <a href="https://updates.timsherratt.org/2025/02/24/years-of-work-on-trove.html">cancelled without warning</a>. A week later, I met with NLA staff and was shocked to be told that downloading &lsquo;content&rsquo;, such as the text of digitised newspaper articles, was regarded as a <a href="https://updates.timsherratt.org/2025/03/02/trove-api-users-beware-the.html">breach of the API terms of use</a>. Without API access I can&rsquo;t continue my work helping researchers make use of Trove. More generally though, the NLA&rsquo;s actions threaten innovative digital research. This post tries to answer some questions raised by my first two posts, and provides some updates on recent actions by the NLA.</p>
+<h2 id="whats-an-api-key">What&rsquo;s an API key?</h2>
+<p>You might be wondering what an API key is and why it&rsquo;s important. At its heart, it&rsquo;s all about access to data. The Trove API delivers information from Trove in a form that computers can understand and process. This allows researchers to compile datasets for detailed analysis or visualisation, and supports the development of innovative tools and interfaces that help all Trove users. But access to the API is controlled by keys ­– no key, no data.</p>
+<p>I&rsquo;ve had an API key since 2012, and have used my keys in a variety of ways to help people use and understand Trove. Some keys were linked to particular applications such as the Trove API Console, and Headline Roulette. Others are used in the development of tools and resources such as the <a href="https://glam-workbench.net/">GLAM Workbench</a>, <a href="https://tdg.glam-workbench.net/home.html">Trove Data Guide</a>, and the <a href="https://wragge.github.io/trove-newspaper-harvester/">Trove Newspaper Harvester</a>.</p>
+<p><strong>The NLA suspended all my keys without warning or consideration as to how they were being used.</strong> Services like the Trove API Console which are dependent on keys for their operation simply stopped working.</p>
+<p>No. warning. at. all.</p>
+<p>However, the greater concern for me is that I can no longer develop or maintain things like the GLAM Workbench. I&rsquo;ve spent a lot of time over the last 15 years responding to researcher inquiries, building tools to enable new research projects, and supporting researchers as they begin to explore the possibilities of Trove data. Most of this work has been unpaid. I do it because I think it&rsquo;s important. But with no API keys my hands are tied. My ability to help researchers is severely limited.</p>
+<p>The National Library of Australia chose to do this.</p>
+<h2 id="what-are-the-terms-of-use">What are the terms of use?</h2>
+<p>I haven&rsquo;t received a clear explanation as to why all of my API keys were cancelled. <a href="https://updates.timsherratt.org/2025/03/02/trove-api-users-beware-the.html">As I noted</a>, discussion of this in my meeting with the NLA was confused and contradictory. But, in general terms, it seems to relate to the Trove <a href="https://trove.nla.gov.au/about/create-something/using-api/trove-api-terms-use">API terms of use</a> which were changed in 2020. In particular, the NLA now insists that accessing the &lsquo;content&rsquo; of resources, rather  than just the descriptive metadata, is a breach of the API terms of use. This includes the full text of digitised newspaper and journal articles that are included in API responses.</p>
+<p>Through all of this it&rsquo;s important to remember that the API terms of use are not imposed on the NLA by some external authority. They created them and can change them again at any time. If the NLA believes that work like mine has value, if they believe that researcher access to publicly-funded resources is important, they can change the rules to support these sorts of activities. To not do so is a choice.</p>
+<p>The terms of use were changed back in 2020, so why has the NLA suddenly chosen to act? From my point of view nothing has changed. All my work is open. I&rsquo;ve just been doing what I&rsquo;ve been doing since 2010. No-one has reached out to me over the last five years with concerns about the terms of use. There must be something else going on here, but, given the NLA&rsquo;s lack of transparency, it&rsquo;s hard to know.</p>
+<p>On 10 April, API users with keys dating back before 2020 started receiving emails that require them to explicitly accept the 2020 terms of use, or give up their keys. I suspect this is because the NLA has realised that API users weren&rsquo;t informed of the changes at the time. Section 20 of the terms of use states:</p>
+<blockquote>
+<p>The Library may change these API terms at any  time at any time in its sole discretion. The Library will notify you of  any changes to these API terms by adding a statement on Trove and the amended API terms will take effect 5 working days (in the Australian  Capital Territory) after the date on which the statement was added to  Trove. If you do not agree to the updated API terms, you must  immediately cease using Trove.</p>
+</blockquote>
+<p>If no such statement was added to Trove, then no agreement can be assumed.</p>
+<p>The email sent to API users could have been an opportunity to explain why these changes were made, and support developers and researchers in making any necessary adjustments. But no. <strong>The major change in terms of access to content is not even mentioned.</strong> It seems the NLA just wants to slip this past quietly without anyone really noticing.</p>
+<h2 id="is-it-all-about-ai">Is it all about AI?</h2>
+<p>Some have wondered whether the NLA&rsquo;s actions were motivated by AI crawlers hoovering up vast quantities of online content. The Director General&rsquo;s response to people who wrote to her expressing their concern over my treatment does highlight the challenges of AI, pointing to the NLA&rsquo;s new <a href="https://www.library.gov.au/visit/about-us/corporate-information/corporate-strategies/artificial-intelligence-framework">Artificial intelligence framework</a>. However, this framework is almost exclusively concerned with the NLA&rsquo;s own use of AI technologies. The only reference to external AI use is the statement: &lsquo;We will seek to protect our data from external AI systems where their use contravenes the access rights
+of publishers and authors&rsquo;.</p>
+<p>It&rsquo;s also not clear how this relates to API use. Commercial use of the Trove API has always been handled differently to non-commercial use. Applications for commercial use are individually examined and typically involve a quid pro quo, such as access to paywalled services built using the API. So why impose new restrictions on non-commercial uses?</p>
+<p>It&rsquo;s also worth noting that the changes to the terms of use were made in 2020, before the impact of AI crawlers was well understood. Their impact, however, might explain why the terms of use are suddenly being enforced.</p>
+<p>Of course, most AI crawlers are probably just going to scrape stuff from the NLA&rsquo;s websites. To try and manage this, it would seem preferable to push bots towards the API, not away. That way their use could be monitored and better controlled. The Wikimedia Foundation recently published an interesting article on <a href="https://diff.wikimedia.org/2025/04/01/how-crawlers-impact-the-operations-of-the-wikimedia-projects/">How crawlers impact the operations of the Wikimedia projects</a>. Their planned responses to this challenge include improving their APIs and working with developers to manage their usage.</p>
+<p>Perhaps the NLA&rsquo;s new policing of their terms of use is some sort of hamfisted response to AI threats, but why go after me? As Seb Chan noted on LinkedIn:</p>
+<blockquote>
+<p>Programmatic access to  cultural collections has been vital to establishing new forms of  practice, research, new scholarship and community discovery. Tim’s work  has been globally recognized as important and vital for a very long  time. Even if we acknowledge the increased cybersecurity risks (eg  British Library), and concerns about AI bot content harvesting that likely lie behind this suspension of Tim’s generous work, this continues to feel like another own goal in the Australian cultural sector.</p>
+</blockquote>
+<p>If there&rsquo;s a problem, why isn&rsquo;t the NLA discussing it with the research sector instead of picking on individuals?</p>
+<h2 id="who-does-this-affect">Who does this affect?</h2>
+<p>The NLA&rsquo;s actions have hit me pretty hard. Having 15 years of work discarded by an organisation that you&rsquo;ve always sought to promote is disheartening to say the least. The impact on my work and life has been such that I&rsquo;ve considered whether there might be legal recourse. I&rsquo;m sad, anxious, and disappointed.</p>
+<p>I&rsquo;m also worried about the impact of the NLA&rsquo;s actions on the research sector in general. In the Director General&rsquo;s response she notes:</p>
+<blockquote>
+<p>Where there is a clear need, the Library grants exemptions to the Terms of Use in order to support research
+and will continue to do so. We are working to make the process for applying for exemptions more transparent
+and to reach out to API users to clarify the process.</p>
+</blockquote>
+<p>However, the email sent to API users simply says:</p>
+<blockquote>
+<p>If your use of the Trove API does not align with the Trove API Terms of Use, please get in touch with Trove Support to discuss an exemption agreement.</p>
+</blockquote>
+<p>No process. No transparency.</p>
+<p>Any researcher wanting to analyse digitised newspaper articles, parliamentary papers, or other full text content will first need to obtain an &lsquo;exemption agreement&rsquo;. There is no information on what such an agreement involves, or how applications are assessed. The Trove API is no longer open. Research projects are now subject to the whims of NLA gatekeepers.</p>
+<p>Established researchers, or large, well-resourced projects, might see no problem here. They can more easily, and more confidently, justify their needs. The greatest impact will be on experimental projects, where the boundaries are not yet charted. What worries me most are the HDR and ECR researchers who will be deterred by these new restrictions. What new questions will not be asked? What new approaches will be discarded because of these barriers erected by the NLA?</p>
+<p>There will also be a significant impact on research training. How can you run a workshop on using the Trove API if participants are required not only to get an API key, but an individual &lsquo;exemption agreement&rsquo; to work with full text?</p>
+<h2 id="your-support-means-a-lot">Your support means a lot!</h2>
+<p>The one good thing to come from all of this is the support I&rsquo;ve received from people around the world. Many have written to Trove, the Director General, and the Minister for the Arts. The responses received so far have not been very enlightening but, nonetheless, I think it&rsquo;s really important to remind the NLA that their actions have an impact, and are being watched.</p>
+<p>The Australian Historical Association has made <a href="https://theaha.org.au/wp-content/uploads/2025/03/AHA-Statement-on-New-Restrictions-to-Trove.pdf">a public statement</a>, noting that:</p>
+<blockquote>
+<p>The suspension of Dr Sherratt’s API keys, the result of recent changes to Trove’s API policy, marks a troubling restriction to the work of researchers in Australia and overseas.</p>
+</blockquote>
+<p>The Centre for Contemporary Histories at Deakin University included a message from Professor David Lowe about the NLA&rsquo;s actions <a href="https://cch.deakin.edu.au/news/2025/03/newsletter-17th-march-2025/">in their recent newsletter</a>. He wrote:</p>
+<blockquote>
+<p>The best research stems from an environment that maximises the free flow of information and  support for independent scholarship.</p>
+</blockquote>
+<p>Kathryn Greenhill published <a href="https://librariansmatter.com/blog/2025/03/03/tim-sherratts-trove-api-keys/">an open letter</a> that argued:</p>
+<blockquote>
+<p>Reinstating Dr Tim Sherratt’s access to Trove API keys is essential to restore a set of cultural, educational and research tools that enhance  access and usage for National Library resources.</p>
+</blockquote>
+<p>There were also articles in <a href="https://ia.acs.org.au/article/2025/national-library-cracks-down-on-public-data-access.html">Information Age</a> (published by the Australian Computer Society) and <em>The Sizzle</em>.</p>
+<p>Concerns are not just being expressed in Australia. Professor Shawn Graham from Carleton University in Canada <a href="https://electricarchaeology.ca/2025/02/24/wtf-nla/">published an open letter</a> in which he stated:</p>
+<blockquote>
+<p>Mr. Sherratt’s work is well known across the world in the galleries,  libraries, archives, and museums sectors. His work developing the GLAM  Workbench has promoted Australia’s cultural heritage world wide. Indeed, because of Mr. Sherratt’s work my own students in our Public History  graduate program are more familiar with the National Library of  Australia’s Trove service, and hence Australian culture, than with what  our own Library and Archives Canada provides. <em>By developing the  GLAMWorbench with the Trove service, Mr. Sherratt has had a major impact in how cultural heritage materials are understood at scale, across the  world</em>. His work is complementary to your own, and enhances the prestige of the National Library of Australia</p>
+</blockquote>
+<p>My battle with the NLA was also used as a case study in a paper on <a href="https://aldonzel.github.io/intervention-forum-AAF25/">digital archives as infrastructure</a> by Anne-Laure  Donzel &amp; Julien Benedetti presented at the forum  de l’Association des archivistes Français.</p>
+<p>Trove used to be recognised internationally as an beacon of open cultural heritage data, but that reputation has been tarnished. I&rsquo;ve been contacted by a number of researchers and GLAM professionals around the world expressing their shock and disappointment at the NLA&rsquo;s behaviour.</p>
+<h2 id="what-comes-next">What comes next?</h2>
+<p>It&rsquo;s now six weeks since my API keys were cancelled. The recent responses by the Director General and the email to API users indicate that <em>something</em> is happening at the NLA, but I&rsquo;m not sure whether that&rsquo;s going to help me. Anyone who asks the NLA about my situation is told that it can&rsquo;t be discussed due to their &lsquo;privacy&rsquo; obligations.</p>
+<p>I&rsquo;m seeking to find out more through my local member, Andrew Wilkie, who has contacted the Minister for the Arts. But now there&rsquo;s an election, so I don&rsquo;t expect any updates soon.</p>
+<p>Beyond my personal situation, there are important issues that need to be considered by the research sector, and I&rsquo;m hoping peak organisations such as the <a href="https://humanities.org.au/">Australian Academy of the Humanities</a>, the <a href="https://socialsciences.org.au/">Academy of the Social Sciences in Australia</a>, and the <a href="https://ardc.edu.au/">Australian Research Data Commons</a> will take up the discussion.</p>
+<p>It&rsquo;s also worth noting that university libraries are Trove &lsquo;partners&rsquo; and are represented on <a href="https://trove.nla.gov.au/partners/trove-strategic-advisory-committee">Trove&rsquo;s Strategic Advisory Committee</a>, so if you&rsquo;re worried about the impact on your own research let your university librarian know, or tell the <a href="https://www.caul.edu.au/">Council of Australasian University Librarians</a>.</p>
+<p>It seems the NLA is currently hunkered down, waiting for everything to blow over. As an institution they have a lot of cultural power, and people are often reluctant to criticise them in public. But I think it&rsquo;s important to keep on the pressure.</p>
+<p>What I want is pretty simple:</p>
+<ul>
+<li>my API keys back</li>
+<li>an apology for the way I&rsquo;ve been treated</li>
+<li>more transparency from the NLA about API access</li>
+<li>an open discussion within the research sector about the problems and possibilities of working with Trove data</li>
+</ul>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
+			<h1><a href="https://updates.timsherratt.org/2025/04/10/using-the-public-record-office.html">Using the Public Record Office Victoria&#39;s API to build an overview of their collection</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2025/04/10/using-the-public-record-office.html" class="u-url"><time class="dt-published" datetime="2025-04-10 13:02:03 &#43;1000">Apr 10, 2025</time></a>
+
+		<div class="e-content">
+			 <p>Over the past few weeks I&rsquo;ve been exploring the Public Record Office Victoria&rsquo;s public API. There&rsquo;s not a lot of documentation, but there is a lot of data!</p>
+<p>What&rsquo;s not immediately obvious is that the API includes information about a variety of different entities within the <a href="https://prov.vic.gov.au/recordkeeping-government/a-z-topics/archival-control-model">PROV&rsquo;s model for archival description</a> – not just items, but functions, agencies, series and more. You can limit your API requests to a particular entity using the <code>category</code> field. You can also request facet counts from the <code>category</code> field to tell you how many of each type of entity are available from the API.</p>
+<!-- raw HTML omitted -->
+<p>I&rsquo;ve been documenting this sort of information in notebooks for inclusion in the forthcoming PROV section of the <a href="https://glam-workbench.net/">GLAM Workbench</a>. But I thought it might be useful to pull a few things together as a standalone dashboard, providing an overview of the PROV collection. So, <a href="https://wragge.github.io/prov-dashboard/">here it is</a>!</p>
+<p>The <a href="https://wragge.github.io/prov-dashboard/">dashboard</a> tells you how many records are currently available through the API, and breaks down this count by <code>entity</code>, and <code>category</code>. It then works through the main entities – functions, agencies, series, items, and images – displaying a series of charts and tables that give you an idea what they&rsquo;re actually made up of.</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>The <a href="https://wragge.github.io/prov-dashboard/">dashboard</a> is <a href="https://github.com/wragge/prov-dashboard">hosted on GitHub</a> and is automatically updated every Sunday. In the future, I&rsquo;ll do more to highlight changes over time.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
+			<h1><a href="https://updates.timsherratt.org/2025/04/09/more-than-million-rows-of.html">More than 6 million rows of data from Public Record Office Victoria added to the GLAM Name Index Search</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2025/04/09/more-than-million-rows-of.html" class="u-url"><time class="dt-published" datetime="2025-04-09 15:28:46 &#43;1000">Apr 9, 2025</time></a>
+
+		<div class="e-content">
+			 <p>The <a href="https://glam-workbench.net/name-search/">GLAM Name Index Search</a> now includes more than 6 million rows of data from the <a href="https://prov.vic.gov.au/">Public Record Office Victoria</a>, downloaded using their <a href="https://prov.vic.gov.au/prov-collection-api">public API</a>.</p>
+<p>The <a href="https://glam-workbench.net/name-search/">GLAM Name Index Search</a> brings together records that include the names of people from 10 Australian GLAM organisations. With a single search, you can find information about individuals across millions of rows of data.</p>
+<!-- raw HTML omitted -->
+<p>Previous versions of the <a href="https://glam-workbench.net/name-search/">GLAM Name Index Search</a> included a few datasets from the Public Record Office Victoria that had been shared through government open data portals. However, as I was exploring PROV&rsquo;s public API recently, I realised that there were many more records that included people&rsquo;s names.</p>
+<p>People&rsquo;s names appear in a number of different fields in the PROV data – including <code>family_name</code>, <code>description.name</code>, and <code>sams.description.name_of_person</code>. They can also be attached to either &lsquo;items&rsquo; or &lsquo;images&rsquo;. &lsquo;Items&rsquo; are individual records, such as files, while &lsquo;images&rsquo; relate metadata to a page from a digitised item. This means that an image record can tell you that a person is mentioned on a specific page. Both item and image records can point you to useful information.</p>
+<p>By using the API to search for records with values in one of the possible name fields, I compiled a list of series that contain items or images that include people&rsquo;s names in their metadata.</p>
+<table>
+<thead>
+<tr>
+<th>series_id</th>
+<th>series_title</th>
+<th>record_category</th>
+<th>number_of_records</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>28</td>
+<td>Probate and Administration Files</td>
+<td>Item</td>
+<td>2,578,652</td>
+</tr>
+<tr>
+<td>948</td>
+<td>Outward Passengers to Interstate, U.K. and Foreign Ports (Refer to Microfilm Copy VPRS 3506)</td>
+<td>Image</td>
+<td>1,661,181</td>
+</tr>
+<tr>
+<td>947</td>
+<td>Inward Overseas  Passenger Lists (see Microfiche Copies: VPRS 7666 United Kingdom Ports;  VPRS 7667 Foreign Ports; VPRS 13439 New Zealand Ports)</td>
+<td>Image</td>
+<td>1,608,515</td>
+</tr>
+<tr>
+<td>7591</td>
+<td>Wills</td>
+<td>Item</td>
+<td>933,110</td>
+</tr>
+<tr>
+<td>17379</td>
+<td>Probate and Administration Files (CourtView)</td>
+<td>Item</td>
+<td>294,882</td>
+</tr>
+<tr>
+<td>24</td>
+<td>Inquest Deposition Files</td>
+<td>Item</td>
+<td>216,768</td>
+</tr>
+<tr>
+<td>14</td>
+<td>Register of Assisted Immigrants from the United Kingdom [refer to microform copy, VPRS 3502]</td>
+<td>Image</td>
+<td>173,167</td>
+</tr>
+<tr>
+<td>5357</td>
+<td>Land Selection And Correspondence Files</td>
+<td>Item</td>
+<td>136,782</td>
+</tr>
+<tr>
+<td>10010</td>
+<td>Body Cards</td>
+<td>Item</td>
+<td>109,968</td>
+</tr>
+<tr>
+<td>4527</td>
+<td>Ward Register (known as Children&rsquo;s Registers 1864 - 1887)</td>
+<td>Image</td>
+<td>55,429</td>
+</tr>
+<tr>
+<td>13579</td>
+<td>Teacher Record Books</td>
+<td>Image</td>
+<td>49,106</td>
+</tr>
+<tr>
+<td>515</td>
+<td>Central Register of Male Prisoners</td>
+<td>Image</td>
+<td>44,285</td>
+</tr>
+<tr>
+<td>5714</td>
+<td>Land Selection Files, Section 12 Closer Settlement Act 1938 [including obsolete and  top numbered Closer Settlement and WW1 Discharged Soldier Settlement  files]</td>
+<td>Image</td>
+<td>7,721</td>
+</tr>
+<tr>
+<td>516</td>
+<td>Central Register of Female Prisoners</td>
+<td>Image</td>
+<td>6,782</td>
+</tr>
+<tr>
+<td>7933</td>
+<td>Non-Issued Probate Applications</td>
+<td>Item</td>
+<td>3,301</td>
+</tr>
+<tr>
+<td>5357</td>
+<td>Land Selection And Correspondence Files</td>
+<td>Image</td>
+<td>644</td>
+</tr>
+<tr>
+<td>7592</td>
+<td>Wills and Probate and Administration Files</td>
+<td>Item</td>
+<td>606</td>
+</tr>
+<tr>
+<td>18110</td>
+<td>Clinical Notes and Patient Files (Receiving House)</td>
+<td>Item</td>
+<td>391</td>
+</tr>
+<tr>
+<td>79</td>
+<td>Articles of Clerkship Files</td>
+<td>Item</td>
+<td>374</td>
+</tr>
+<tr>
+<td>266</td>
+<td>Inward Registered Correspondence</td>
+<td>Item</td>
+<td>275</td>
+</tr>
+</tbody>
+</table>
+<p>I then looped through each series in this list, saving details of each item or image. Finally, to prepare the data from the <a href="https://glam-workbench.net/name-search/">GLAM Name Index Search</a>, I excluded some fields that weren&rsquo;t useful and converted the data files into CSV format. All the details are in a notebook that I&rsquo;ll add to the <a href="https://glam-workbench.net/">GLAM Workbench</a> in coming weeks.</p>
+<!-- raw HTML omitted -->
+<p>The result is that the <a href="https://glam-workbench.net/name-search/">GLAM Name Index Search</a> now includes 20 datasets from the Public Record Office Victoria, containing 6,645,269 rows of data! All together, the GLAM Name Index Search includes around 13 million records, so almost half are from PROV.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
 			<h1><a href="https://updates.timsherratt.org/2025/04/09/introducing-provbot-sharing-photos-from.html">Introducing PROVBot – sharing photos from Public Record Office Victoria</a></h1>
 		
 
@@ -4818,7 +5100,7 @@ db[bit]<span style="color:#000;font-weight:bold">.</span>transform(drop<span sty
 
 		<div class="e-content">
 			 <p>I&rsquo;ve been doing a bit of cleaning up, trying to make some old datasets more easily available. In particular I&rsquo;ve been pulling together harvests of the number of newspaper articles in Trove by year and state. My <a href="https://timsherratt.org/shed/trove/graphs/">first harvests</a> date all the way back to 2011, before there was even a Trove API. Unfortunately, I didn&rsquo;t run the harvests as often as I should&rsquo;ve and there are some big gaps. Nonetheless, if you&rsquo;re interested in how Trove&rsquo;s newspaper corpus has grown and changed over time, you might find them useful. They&rsquo;re available in <a href="https://github.com/wragge/trove-newspaper-totals-historical">this repository</a> and also <a href="https://doi.org/10.5281/zenodo.6471544">in Zenodo</a>.</p>
-<p><img src="https://cdn.uploads.micro.blog/8371/2022/2c1e7dd328.png" alt="Chart showing number of newspaper articles per year available in Trove – harvested multiple times from 2011 to 2022"></p>
+<p><img src="https://updates.timsherratt.org/uploads/2022/2c1e7dd328.png" alt="Chart showing number of newspaper articles per year available in Trove – harvested multiple times from 2011 to 2022"></p>
 <p><em>This chart shows how the number of newspaper articles per year in Trove has changed from 2011 to 2022. Note the rapid growth between 2011 and 2015.</em></p>
 <p>To try and make sure that there&rsquo;s a more consistent record from now on, I&rsquo;ve also created a new Git Scraper – <a href="https://github.com/wragge/trove-newspaper-totals">a GitHub repository</a> that automatically harvests and saves data at weekly intervals. As well as the number of articles by <a href="https://github.com/wragge/trove-newspaper-totals/blob/master/data/total_articles_by_year.csv">year</a> and <a href="https://github.com/wragge/trove-newspaper-totals/blob/master/data/total_articles_by_year_and_state.csv">state</a>, it also harvests the number of articles by <a href="https://github.com/wragge/trove-newspaper-totals/blob/master/data/total_articles_by_newspaper.csv">newspaper</a> and <a href="https://github.com/wragge/trove-newspaper-totals/blob/master/data/total_articles_by_category.csv">category</a>. As mentioned, these four datasets are updated weekly. If you want to get all the changes over time, you can retrieve earlier versions from the repository&rsquo;s commit history.</p>
 <p>All the datasets are CC-0 licensed and validated with Frictionless.</p>
@@ -4851,7 +5133,7 @@ db[bit]<span style="color:#000;font-weight:bold">.</span>transform(drop<span sty
 		<div class="e-content">
 			 <p>Over the past few months I&rsquo;ve been doing a lot of behind-the-scenes work on the <a href="https://glam-workbench.net/">GLAM Workbench</a> – <a href="https://updates.timsherratt.org/2021/12/01/digitalnz-te-papa.html">automating</a>, <a href="https://updates.timsherratt.org/2022/01/28/testing-testing.html">standardising</a>, and documenting processes for developing and managing repositories. These sort of things ease the maintenance burden on me and help make the GLAM Workbench <a href="https://glam-workbench.net/about/#is-the-glam-workbench-sustainable">sustainable</a>, even as it continues to grow. But these changes are also aimed at making it easier for <strong>you</strong> to contribute to the GLAM Workbench!</p>
 <p>Perhaps you&rsquo;re part of a GLAM organisation that wants to help researchers explore its collection data – why not create your own section of the GLAM Workbench? It would be a great opportunity for staff to develop their own digital skills and learn about the possibilities of Jupyter notebooks. I&rsquo;ve developed a <a href="https://github.com/GLAM-Workbench/glam-workbench-template">repository template</a> and some <a href="https://glam-workbench.net/get-involved/developing-repositories/">detailed documentation</a> to get you started. The repository template includes everything you need to create and test notebooks, as well as built-in integration with Binder, Docker, Reclaim Cloud, and Zenodo. And, of course, I&rsquo;ll be around to help you through the process.</p>
-<p><img src="https://cdn.uploads.micro.blog/8371/2022/a46891dbeb.png" alt="Screenshot of documentation"></p>
+<p><img src="https://updates.timsherratt.org/uploads/2022/a46891dbeb.png" alt="Screenshot of documentation"></p>
 <p>Or perhaps you&rsquo;re a researcher who wants to <a href="https://glam-workbench.net/get-involved/contribute-code/">share some code you&rsquo;ve developed</a> that extends or improves an existing GLAM Workbench repository. Yes please!  Or maybe you&rsquo;re a GLAM Workbench user who has <a href="https://glam-workbench.net/get-involved/add-links/">something to add</a> to one of the lists of resources; or you&rsquo;ve noticed a problem with some of the documentation that <a href="https://glam-workbench.net/get-involved/editing-documentation/">you&rsquo;d like to fix</a>. All contributions welcome!</p>
 <p>The <a href="https://glam-workbench.net/get-involved/">Get involved!</a> page includes links to all this information, as well as some other possibilities such as becoming a <a href="https://glam-workbench.net/get-involved/supporters/">sponsor</a>, or sharing <a href="https://updates.timsherratt.org/categories/glamworkbench/">news</a>. And to recognise those who make a contribution to the code or documentation there&rsquo;s also a brand new <a href="https://glam-workbench.net/contributors/">contributors</a> page.</p>
 <p>I&rsquo;m looking forward to exploring how we can build the GLAM Workbench together. #dhhacks</p>
@@ -4914,7 +5196,7 @@ db[bit]<span style="color:#000;font-weight:bold">.</span>transform(drop<span sty
 <li><a href="https://glam-workbench.net/digitalnz-views/papers_past_newspapers.html">Papers Past newspapers in DigitalNZ</a> – showing which Papers Past newspapers are available through DigitalNZ</li>
 <li><a href="https://glam-workbench.net/examples/trove_newspaper_issues_per_day.html">Trove newspapers – number of issues per day, 1803–2020</a> – the number of newspaper issues published <strong>every day</strong> in Trove</li>
 </ul>
-<p><img src="https://cdn.uploads.micro.blog/8371/2021/83610c54c6.png" alt="" title="Chart showing the number of newspaper issues in Trove published on each day in 1834."></p>
+<p><img src="https://updates.timsherratt.org/uploads/2021/83610c54c6.png" alt="" title="Chart showing the number of newspaper issues in Trove published on each day in 1834."></p>
 <p>Both are HTML pages that embed visualisations created using <a href="https://altair-viz.github.io/">Altair</a>. The visualisations are rendered using javascript, and even though the notebook isn’t running in a live computing environment, there’s some basic interactivity built-in – for example, you can hover for more details, and click on the DigitalNZ chart to search for articles from a newspaper. More to come! #dhhacks</p>
 
 		</div>
@@ -4929,7 +5211,7 @@ db[bit]<span style="color:#000;font-weight:bold">.</span>transform(drop<span sty
 
 		<div class="e-content">
 			 <p>The <a href="https://vimeo.com/652696272">video</a> of my key story presentation at <a href="https://resbaz.github.io/resbaz2021qld/">ResBaz Queensland</a> (simulcast via <a href="https://resbaz.github.io/resbaz2021/sydney/">ResBaz Sydney</a>) is now available on Vimeo. In it, I explore some of the possibilities of GLAM data by retracing my own journey through WWI service records, <a href="https://www.realfaceofwhiteaustralia.net/">The Real Face of White Australia</a>, #redactionart, and Trove – ending up at the <a href="https://glam-workbench.net/">GLAM Workbench</a>, which brings together a lot of my tools and resources in a form that anyone can use. The <a href="https://slides.com/wragge/resbaz-2021">slides</a> are also available, and there’s an <a href="https://doi.org/10.5281/zenodo.5760042">archived version</a> of everything in Zenodo.</p>
-<p><a href="https://vimeo.com/652696272"><img src="https://cdn.uploads.micro.blog/8371/2021/34f5c3763d.png" alt="" title="Screencap of video showing #redactionart."></a></p>
+<p><a href="https://vimeo.com/652696272"><img src="https://updates.timsherratt.org/uploads/2021/34f5c3763d.png" alt="" title="Screencap of video showing #redactionart."></a></p>
 <p>This and many other presentations about the GLAM Workbench are <a href="https://glam-workbench.net/presentations/">listed here</a>. It seems I’ve given at least 11 talks and workshops this year! #dhhacks</p>
 
 		</div>
@@ -4944,9 +5226,9 @@ db[bit]<span style="color:#000;font-weight:bold">.</span>transform(drop<span sty
 
 		<div class="e-content">
 			 <p>The <a href="https://updates.timsherratt.org/2021/12/01/digitalnz-te-papa.html">newly-updated</a> <a href="https://glam-workbench.net/digitalnz/">DigitalNZ</a> and <a href="https://glam-workbench.net/tepapa/">Te Papa</a> sections of the <a href="https://glam-workbench.net/">GLAM Workbench </a>have been added to the list of available repositories in the <a href="https://dashboard.rc.nectar.org.au/">Nectar Research Cloud</a>’s GLAM Workbench Application. This means you can create your very own version of these repositories running in the Nectar Cloud, simply by choosing them from the app’s dropdown list. See the <a href="https://glam-workbench.net/using-nectar/">Using Nectar</a> help page for more information.</p>
-<p><img src="https://cdn.uploads.micro.blog/8371/2021/ad2303f5e6.png" alt="" title="Screenshot of Nectar app showing dropdown list"></p>
+<p><img src="https://updates.timsherratt.org/uploads/2021/ad2303f5e6.png" alt="" title="Screenshot of Nectar app showing dropdown list"></p>
 <p>I’ve also taken the opportunity to make use of the new container registry service developed by the ARDC as part of the <a href="https://arcos.ardc.edu.au/">ARCOS</a> project. The app now pulls the GLAM Workbench Docker images from <a href="https://quay.io/organization/glamworkbench">Quay.io</a> via the container registry’s cache. This means that copies of the images are cached locally, speeding things up and saving on data transfers. Yay for integration!</p>
-<p><img src="https://cdn.uploads.micro.blog/8371/2021/cb4e1280cb.png" alt="" title="Screenshot of container registry interface showing cahced images"></p>
+<p><img src="https://updates.timsherratt.org/uploads/2021/cb4e1280cb.png" alt="" title="Screenshot of container registry interface showing cahced images"></p>
 <p>Thanks again to Andy and the Nectar Cloud staff for their help! #dhhacks</p>
 
 		</div>
@@ -4971,7 +5253,7 @@ db[bit]<span style="color:#000;font-weight:bold">.</span>transform(drop<span sty
 <li>Update of all Python packages</li>
 </ul>
 <p>From the user’s point of view, the main benefit of these changes is the ability to run the repositories in a variety of different environments depending on your needs and skills. The Docker images, generated using <a href="https://github.com/jupyterhub/repo2docker">repo2Docker</a>, are used by Binder, Reclaim Cloud, Nectar, and Docker Desktop. Same image, multiple environments! See ‘Run these notebooks’ in the <a href="https://glam-workbench.net/digitalnz/">DigitalNZ</a> and <a href="https://glam-workbench.net/tepapa/">Te Papa</a> sections of the GLAM Workbench for more information.</p>
-<p><img src="https://cdn.uploads.micro.blog/8371/2021/d40a7d95cb.png" alt="" title="Screenshot of visualisation displaying information about Papers Past newspapers available through DigitalNZ."></p>
+<p><img src="https://updates.timsherratt.org/uploads/2021/d40a7d95cb.png" alt="" title="Screenshot of visualisation displaying information about Papers Past newspapers available through DigitalNZ."></p>
 <p>Of course, I’ve also re-run all of the notebooks to make sure everything works and to update any statistics, visualisations, and datasets. As a bonus, there’s a couple of new notebooks in the DigitalNZ repository:</p>
 <ul>
 <li><a href="https://glam-workbench.net/digitalnz/#querypic-digitalnz">QueryPic DigitalNZ</a> – a web app to visualise searches in Papers Past over time (I’ll post some further info about this shortly)</li>
@@ -5122,7 +5404,7 @@ db[bit]<span style="color:#000;font-weight:bold">.</span>transform(drop<span sty
 <li><code>1791051</code> – to view in Trove just add this to <code>http://nla.gov.au/nla.news-issue</code>, eg <a href="http://nla.gov.au/nla.news-issue1791051">http://nla.gov.au/nla.news-issue1791051</a></li>
 </ul>
 <p>I also took the opportunity to create a new <a href="https://glam-workbench.net/trove-newspapers/#harvesting-data">Harvesting data</a> heading in the <a href="https://glam-workbench.net/trove-newspapers/">Trove newspapers</a> section of the GLAM Workbench. #dhhacks</p>
-<p><img src="https://cdn.uploads.micro.blog/8371/2021/af229b4fa2.png" alt="" title="Screenshot of the Harvesting data section in Trove newspapers"></p>
+<p><img src="https://updates.timsherratt.org/uploads/2021/af229b4fa2.png" alt="" title="Screenshot of the Harvesting data section in Trove newspapers"></p>
 
 		</div>
 	  </div>
@@ -5137,7 +5419,7 @@ db[bit]<span style="color:#000;font-weight:bold">.</span>transform(drop<span sty
 		<div class="e-content">
 			 <p>The <a href="https://glam-workbench.net/">GLAM Workbench</a> isn’t dependent on one big piece of technological infrastructure. It’s basically a collection of Jupyter notebooks, and those notebooks can be used within a variety of different environments. This helps make the GLAM Workbench more sustainable – new components can be swapped in and out as required. It also makes it possible to create different pathways for users, depending on their digital skills, institutional support, and research needs. For example, links to <a href="https://glam-workbench.net/using-binder/">Binder</a> make it easy for users to explore the possibilities of the GLAM Workbench and accomplish quick tasks. But Binder has limits. Where do you go when your research project scales up?</p>
 <p>Earlier this year I added one-click installation of GLAM Workbench repositories in <a href="https://glam-workbench.net/using-reclaim-cloud/">Reclaim Cloud</a>. <strong>Today I’m very pleased to announce that selected GLAM Workbench repositories can be installed as applications within the <a href="https://ardc.edu.au/services/nectar-research-cloud/">Nectar Research Cloud</a>.</strong> Using nationally-funded digital infrastructure, researchers in Australian universities can now create their own workbenches in minutes. So whether you’re harvesting truckloads of data from Trove or analysing web archives at scale, you can move beyond Binder and set up an environment dedicated to your research project. Cool huh?</p>
-<p><img src="https://cdn.uploads.micro.blog/8371/2021/e10ef8218a.png" alt="You can install GLAM Workbench repositories using this simple application in Nectar!"></p>
+<p><img src="https://updates.timsherratt.org/uploads/2021/e10ef8218a.png" alt="You can install GLAM Workbench repositories using this simple application in Nectar!"></p>
 <p>Currently four repositories can be installed on Nectar in this way:</p>
 <ul>
 <li><a href="https://glam-workbench.net/trove-newspapers/">Trove newspapers</a></li>
@@ -5278,7 +5560,7 @@ db[bit]<span style="color:#000;font-weight:bold">.</span>transform(drop<span sty
 			 <p>Way back in 2013, I went to the eResearch Australasia conference as the manager of Trove to talk about <a href="https://www.slideshare.net/wragge/beyond-discovery">new research possibilities using the Trove API</a>. Eight years years later <a href="https://conference.eresearch.edu.au/events/a-glam-workbench-for-humanities-researchers/">I was back</a>, still spruiking the possibilities of Trove data. This time, however, I was discussing Trove in the broader context of <strong>GLAM</strong> data – all the exciting possibilities that have emerged as galleries, libraries, archives and museums make more of their collections available in machine-readable form. The <strong>big question</strong> is, of course, how do researchers, particularly those in the humanities, make use of that data? The <a href="https://glam-workbench.net/">GLAM Workbench</a> is my attempt to address that question – to provide humanities researchers with both the tools and information they need, and an understanding of the possibilities that might emerge if they invest a bit of time in working with GLAM data. My eResearch Australasia 2021 presentation provides a quick introduction to the GLAM Workbench, here’s the <a href="https://vimeo.com/631475562">video</a>, and the <a href="https://slides.com/wragge/eresearch2021">slides</a>.</p>
 <!-- raw HTML omitted -->
 <p>The presentation was pre-recorded, but I managed to sneak in an update via chat for those who attended the session. More news on this next week… 🥳</p>
-<p><img src="https://cdn.uploads.micro.blog/8371/2021/29b72b05bc.png" alt=""></p>
+<p><img src="https://updates.timsherratt.org/uploads/2021/29b72b05bc.png" alt=""></p>
 
 		</div>
 	  </div>
@@ -5320,7 +5602,7 @@ images = download_images('107024751')
 <li><a href="https://data.sa.gov.au/data/dataset/passengers-in-history">Passengers in History</a> – that’s 371,894 records of people arriving in South Australia from 1836 to 1961</li>
 <li><a href="https://data.sa.gov.au/data/dataset/3f6fab54-8cc8-4732-9c1e-fb3f73df53b0">Women’s Suffrage Petition 1894 (South Australia)</a> – another 10,638 names</li>
 </ul>
-<p><img src="https://cdn.uploads.micro.blog/8371/2021/7eadb95bde.png" alt="" title="Screenshot of GLAM Name Index Search home page"></p>
+<p><img src="https://updates.timsherratt.org/uploads/2021/7eadb95bde.png" alt="" title="Screenshot of GLAM Name Index Search home page"></p>
 <p>In total there’s 9.67 million name records to search across 197 datasets provided by 9 GLAM organisations!</p>
 
 		</div>
@@ -5335,7 +5617,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Here’s the <a href="https://doi.org/10.5281/zenodo.5463710">preprint version</a> of an article, ‘More than newspapers’, that I’ve submitted for a forum about Trove in a forthcoming issue of <em>History Australia</em>.</p>
-<p><img src="https://cdn.uploads.micro.blog/8371/2021/79644bef1e.png" alt="" title="Screenshot of concluding paragraph of article: 'Access is a collective responsibility. GLAM institutions, like the National Library, need to be open about the policies and practices that shape their resources. But researchers need to honest about their methods, and ready to learn. Trove is not one thing. It is an attempt to bring together cultural heritage collections and deliver new means of discovery and use. Trove is revolutionary. Trove is flawed. It is inspiring and annoying – seemingly limitless, but full of holes. Trove is a start, but not the end.'"></p>
+<p><img src="https://updates.timsherratt.org/uploads/2021/79644bef1e.png" alt="" title="Screenshot of concluding paragraph of article: 'Access is a collective responsibility. GLAM institutions, like the National Library, need to be open about the policies and practices that shape their resources. But researchers need to honest about their methods, and ready to learn. Trove is not one thing. It is an attempt to bring together cultural heritage collections and deliver new means of discovery and use. Trove is revolutionary. Trove is flawed. It is inspiring and annoying – seemingly limitless, but full of holes. Trove is a start, but not the end.'"></p>
 <p><a href="https://doi.org/10.5281/zenodo.5463710"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.5463710.svg" alt="DOI"></a></p>
 
 		</div>
@@ -5521,7 +5803,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Over the last few weeks I’ve been updating my harvests of OCRd text from digitised <a href="https://updates.timsherratt.org/2021/08/16/explore-troves-digitised.html">books</a> and <a href="https://updates.timsherratt.org/2021/08/06/updated-lots-and.html">periodicals</a> in Trove. As part of the harvesting process, I’ve created lists of both that are available in digital form – this includes digitised works, as well as those that are born-digital (such as PDFs or epubs). I’ve published the full lists of <a href="https://trove-digital-books.glitch.me/data/trove-digital-books">books</a> and <a href="https://trove-digital-periodicals.glitch.me/data/trove-digital-journals">periodicals</a> as searchable databases to make them easy to explore.</p>
-<p><img src="https://cdn.uploads.micro.blog/8371/2021/51c3edce9a.png" alt="" title="Screenshot of database of Trove's government publications."></p>
+<p><img src="https://updates.timsherratt.org/uploads/2021/51c3edce9a.png" alt="" title="Screenshot of database of Trove's government publications."></p>
 <p>One thing that you might notice is that works with the format ‘Government publication’ pop up in both lists – sometimes it’s not clear whether something is a ‘book’ or ‘periodical’. To make it easier to find these items, no matter what their format, I’ve combined data from my two harvests and created a <a href="https://trove-government-publications.glitch.me/data/trove-government-publications">searchable dataset of government publications</a>. It includes links to download OCRd text from CloudStor if available.</p>
 <p>All three databases make use of Datasette, which I’ve also used for the <a href="https://updates.timsherratt.org/2021/08/23/a-family-history.html">GLAM Name Index Search</a>. One of the cool things about <a href="https://datasette.io/">Datasette</a> is that it provides it’s own API, so if you find some interesting in any of these databases, you can easily download the machine-readable data for further analysis. #dhhacks</p>
 
@@ -5616,7 +5898,7 @@ images = download_images('107024751')
 <p>After a few nights work, I found the answer was <strong>yes</strong>.</p>
 <p><strong><a href="https://glam-workbench.net/name-search/">Try out my new aggregated search interface here!</a></strong>.</p>
 <p>(The cloud service it uses runs on demand, so if it has gone to sleep, it might take a little while to wake up again – just be patient for a few seconds.)</p>
-<p><a href="https://glam-workbench.net/name-search/"><img src="https://cdn.uploads.micro.blog/8371/2021/bf9da8208a.png" alt="" title="Scrrenshot of GLAM Name index search"></a></p>
+<p><a href="https://glam-workbench.net/name-search/"><img src="https://updates.timsherratt.org/uploads/2021/bf9da8208a.png" alt="" title="Scrrenshot of GLAM Name index search"></a></p>
 <p>Currently, the <a href="https://glam-workbench.net/name-search/">GLAM Name Search</a> interface lets you search for names across 195 indexes from eight GLAM organisations. All together, there’s a total of more than <strong>9.2 million rows of data</strong> to explore!</p>
 <p>It’s simple to use – just enter a name in the search box and Datasette will search each index in turn, displaying the first five matching results. You can click through to view all results from a specific index. Not surprisingly, the aggregated name search only searches columns containing names. However, once you click through to an individual table, you can apply additional filters or facets.</p>
 <p>To create the aggregated search interface I worked through the <a href="https://github.com/GLAM-Workbench/ozglam-data/blob/master/glam-datasets-from-gov-portals-csvs.csv">list of CSVs</a> I’d harvested from government data portals to identify those that contained names of people, and discard those that contained administrative, rather than historical data. I also made a note of the columns that contained the names so I could index their contents once they’d been added to the database. Usually these were fields such as <code>Surname</code> or <code>Given names</code>, but sometimes names were in the record title or notes.</p>
@@ -5641,7 +5923,7 @@ images = download_images('107024751')
 <p>Included is <a href="https://glam-workbench.net/trove-books/#harvesting-the-text-of-digitised-books-and-ephemera">a notebook to harvest details of all books</a> available from Trove in digital form. This includes both digitised books, that have been scanned and OCRd, as well as born digital publications, such as PDFs and epubs. The definition of ‘books’ is pretty loose – I’ve harvested details of anything that has been assigned the format ‘Book’ in Trove, but this includes <a href="https://updates.timsherratt.org/2021/08/13/a-miscellany-of.html">ephemera, such as posters, pamphlets, and advertising</a>.</p>
 <p>In the latest harvest, I ended up with details of 42,174 ‘books’. This includes some duplicates, because multiple metadata entries can point to the same digital object. I thought it was best to preserve the duplicates, rather than discard the metadata.</p>
 <p>Once I’d harvested the details of the books, I tried to see if there was any OCRd text available for download. If there was, I saved it to a <a href="https://cloudstor.aarnet.edu.au/plus/s/ugiw3gdijSKaoTL">public folder on CloudStor</a>. In total, I was able to download 26,762 files of OCRd text.</p>
-<p><img src="https://cdn.uploads.micro.blog/8371/2021/7b5774a071.png" alt="Screenshot of database showing details of digital book"></p>
+<p><img src="https://updates.timsherratt.org/uploads/2021/7b5774a071.png" alt="Screenshot of database showing details of digital book"></p>
 <p>The easiest way to explore the books is <a href="https://trove-digital-books.glitch.me/data/trove-digital-books">using this searchable database</a>. It’s created using Datasette and is running on Glitch. Full text search is available on the ‘title’ and ‘contributors’ fields, and you can filter on things like date, copyright status, number of pages, and whether OCRd text is available for download. If there is OCRd text, a direct link to the file on CloudStor is included. You can use the database to filter the titles, creating your own dataset that you can download in CSV or JSON format.</p>
 <p>If you just want the full list of books as a CSV file, you can <a href="https://nbviewer.jupyter.org/github/GLAM-Workbench/trove-books/blob/master/trove_digitised_books_with_ocr.csv">download it here</a>. And if you want <em>all</em> the OCRd text, you can go straight to the <a href="https://cloudstor.aarnet.edu.au/plus/s/ugiw3gdijSKaoTL">public folder on CloudStor</a> – there’s about 3.6gb of text files to explore! #dhhacks</p>
 
@@ -5657,7 +5939,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>I’m just in the midst of updating my harvest of OCRd text from Trove’s digitised books (more about that soon!). But amongst the items catalogued as ‘books’ are a wide assortment of ephemera, posters, advertisements, and other oddities. There’s no consistent way of identifying these items through the search interface, but because I’ve found the number of pages in each ‘book’ as part of the harvesting process, I can limit results to items with just a single digitised page – there’s more than 1,500! To make it easy to explore this collection of odds and ends, I’ve downloaded all the single page images and compiled them into <a href="https://www.dropbox.com/s/xi84y12zz6iryfu/trove-ephemera.pdf?dl=0">one big PDF</a> with links back to their entries in Trove. Enjoy your browsing!</p>
-<p><img src="https://cdn.uploads.micro.blog/8371/2021/1f185ad85f.png" alt="" title="Screenshot from PDF showing a 'To let' poster"></p>
+<p><img src="https://updates.timsherratt.org/uploads/2021/1f185ad85f.png" alt="" title="Screenshot from PDF showing a 'To let' poster"></p>
 <p>This is another example of the ways in which we can extend and enrich existing collection interfaces using simple technologies like PDFs and CSVs. We can create slices across existing categories to expose interesting features, and provide new entry points for researchers. Some other examples in the GLAM Workbench are the collection of <a href="https://glam-workbench.net/trove-journals/#editorial-cartoons-from-the-bulletin-1886-to-1952">editorial cartoons from <em>The Bulletin</em></a>, the list of Trove newspapers with <a href="https://glam-workbench.net/trove-newspapers/#trove-newspapers-with-non-english-language-content">non-English content</a>, the harvest of <a href="https://glam-workbench.net/trove-music/#abc-radio-national-programs">ABC Radio National programs</a>, and the recent collection of <a href="https://glam-workbench.net/trove-journals/#politicians-talking-about-covid">politicians talking about COVID</a>. <a href="https://glam-workbench.net/suggest-a-topic/">Let me know</a> if you have any ideas for additional slices! #dhhacks</p>
 
 		</div>
@@ -5672,7 +5954,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Some good news on the funding front with the success of the <a href="https://dataportal.arc.gov.au/NCGP/Web/Grant/Grant/LP200301446">Everyday Heritage project</a> in the latest round of ARC Linkage grants. The project aims to look beyond the formal discourses of ‘national’ heritage to develop a more diverse range of heritage narratives. Working at the intersection of place, digital collections, and material culture, team members will develop a series of ‘heritage biographies’, that document everyday experience, and provide new models for the heritage sector.</p>
-<p><img src="https://cdn.uploads.micro.blog/8371/2021/37dbda004e.png" alt="Screen capture of project details in ARC grants database"></p>
+<p><img src="https://updates.timsherratt.org/uploads/2021/37dbda004e.png" alt="Screen capture of project details in ARC grants database"></p>
 <p>Digital methods will play a major role in the project. I’ll be leading the ‘Heritage Hacks’ work package that will support the creation of the heritage biographies and develop a range of new tools and tutorials for use in heritage management contexts. All the tools, methods, and data generated through the project will be documented using Jupyter notebooks and published through the <a href="https://glam-workbench.net/">GLAM Workbench</a>. Watch this space!</p>
 <p>The project is led by <a href="https://researchprofiles.canberra.edu.au/en/persons/tracy-ireland">Tracy Ireland</a> (University of Canberra), with <a href="https://research-repository.uwa.edu.au/en/persons/jane-lydon">Jane Lydon</a> (UWA), <a href="https://www.utas.edu.au/profiles/staff/humanities/kate-bagnall">Kate Bagnall</a> (UTAS), and me as chief investigators. Our industry partner is <a href="https://www.gml.com.au/">GML Heritage</a>.</p>
 
@@ -5716,7 +5998,7 @@ images = download_images('107024751')
 <li>Adding up to a total of around 12gb of text</li>
 </ul>
 <p>If you want to dive straight in, here’s a <a href="https://github.com/GLAM-Workbench/trove-journals/blob/master/digital-journals-with-text.md">list of all the harvested periodicals</a>, with links to download a summary of available issues, as well as all the harvested text (there’s one file per issue). You’ll notice that the list includes a large number of parliamentary papers and government reports as well as published journals.</p>
-<p><img src="https://cdn.uploads.micro.blog/8371/2021/008359faba.png" alt="List of Trove periodicals with downloadable text"></p>
+<p><img src="https://updates.timsherratt.org/uploads/2021/008359faba.png" alt="List of Trove periodicals with downloadable text"></p>
 <p>All of the harvested text is available from a <a href="https://cloudstor.aarnet.edu.au/plus/s/QOmnqpGQCNCSC2h">public folder on CloudStor</a>.</p>
 <p>The harvesting process involves a few different steps:</p>
 <ul>
@@ -5741,7 +6023,7 @@ images = download_images('107024751')
 		<div class="e-content">
 			 <p>The <a href="https://glam-workbench.net/trove-journals/">Trove Journals</a> section of the GLAM Workbench includes <a href="https://glam-workbench.net/trove-journals/#harvest-parliament-press-releases-from-trove">a notebook</a> that helps you download press releases, speeches, and interview transcripts by Australian federal politicians. These documents are compiled and published by the Parliamentary Library, and the details are regularly harvested into Trove.</p>
 <p>Using this notebook, I’ve created a collection of documents that include the words ‘COVID’ or ‘Coronavirus’. It includes all the <strong>metadata</strong> from Trove, as well as the <strong>full text</strong> of each document downloaded from the Parliamentary Library. There’s <strong>3,995 documents in total</strong>, covering the period up until early April 2021. You can <strong><a href="https://github.com/GLAM-Workbench/trove-journals/raw/6f4d805186716853b81c7d93cac6754685b384bf/press-releases/press-releases-coronavirus-or-covid.zip">download them all as a zip file</a></strong> (12 mb).</p>
-<p><img src="https://cdn.uploads.micro.blog/8371/2021/44a7f87b2c.png" alt="" title="Screenshot showing a sample of the harvested metadata"></p>
+<p><img src="https://updates.timsherratt.org/uploads/2021/44a7f87b2c.png" alt="" title="Screenshot showing a sample of the harvested metadata"></p>
 <p>While I was compiling this dataset, I also made a few improvements to the notebook. You can now filter the results to weed out false positives, and identify duplicates. #dhhacks</p>
 
 		</div>
@@ -5756,9 +6038,9 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>I’ve always been interested in the way people add value to resources in Trove. OCR correction tends to get all the attention, but Trove users have also been busy organising resources using tags, lists, and comments. I used to refer to tagging quite often in <a href="http://discontents.com.au/myths-mega-projects-and-making/">presentations</a>, pointing to the different ways they were used. For example, ‘TBD’ is a workflow marker, used by text correctors to label articles that are ‘To Be Done’. My favourite was ‘LRRSA’, one of the most heavily-used tags across the whole of Trove. What does it mean? It stands for the Light Rail Research Society of Australia, and the tag is used by members to mark items of shared interest. It’s a great example of how something as simple as plain text tags can be used to support collaboration and build communities.</p>
-<p><img src="https://cdn.uploads.micro.blog/8371/2021/f76b2e110b.png" alt="Word cloud showing the top 200 Trove tags"></p>
+<p><img src="https://updates.timsherratt.org/uploads/2021/f76b2e110b.png" alt="Word cloud showing the top 200 Trove tags"></p>
 <p>Until its update last year, Trove used to provide some basic stats about user activity. There was also a tag cloud that let you explore the most commonly-used tags. It’s now much harder to access this sort of information. However, you can extract some basic information about tags from the Trove API. First of all, you can filter a search using ‘has:tags’ to limit the results to items that have tags attached to them. Then to find out what the tags actually are, you can add the <code>include=tags</code> parameter. This embeds the tags within the item record, so you can work through a set of results, extracting all the tags as you go. To save you the trouble, I’ve done this for the whole of Trove, and ended up with <strong>a dataset containing more than 8 million tags</strong>!</p>
-<p><img src="https://cdn.uploads.micro.blog/8371/2021/6ef630ccef.png" alt="Chart showing the number of tags per year and zone."></p>
+<p><img src="https://updates.timsherratt.org/uploads/2021/6ef630ccef.png" alt="Chart showing the number of tags per year and zone."></p>
 <p>The dataset is saved as a 500mb CSV file, and contains the following fields:</p>
 <ul>
 <li><code>tag</code> – lower-cased version of the tag</li>
@@ -5822,7 +6104,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>To help you make use of the <a href="https://glam-workbench.net/">GLAM Workbench</a>, I’ve set up an ‘office hours’ time slot every Friday when people can book in for 30 minute chats via Zoom. Want to talk about how you might use the GLAM Workbench in your latest research project? Are you having trouble getting started with GLAM data? Or perhaps you have some ideas for future notebooks you’d like to share? Just click on the ‘Book a chat’ link in the GLAM Workbench, or head straight to the <a href="https://calendly.com/timsherratt/30minchat">scheduling page</a> to set up a time!</p>
-<p><img src="https://cdn.uploads.micro.blog/8371/2021/94822f8fd4.png" alt="Book a chat!" title="Screenshot of booking pop up in the GLAM Workbench"></p>
+<p><img src="https://updates.timsherratt.org/uploads/2021/94822f8fd4.png" alt="Book a chat!" title="Screenshot of booking pop up in the GLAM Workbench"></p>
 <p>This is yet another experiment to see how I can support the use of GLAM data and the development of digital skills with the GLAM Workbench. Let me know if you think it’s worthwhile. #dhhacks</p>
 
 		</div>
@@ -5860,7 +6142,7 @@ images = download_images('107024751')
 <li><strong>Multiple time scales</strong> – previous versions only aggregated search results by year, but now you can also aggregate by month, or by day. QueryPic will automatically choose a time unit based on the date range of your query, but if you’re not happy with the result you can change it!</li>
 <li><strong>Links back to Trove</strong> – click on any of the points on the chart to search Trove within that time period. This enables you to zoom in and out of your results, from the high-level visualisation, to individual articles.</li>
 </ul>
-<p><img src="https://cdn.uploads.micro.blog/8371/2021/b02780ed6c.png" alt="Screenshot of QueryPic chart"></p>
+<p><img src="https://updates.timsherratt.org/uploads/2021/b02780ed6c.png" alt="Screenshot of QueryPic chart"></p>
 <p>This version of QueryPic is built within a Jupyter notebook, and designed to run using Voila (which hides all the code and makes the notebook look like a web app). See the <a href="https://glam-workbench.net/trove-newspapers/#querypic">Trove Newspapers section</a> of the GLAM Workbench for more information. If you’d like to give it a try, just click the button below to run it live using Binder.</p>
 <p><a href="https://mybinder.org/v2/gh/GLAM-Workbench/trove-newspapers/master?urlpath=voila/render/querypic.ipynb"><img src="https://static.mybinder.org/badge_logo.svg" alt="Binder badge"></a></p>
 <p>Hope you find it useful! #dhhacks</p>
@@ -5936,7 +6218,7 @@ images = download_images('107024751')
 		<div class="e-content">
 			 <p>Here’s a <a href="https://github.com/wragge/trove_query_parser/">new little Python package</a> that you might find useful. It simply takes a search url from Trove’s Newspapers &amp; Gazettes category and converts it into a set of parameters that you can use to request data from the Trove API. While some parameters are used both in the web interface and the API, there are a lot of variations – this package means you don’t have to keep track of all the differences!</p>
 <p>It’s very simple to use.</p>
-<p><img src="https://cdn.uploads.micro.blog/8371/2021/5b7e85ea88.png" alt="How to use the Trove Query Parser."></p>
+<p><img src="https://updates.timsherratt.org/uploads/2021/5b7e85ea88.png" alt="How to use the Trove Query Parser."></p>
 <p>The code for the parser has been basically lifted from the <a href="https://pypi.org/project/troveharvester/">Trove Newspaper Harvester</a>. I wanted to separate it out so that I could use it at various spots in the <a href="https://glam-workbench.net/">GLAM Workbench</a> and in other projects.</p>
 <p>This package, the documentation, and the tests were all created using <a href="https://github.com/fastai/nbdev">nbdev</a>, which is really quite a fun way to develop Python packages. #dhhacks</p>
 
@@ -5952,7 +6234,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>I deliberately don’t keep any stats about GLAM Workbench visits, because I think they’re pretty meaningless. On the other hand, I’m always interested to see how often GLAM Workbench repositories are launched on <a href="https://archive.analytics.mybinder.org/">Binder</a>. Rather than just random clicks, these numbers represent the number of times users started new computing sessions using the GLAM Workbench. I just compiled these stats for the past year, and I was very pleased to see that the <a href="https://glam-workbench.net/web-archives/">Web Archives</a> section has been launched over 1,000 times in the past twelve months! The <a href="https://glam-workbench.net/trove-newspapers/">Trove Newspapers</a> and <a href="https://glam-workbench.net/trove-harvester/">Trove Newspaper Harvester</a> repositories are also well used – on average these are both being launched more than once a day.</p>
-<p><img src="https://cdn.uploads.micro.blog/8371/2021/3aa3ee045b.png" alt="Binder launches of GLAM Workbench repositories, 1 June 2020 to 2 June 2021."></p>
+<p><img src="https://updates.timsherratt.org/uploads/2021/3aa3ee045b.png" alt="Binder launches of GLAM Workbench repositories, 1 June 2020 to 2 June 2021."></p>
 <p>The GLAM Workbench is never going to attract massive numbers of users – it’s all about <em>being there</em> when a researcher needs help to use GLAM collections. One or two launches per day means one or two researchers from somewhere around the world are able to explore new datasets, or ask new questions. I think that’s pretty important.</p>
 
 		</div>
@@ -5967,7 +6249,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Five of the GLAM Workbench repositories now have automatically built Docker images and 1-click integration with <a href="https://reclaim.cloud/">Reclaim Cloud</a> – <a href="https://glam-workbench.net/anu-archives/">ANU Archives</a>, <a href="https://glam-workbench.net/trove-newspapers/">Trove Newspapers</a>, <a href="https://glam-workbench.net/trove-harvester/">Trove Newspaper Harvester</a>, <a href="https://glam-workbench.net/recordsearch/">NAA RecordSearch</a>, &amp; <a href="https://glam-workbench.net/web-archives/">Web Archives</a>.</p>
-<p><img src="https://cdn.uploads.micro.blog/8371/2021/45605b531f.png" alt="" title="Screencap showing Reclaim Cloud details"></p>
+<p><img src="https://updates.timsherratt.org/uploads/2021/45605b531f.png" alt="" title="Screencap showing Reclaim Cloud details"></p>
 <p>This means you can launch your very own version of these GLAM Workbench repositories in the cloud, where all your downloads and experiments will be saved! Find out more on the <a href="https://glam-workbench.net/using-reclaim-cloud/">Using Reclaim Cloud</a> page.</p>
 
 		</div>
@@ -5982,7 +6264,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>I’ve updated my harvest of Australian GLAM datasets from state/national government open data portals. There’s now 387 datasets, containing 1049 files (including 684 CSVs). <a href="https://glam-workbench.net/glam-datasets-from-gov-portals/">There’s a list</a> if you want to browse, and <a href="https://github.com/GLAM-Workbench/ozglam-data/blob/master/glam-datasets-from-gov-portals.csv">a CSV file</a> if you want to download all the metadata. For more more information see the <a href="https://glam-workbench.net/glam-data-portals/">data portals section</a> of the GLAM Workbench.</p>
-<p><img src="https://cdn.uploads.micro.blog/8371/2021/ef977dfcfc.png" alt="Number of datatsets by institution" title="Screencap showing number of datasets per institution"></p>
+<p><img src="https://updates.timsherratt.org/uploads/2021/ef977dfcfc.png" alt="Number of datatsets by institution" title="Screencap showing number of datasets per institution"></p>
 <p>If you’re interested in finding out what’s inside all those 684 CVS files, take the <a href="https://glam-workbench.net/csv-explorer/">GLAM CSV Explorer</a> for a spin! It’s also been given a refresh, with new data and a new interface. #dhhacks</p>
 
 		</div>
@@ -8956,7 +9238,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Pleased and proud to see the chapter @baibi &amp; I wrote on the Real Face of White Australia now published as part of an <a href="https://www.press.umich.edu/9964786/seeing_the_past_with_computers">awesome collection</a>. Buy now or read the CC-BY version online!</p>
-<p><img src="https://cdn.uploads.micro.blog/8371/2019/bcab589773.jpg" alt="5CBECBFE-75D3-400E-9274-C3BE0B2357F5.jpg"></p>
+<p><img src="http://updates.timsherratt.org/uploads/2019/bcab589773.jpg" alt="5CBECBFE-75D3-400E-9274-C3BE0B2357F5.jpg"></p>
 
 		</div>
 	  </div>
@@ -8968,7 +9250,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>In a bit over a week I&rsquo;ll be heading to Stockholm for the <a href="http://www.delegia.com/app/netattm/attendee/page/81997">&lsquo;From text to data&rsquo;</a> conference. Preparing myself for the 40 degree temperature difference&hellip;</p>
-<p><img src="https://cdn.uploads.micro.blog/8371/2019/9c6a7e2d2d.jpg" alt="BDAFC715-2AE0-4186-9211-ABA97D5E09DC.jpg"></p>
+<p><img src="http://updates.timsherratt.org/uploads/2019/9c6a7e2d2d.jpg" alt="BDAFC715-2AE0-4186-9211-ABA97D5E09DC.jpg"></p>
 
 		</div>
 	  </div>
