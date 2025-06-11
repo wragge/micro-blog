@@ -24,6 +24,210 @@
 	
 	  <div class="h-entry">
 		
+			<h1><a href="https://updates.timsherratt.org/2025/06/10/new-dataset-trove-links-shared.html">New dataset – Trove links shared on Twitter, 2009 to 2020</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2025/06/10/new-dataset-trove-links-shared.html" class="u-url"><time class="dt-published" datetime="2025-06-10 11:30:54 &#43;1000">Jun 10, 2025</time></a>
+
+		<div class="e-content">
+			 <p>A few years ago, I harvested the details of tweets that included links to Trove. The data has just been sitting on my computer, so I thought I should package it up and share, in case it&rsquo;s of use to anyone.</p>
+<p>The story is that back in 2021, I was working on the article <a href="https://doi.org/10.5281/zenodo.5595420">&lsquo;More than newspapers&rsquo;</a> for a special section of <em>History Australia</em> focusing on Trove. I was thinking that I might include something about the way Trove newspaper articles were mobilised within online discussions about history – a topic I first explored in <a href="https://doi.org/10.5281/zenodo.3566879">&lsquo;Life on the outside: connections, contexts, and the wild, wild web&rsquo;</a>, my keynote for the Annual Conference of the Japanese Association of Digital Humanities in 2014. In the end, the article went in another direction, so I didn&rsquo;t use the data.</p>
+<p>I remembered this recently and thought I should I should do something with it. I&rsquo;ve now created a dataset and <a href="https://doi.org/10.5281/zenodo.15627800">shared it on Zenodo</a>. I&rsquo;m <a href="https://updates.timsherratt.org/2025/05/07/farewell-trove.html">not working on Trove any more</a>, but I&rsquo;m hoping that someone else might find the data useful!</p>
+<p><a href="https://doi.org/10.5281/zenodo.15627800"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.15627800.svg" alt="DOI"></a></p>
+<p>The dataset contains information about tweets from 2009 to 2020 that include links to <a href="https://trove.nla.gov.au/">Trove</a>. The tweet data was compiled using <a href="https://twarc-project.readthedocs.io/en/latest/">Twarc</a> in May 2021, under Twitter&rsquo;s academic access program. The search queries used were:</p>
+<ul>
+<li><code>url:nla.gov.au/nla.news</code></li>
+<li><code>url:trove.nla.gov.au</code></li>
+<li><code>url:newspapers.nla.gov.au</code></li>
+</ul>
+<p>Many of the tweets were produced by bots. Fortunately, I&rsquo;d been maintaining a list of <a href="https://web.archive.org/web/20180627053546/https://twitter.com/wragge/lists/trove-bots/members">Trove bots</a> on Twitter, so I used the list to separate the tweets into two files, one for bots and one for ordinary users.</p>
+<p>To respect user intentions and comply with the Twitter API terms of use, I removed all the tweet information except for <code>tweet_id</code> and <code>tweet_date</code> from the files. If it hasn&rsquo;t been deleted, the full data for each tweet can probably be obtained from the X API using the <code>tweet_id</code>, though you might need a paid subscription.</p>
+<p>The two main files are:</p>
+<ul>
+<li><code>trove_url_tweets.csv</code> – links shared by human users (although it may include some unidentified bots)</li>
+<li><code>trove_url_tweets_bots.csv</code> – links shared by bots</li>
+</ul>
+<p>I also created some additional data files:</p>
+<ul>
+<li><code>trove_url_totals.csv</code> – the number of times each Trove link was shared by users (not including bots)</li>
+<li><code>active_users_per_year.csv</code> – the number of unique users each year who shared a link to Trove</li>
+<li><code>active_bots_per_year.csv</code> – the number of active bots each year sharing links to Trove</li>
+</ul>
+<p>There&rsquo;s more information about the structure and contents of the data files <a href="https://doi.org/10.5281/zenodo.15627800">in the Zenodo record</a>.</p>
+<h2 id="overview">Overview</h2>
+<p>I haven&rsquo;t explored the data in detail, but here&rsquo;s some quick summaries to give you a taste.</p>
+<table>
+<thead>
+<tr>
+<th>summary</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>number of unique users sharing Trove links</td>
+<td>9,294</td>
+</tr>
+<tr>
+<td>number of bots sharing Trove links</td>
+<td>43</td>
+</tr>
+<tr>
+<td>number of tweets by humans containing Trove links</td>
+<td>48,293</td>
+</tr>
+<tr>
+<td>number of tweets by bots containing Trove links</td>
+<td>318,797</td>
+</tr>
+<tr>
+<td>number of unique links shared by humans</td>
+<td>36,886</td>
+</tr>
+<tr>
+<td>number of unique links shared by bots</td>
+<td>270,501</td>
+</tr>
+</tbody>
+</table>
+<p>What types of links were people sharing?</p>
+<table>
+<thead>
+<tr>
+<th>types of link shared by humans</th>
+<th>count</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>newspaper article</td>
+<td>34,548</td>
+</tr>
+<tr>
+<td>other (search queries, home page etc)</td>
+<td>8,385</td>
+</tr>
+<tr>
+<td>work (items other than newspapers – books, maps, photos etc)</td>
+<td>4,856</td>
+</tr>
+<tr>
+<td>newspaper page</td>
+<td>1,377</td>
+</tr>
+<tr>
+<td>newspaper title</td>
+<td>400</td>
+</tr>
+</tbody>
+</table>
+<p>How did the number of links shared by humans vary across time?</p>
+<!-- raw HTML omitted -->
+<p>Which articles or pages were shared most often by humans? Here&rsquo;s the top ten (click on the link to view).</p>
+<table>
+<thead>
+<tr>
+<th>trove_id</th>
+<th>trove_type</th>
+<th>tweets</th>
+<th>retweets</th>
+<th>quotes</th>
+<th>total times shared</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://trove.nla.gov.au/newspaper/article/75869223">75869223</a></td>
+<td>article</td>
+<td>1,232</td>
+<td>61</td>
+<td>34</td>
+<td>1,327</td>
+</tr>
+<tr>
+<td><a href="https://trove.nla.gov.au/newspaper/article/1298497">1298497</a></td>
+<td>article</td>
+<td>141</td>
+<td>1,028</td>
+<td>53</td>
+<td>1,222</td>
+</tr>
+<tr>
+<td><a href="https://trove.nla.gov.au/newspaper/article/102074798">102074798</a></td>
+<td>article</td>
+<td>74</td>
+<td>693</td>
+<td>77</td>
+<td>844</td>
+</tr>
+<tr>
+<td><a href="https://trove.nla.gov.au/newspaper/article/68141866">68141866</a></td>
+<td>article</td>
+<td>138</td>
+<td>522</td>
+<td>48</td>
+<td>708</td>
+</tr>
+<tr>
+<td><a href="https://trove.nla.gov.au/newspaper/article/41602327">41602327</a></td>
+<td>article</td>
+<td>633</td>
+<td>30</td>
+<td>0</td>
+<td>663</td>
+</tr>
+<tr>
+<td><a href="https://trove.nla.gov.au/newspaper/article/100645214">100645214</a></td>
+<td>article</td>
+<td>111</td>
+<td>467</td>
+<td>20</td>
+<td>598</td>
+</tr>
+<tr>
+<td><a href="https://trove.nla.gov.au/newspaper/page/502650">502650</a></td>
+<td>page</td>
+<td>1</td>
+<td>513</td>
+<td>12</td>
+<td>526</td>
+</tr>
+<tr>
+<td><a href="https://trove.nla.gov.au/newspaper/article/60828173">60828173</a></td>
+<td>article</td>
+<td>48</td>
+<td>444</td>
+<td>19</td>
+<td>511</td>
+</tr>
+<tr>
+<td><a href="https://trove.nla.gov.au/newspaper/article/4173156">4173156</a></td>
+<td>article</td>
+<td>53</td>
+<td>321</td>
+<td>10</td>
+<td>384</td>
+</tr>
+<tr>
+<td><a href="https://trove.nla.gov.au/newspaper/article/79410604">79410604</a></td>
+<td>article</td>
+<td>2</td>
+<td>303</td>
+<td>69</td>
+<td>374</td>
+</tr>
+</tbody>
+</table>
+<p>The most shared article reports that PM Menzies had described Hitler as a &lsquo;great man&rsquo; at a meeting in July 1939. However, most of the tweets sharing this link came from a single user. A number of the other articles relate to the weather, a reflection of the fact that Trove&rsquo;s newspaper articles have been mobilised on both sides of the climate change debate.</p>
+<p>How many Twitter users were sharing links to Trove each year?</p>
+<!-- raw HTML omitted -->
+<p>I haven&rsquo;t included any of the bot data in these summaries because I think I&rsquo;ll write a second bot-themed post – coming soon!</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
 			<h1><a href="https://updates.timsherratt.org/2025/06/05/glam-workbench-preprint-for-building.html">GLAM Workbench ­– preprint for &#39;Building User-Friendly Toolkits and Platforms for Digital Humanities&#39;</a></h1>
 		
 
@@ -57,28 +261,28 @@
 <p>On the other hand, there are many more GLAM collections for me to explore. I&rsquo;m also hoping to find new ways of collaborating with individuals and institutions. I&rsquo;m often inspired to create new tools and resources by gnarly questions from researchers. While such questions continue, so the GLAM Workbench will grow.</p>
 <hr>
 <h2 id="references">References</h2>
-<p>Ames, Sarah, and Lucy Havens. “Exploring National Library of Scotland Datasets with Jupyter Notebooks.” <em>IFLA Journal</em>, December 27, 2021. <a href="https://doi.org/10.1177/03400352211065484.">doi.org/10.1177/0&hellip;</a></p>
-<p>Bailey, Rebecca, Javier Pereda, Chris Michaels, and Tom Callahan. “Unlocking the Potential of Digital Collections. A Call to Action.” Towards a National Collection, November 21, 2024. <a href="https://doi.org/10.5281/zenodo.13838916.">doi.org/10.5281/z&hellip;</a></p>
-<p>Candela, Gustavo, Sally Chambers, and Tim Sherratt. “An Approach to Assess the Quality of Jupyter Projects Published by GLAM Institutions.” <em>Journal of the Association for Information Science and Technology</em> 74, no. 13 (2023): 1550–64. <a href="https://doi.org/10.1002/asi.24835.">doi.org/10.1002/a&hellip;</a></p>
-<p>“GLAM Workbench (GitHub Organisation).” Accessed June 5, 2025. <a href="https://github.com/GLAM-Workbench.">github.com/GLAM-Work&hellip;</a></p>
-<p>IIPC. “Asking Questions with Web Archives – Introductory Notebooks for Historians.” Accessed June 5, 2025. <a href="https://netpreserve.org/projects/jupyter-notebooks-for-historians/.">netpreserve.org/projects/&hellip;</a></p>
-<p>Jackson, Andy. “GLAM Workbench Update.” UK Web Archive Blog. Accessed June 2, 2025. <a href="https://blogs.bl.uk/webarchive/2022/09/glam-workbench-update.html.">blogs.bl.uk/webarchiv&hellip;</a></p>
-<p>Sefton, Peter, Tom Honeyman, Tim Sherratt, and Conal Tuohy. “The ARDC Community Data Lab Architecture: Research Software Deployment Principles and Patterns for Integrity, Reproducibility and Sustainability,” May 10, 2024. <a href="https://zenodo.org/records/11169744.">zenodo.org/records/1&hellip;</a></p>
-<p>Sherratt, Tim. “Develop a New GLAM Workbench Repository.” GLAM Workbench. Accessed June 5, 2025. <a href="https://glam-workbench.net/get-involved/developing-repositories/.">glam-workbench.net/get-invol&hellip;</a></p>
-<p>———. “Farewell Trove.” <em>Tim Sherratt – Sharing Recent Updates and Work-in-Progress</em>, May 7, 2025. <a href="https://updates.timsherratt.org/2025/05/07/farewell-trove.html.">updates.timsherratt.org/2025/05/0&hellip;</a></p>
-<p>———. “GLAM Workbench.” Zenodo, June 5, 2025. <a href="https://doi.org/10.5281/zenodo.15597489.">doi.org/10.5281/z&hellip;</a></p>
-<p>———. “GLAM Workbench.” Accessed June 5, 2025. <a href="https://glam-workbench.net/.">glam-workbench.net/.</a></p>
-<p>———. “GLAM Workbench Citations.” <em>GLAM Workbench</em>. Accessed June 5, 2025. <a href="https://glam-workbench.net/citations/.">glam-workbench.net/citations&hellip;</a></p>
-<p>———. “Hacking Heritage: Understanding the Limits of Online Access.” In <em>The Routledge International Handbook of New Digital Practices in Galleries, Libraries, Archives, Museums and Heritage Sites</em>, edited by H Lewi, W Smith, S Cooke, and D vom Lehn, 116–30. London &amp; New York: Routledge, 2020. <a href="https://doi.org/10.5281/zenodo.5035855.">doi.org/10.5281/z&hellip;</a></p>
-<p>———. “No More Harvesting Data from the National Archives of Australia.” <em>Tim Sherratt – Sharing Recent Updates and Work-in-Progress</em>, May 19, 2025. <a href="https://updates.timsherratt.org/2025/05/19/no-more-harvesting-data-from.html.">updates.timsherratt.org/2025/05/1&hellip;</a></p>
-<p>———. “Some Important Updates for the Trove Newspaper &amp; Gazette Harvester.” <em>Tim Sherratt – Sharing Recent Updates and Work-in-Progress</em>, August 31, 2023. <a href="https://updates.timsherratt.org/2023/08/31/some-important-updates.html.">updates.timsherratt.org/2023/08/3&hellip;</a></p>
-<p>———. “Supporters.” <em>GLAM Workbench</em>. Accessed June 5, 2025. <a href="https://glam-workbench.net/get-involved/supporters/.">glam-workbench.net/get-invol&hellip;</a></p>
-<p>———. “Trove Newspapers: Data Dashboard.” Accessed June 5, 2025. <a href="https://wragge.github.io/trove-newspaper-totals/.">wragge.github.io/trove-new&hellip;</a></p>
-<p>———. “Trove-Newspaper-Harvester.” Python, October 23, 2023. <a href="https://doi.org/10.5281/zenodo.7103174.">doi.org/10.5281/z&hellip;</a></p>
-<p>Sherratt, Tim, Harry Keightley, Ben Foley, and Michael Niemann. “GLAM-Workbench/Glam-Workbench-Template.” Python. GLAM Workbench, August 24, 2023. <a href="https://github.com/GLAM-Workbench/glam-workbench-template.">github.com/GLAM-Work&hellip;</a></p>
-<p>“TaDiRAH The Taxonomy of Digital Research Activities in the Humanities.” Accessed June 5, 2025. <a href="https://tadirah.info/.">tadirah.info/.</a></p>
-<p>Talboom, Leontien, and Mark Bell. “Keeping It under Lock and Keywords: Exploring New Ways to Open up the Web Archives with Notebooks.” <em>Archival Science</em>, July 4, 2022. <a href="https://doi.org/10.1007/s10502-022-09391-6.">doi.org/10.1007/s&hellip;</a></p>
-<p>“Trove Historical Data.” Accessed June 5, 2025. <a href="https://zenodo.org/communities/trove-historical-data/records?q=&amp;l=list&amp;p=1&amp;s=10&amp;sort=newest.">zenodo.org/communiti&hellip;</a></p>
+<p>Ames, Sarah, and Lucy Havens. “Exploring National Library of Scotland Datasets with Jupyter Notebooks.” <em>IFLA Journal</em>, December 27, 2021. <a href="https://doi.org/10.1177/03400352211065484">doi.org/10.1177/0&hellip;</a>.</p>
+<p>Bailey, Rebecca, Javier Pereda, Chris Michaels, and Tom Callahan. “Unlocking the Potential of Digital Collections. A Call to Action.” Towards a National Collection, November 21, 2024. <a href="https://doi.org/10.5281/zenodo.13838916">doi.org/10.5281/z&hellip;</a>.</p>
+<p>Candela, Gustavo, Sally Chambers, and Tim Sherratt. “An Approach to Assess the Quality of Jupyter Projects Published by GLAM Institutions.” <em>Journal of the Association for Information Science and Technology</em> 74, no. 13 (2023): 1550–64. <a href="https://doi.org/10.1002/asi.24835">doi.org/10.1002/a&hellip;</a>.</p>
+<p>“GLAM Workbench (GitHub Organisation).” Accessed June 5, 2025. <a href="https://github.com/GLAM-Workbench">github.com/GLAM-Work&hellip;</a>.</p>
+<p>IIPC. “Asking Questions with Web Archives – Introductory Notebooks for Historians.” Accessed June 5, 2025. <a href="https://netpreserve.org/projects/jupyter-notebooks-for-historians/">netpreserve.org/projects/&hellip;</a>.</p>
+<p>Jackson, Andy. “GLAM Workbench Update.” UK Web Archive Blog. Accessed June 2, 2025. <a href="https://blogs.bl.uk/webarchive/2022/09/glam-workbench-update.html">blogs.bl.uk/webarchiv&hellip;</a>.</p>
+<p>Sefton, Peter, Tom Honeyman, Tim Sherratt, and Conal Tuohy. “The ARDC Community Data Lab Architecture: Research Software Deployment Principles and Patterns for Integrity, Reproducibility and Sustainability,” May 10, 2024. <a href="https://zenodo.org/records/11169744">zenodo.org/records/1&hellip;</a>.</p>
+<p>Sherratt, Tim. “Develop a New GLAM Workbench Repository.” GLAM Workbench. Accessed June 5, 2025. <a href="https://glam-workbench.net/get-involved/developing-repositories/">glam-workbench.net/get-invol&hellip;</a>.</p>
+<p>———. “Farewell Trove.” <em>Tim Sherratt – Sharing Recent Updates and Work-in-Progress</em>, May 7, 2025. <a href="https://updates.timsherratt.org/2025/05/07/farewell-trove.html">updates.timsherratt.org/2025/05/0&hellip;</a>.</p>
+<p>———. “GLAM Workbench.” Zenodo, June 5, 2025. <a href="https://doi.org/10.5281/zenodo.15597489">doi.org/10.5281/z&hellip;</a>.</p>
+<p>———. “GLAM Workbench.” Accessed June 5, 2025. <a href="https://glam-workbench.net/">glam-workbench.net/.</a>.</p>
+<p>———. “GLAM Workbench Citations.” <em>GLAM Workbench</em>. Accessed June 5, 2025. <a href="https://glam-workbench.net/citations/">glam-workbench.net/citations&hellip;</a>.</p>
+<p>———. “Hacking Heritage: Understanding the Limits of Online Access.” In <em>The Routledge International Handbook of New Digital Practices in Galleries, Libraries, Archives, Museums and Heritage Sites</em>, edited by H Lewi, W Smith, S Cooke, and D vom Lehn, 116–30. London &amp; New York: Routledge, 2020. <a href="https://doi.org/10.5281/zenodo.5035855">doi.org/10.5281/z&hellip;</a>.</p>
+<p>———. “No More Harvesting Data from the National Archives of Australia.” <em>Tim Sherratt – Sharing Recent Updates and Work-in-Progress</em>, May 19, 2025. <a href="https://updates.timsherratt.org/2025/05/19/no-more-harvesting-data-from.html">updates.timsherratt.org/2025/05/1&hellip;</a>.</p>
+<p>———. “Some Important Updates for the Trove Newspaper &amp; Gazette Harvester.” <em>Tim Sherratt – Sharing Recent Updates and Work-in-Progress</em>, August 31, 2023. <a href="https://updates.timsherratt.org/2023/08/31/some-important-updates.html">updates.timsherratt.org/2023/08/3&hellip;</a>.</p>
+<p>———. “Supporters.” <em>GLAM Workbench</em>. Accessed June 5, 2025. <a href="https://glam-workbench.net/get-involved/supporters/">glam-workbench.net/get-invol&hellip;</a>.</p>
+<p>———. “Trove Newspapers: Data Dashboard.” Accessed June 5, 2025. <a href="https://wragge.github.io/trove-newspaper-totals/">wragge.github.io/trove-new&hellip;</a>.</p>
+<p>———. “Trove-Newspaper-Harvester.” Python, October 23, 2023. <a href="https://doi.org/10.5281/zenodo.7103174">doi.org/10.5281/z&hellip;</a>.</p>
+<p>Sherratt, Tim, Harry Keightley, Ben Foley, and Michael Niemann. “GLAM-Workbench/Glam-Workbench-Template.” Python. GLAM Workbench, August 24, 2023. <a href="https://github.com/GLAM-Workbench/glam-workbench-template">github.com/GLAM-Work&hellip;</a>.</p>
+<p>“TaDiRAH The Taxonomy of Digital Research Activities in the Humanities.” Accessed June 5, 2025. <a href="https://tadirah.info/">tadirah.info/.</a>.</p>
+<p>Talboom, Leontien, and Mark Bell. “Keeping It under Lock and Keywords: Exploring New Ways to Open up the Web Archives with Notebooks.” <em>Archival Science</em>, July 4, 2022. <a href="https://doi.org/10.1007/s10502-022-09391-6">doi.org/10.1007/s&hellip;</a>.</p>
+<p>“Trove Historical Data.” Accessed June 5, 2025. <a href="https://zenodo.org/communities/trove-historical-data/records?q=&amp;l=list&amp;p=1&amp;s=10&amp;sort=newest">zenodo.org/communiti&hellip;</a>.</p>
 <section class="footnotes" role="doc-endnotes">
 <hr>
 <ol>
