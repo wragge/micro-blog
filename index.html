@@ -24,6 +24,79 @@
 	
 	  <div class="h-entry">
 		
+			<h1><a href="https://updates.timsherratt.org/2025/08/29/wikifest-at-the-state-library.html">WikiFest at the State Library of Victoria</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2025/08/29/wikifest-at-the-state-library.html" class="u-url"><time class="dt-published" datetime="2025-08-29 15:07:26 &#43;1000">Aug 29, 2025</time></a>
+
+		<div class="e-content">
+			 <p>This week I was lucky enough to participate in WikiFest at the State Library of Victoria. Organised by the <a href="https://lab.slv.vic.gov.au">State Library&rsquo;s new innovation LAB</a> and <a href="https://wikimedia.org.au">Wikimedia Australia</a>, Wikifest was a hands-on, participant-led workshop focused on the possibilities of connecting SLV&rsquo;s collections to (and through!) Wikidata.</p>
+<p>The day kicked off with a series of presentations demonstrating possible uses of Wikidata. I talked a bit about some of my recent GLAM/Wikidata experiments. My <a href="https://slides.com/wragge/wikifest-slv-2025">slides are online</a> and contain plenty of links to code, demonstrations, and documentation. They&rsquo;re openly-licensed, so feel free to take anything of use.</p>
+<!-- raw HTML omitted -->
+<p>The rest of the day was spent in groups, working on particular projects and learning more about Wikidata in the process. My group was looking at providing placed-based entry points to SLV collections, and spent a lot of time exploring the representation of Victoria&rsquo;s <a href="https://query.wikidata.org/embed.html#%23Country%20populations%20together%20with%20total%20city%20populations%0ASELECT%20%3Flga%20%3FlgaLabel%20%3FstartDate%20%3FendDate%20%3Fpoint%20%7B%0A%20%20%3Flga%20wdt%3AP31%20wd%3AQ30129411%20%3B%0A%20%20%20%20%20%20%20wdt%3AP131%20wd%3AQ36687.%0A%20%20%3Flga%20p%3AP625%20%3Fcoordinate.%0A%20%20%3Fcoordinate%20ps%3AP625%20%3Fpoint.%0A%20%20OPTIONAL%20%7B%3Flga%20wdt%3AP571%20%3FstartDate.%7D%0A%20%20OPTIONAL%20%7B%3Flga%20wdt%3AP576%20%3FendDate.%7D%0A%20%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22%5BAUTO_LANGUAGE%5D%2Cmul%2Cen%22%20%7D%0A%7D">Local Government Areas (LGAs) in Wikidata</a>. We realised there was quite a bit of work to do in adding things like dates and boundaries, but we could see some exciting future possibilities. We also made a start, adding an &lsquo;inception&rsquo; date for the <a href="https://www.wikidata.org/wiki/Q5123821">City of Moe</a>, based on the Victorian Government Gazette, <a href="https://gazette.slv.vic.gov.au">digitised by the SLV</a>.</p>
+<!-- raw HTML omitted -->
+<h2 id="bonus-userscript">Bonus userscript</h2>
+<p>While I was preparing my presentation I was thinking about the the way entries for Australian people in Wikidata are linked to a range of different identifiers, such as DAAO, the Encyclopedia of Australian Science, and the Australian Dictionary of Biography (ADB). Often a single person can have multiple identifiers and this means that those identifiers themselves become connected through that person&rsquo;s record. You can query Wikidata with one identifier, and get back links to a range of other information sources about that person.</p>
+<p>To demonstrate this, I created <a href="https://gist.github.com/wragge/40f66af72c400b2563f95bda60e713dd">a simple userscript</a> that adds additional links to biographies in the ADB. The script grabs the ADB identifier from the url, queries Wikidata for additional identifiers, and writes the results into the page&rsquo;s &lsquo;Life Summary&rsquo;. Basic, but useful!</p>
+<!-- raw HTML omitted -->
+<p>For something more advanced, have a look at the <a href="https://addons.mozilla.org/en-US/firefox/addon/entity-explosion/">Entity Explosion extension</a> for Firefox.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
+			<h1><a href="https://updates.timsherratt.org/2025/07/17/glam-hacking-with-userscripts.html">GLAM hacking with userscripts</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2025/07/17/glam-hacking-with-userscripts.html" class="u-url"><time class="dt-published" datetime="2025-07-17 17:21:25 &#43;1000">Jul 17, 2025</time></a>
+
+		<div class="e-content">
+			 <p>In teaching and workshops I used to get students to question the idea that websites are &lsquo;published&rsquo;. They&rsquo;re not released into the world in a fixed, immutable form – they&rsquo;re a set of blueprints which only reach their final form in your browser window. This makes it possible to change the way websites look and behave.</p>
+<p>Mozilla used to have a nifty educational tool called X-Ray Googles. Using it you could explore the code underlying a web page and do fun things like inserting new text or images. I encouraged students to try hacking ASIO&rsquo;s home page.</p>
+<!-- raw HTML omitted -->
+<p><em>ASIO home page with some added First Dog on the Moon.</em></p>
+<p>There are other ways you can fiddle with websites. For example, most browsers have a developer console that exposes the code and styling of a page. You can use the console to edit HTML elements or toggle styles, but your changes won&rsquo;t be saved.</p>
+<p>One way you can save and share your web site customisations is by creating userscripts. Userscripts are little bits of Javascript code that run in your browser after a web page loads. These scripts can change many aspects of a page – not just how it looks, but also how it works.</p>
+<h2 id="some-old-userscripts">Some old userscripts</h2>
+<p>I&rsquo;ve been playing around with userscripts for a long time. Back in 2008, I created a userscript that <a href="https://discontents.com.au/shoebox/archives-shoebox/archives-in-3d.html">completely overhauled the way that digital files were presented</a> in the National Archives of Australia&rsquo;s online database, RecordSearch. My userscript added new options for navigating and printing the file, and even made it possible to view the complete file contents on a 3D zoomable wall.</p>
+<!-- raw HTML omitted -->
+<p><em>This customised RecordSearch interface was created by a userscript.</em></p>
+<p>The userscripts I&rsquo;ve created over the years have tended to either be useful little hacks aimed at fixing annoying aspects of GLAM websites, or experiments in thinking about the sort of information that&rsquo;s presented online by GLAM organisations, and how it might be different.</p>
+<p>In the first category are hacks like my <a href="https://gist.github.com/wragge/b2af9dc56f7cb0a9476b">RecordSearch show pages userscript</a>. In 2009, I got annoyed that there was no way of knowing how many pages were in a digitised file until you clicked on the link. <a href="https://discontents.com.au/doing-it-yourself/index.html">So I fixed it.</a> With my userscript running, the links to digitised files are rewritten to display the number of pages. I&rsquo;ve updated the code numerous times over the years, adding new features, and dealing with changes to RecordSearch. The last update was just a few days ago.</p>
+<p>In the second category is my userscript that inserts photos from <a href="https://www.realfaceofwhiteaustralia.net/">The Real Face of White Australia</a> into RecordSearch. The are many thousands of records in the National Archives of Australia that document the impact of the White Australia Policy on the lives of ordinary people. But it&rsquo;s often hard to understand this from the file descriptions. The userscript displays portrait images extracted from the files alongside the metadata – it tells you there are <a href="https://doi.org/10.5281/zenodo.3579530">people inside</a>.</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>Amidst <a href="https://updates.timsherratt.org/2025/07/09/the-rebirth-of-wragge-labs.html">my recent self-archiving binge</a>, I realised I&rsquo;d never updated this userscript to work with the latest data from The Real Face of White Australia, so I spent some time getting it working again. In the process I realised that RecordSearch now included content security policies that made it a bit harder to insert new images. The solution was to use one of the special userscript functions, <a href="https://www.tampermonkey.net/documentation.php?locale=en#api:GM_addElement">GM_addElement()</a>, rather than plain old Javascript. But then I discovered that the if the show pages userscript ran after this one, it would trigger the security restrictions nonetheless! To avoid this I made sure that the two userscripts operated on separate elements. So now the <a href="https://gist.github.com/wragge/2941e473ee70152f4de7">show people userscript</a> is working again!</p>
+<h2 id="and-a-new-userscript-to-improve-trove-lists">And a new userscript to improve Trove lists</h2>
+<p>Fixing up the &lsquo;people inside&rsquo; code reminded me of how much fun it was playing around with userscripts, so when David Coombe mentioned a problem he had using Trove lists on Mastodon last night, I had to have a go at fixing it.</p>
+<p>The problem is that Trove lists display all the tags associated with each individual item. Some items have lots of tags, so this eats up the screen real estate, making it harder to browse the contents of a list. Notes attached to items can be hidden, but not tags. Why not?</p>
+<p>My <a href="https://gist.github.com/wragge/ab6a9d6b612bee6bc4d98658e947c420">brand new userscript</a> hides tags by default, and adds a new link to toggle their visibility for each individual item. The link also displays the number of tags attached to each item. This gives the user control over which tags are displayed and when.</p>
+<p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+<p><em>The new userscript in action – toggle your tags!</em></p>
+<p>The main difficulty in creating this userscript was knowing when the page had actually finished loading. The current version of Trove uses a lot of Javascript to load and manipulate content, so you have to tell the userscript to wait until  everything has settled down. Otherwise the script could fire too soon and cause unexpected results. I tried a number of different approaches to handling this problem, but eventually settled on the <a href="https://gist.github.com/BrockA/2625891">waitForKeyElements script</a>. (I just realised there&rsquo;s a <a href="https://github.com/CoeJoder/waitForKeyElements.js">more recent version</a> of this script that doesn&rsquo;t require JQuery, so I might need to investigate this further.)</p>
+<p>Another Trove problem fixed!</p>
+<h2 id="using-userscripts">Using userscripts</h2>
+<p>In addition to the userscripts mentioned above, I&rsquo;ve also created one that <a href="https://gist.github.com/wragge/af8bd20a14005d267ffc759463bd832c">enables you to browse Trove newspaper pages using the arrows on your keyboard</a>. Left and right arrows go to the next and previous pages, while up and down arrows jump between issues. Searching is great, but sometimes you just want to browse. Install this userscript for that old-time, authentic newspaper reading experience!</p>
+<p>But how do you install userscripts? First of all you need a browser extension to manage your userscripts – I use <a href="https://www.tampermonkey.net/">TamperMonkey</a> or <a href="http://violentmonkey.com/">ViolentMonkey</a>. Just follow the instructions to add one of them to your browser.</p>
+<p>To install one of my userscripts, you need to go to the script (saved as a GitHub Gist) and click on the &lsquo;Raw&rsquo; button. Your userscript manager will then ask you if you want to add the userscript. Click install!</p>
+<!-- raw HTML omitted -->
+<p><em>Click on the &lsquo;Raw&rsquo; button to install.</em></p>
+<p>Once they&rsquo;re installed the userscripts will run automatically when specified pages are loaded. If you ever want to disable them, you can do that from your userscript manager&rsquo;s dashboard.</p>
+<p>For convenience, here are the Gist links to all the userscripts I&rsquo;ve mentioned:</p>
+<ul>
+<li><a href="https://gist.github.com/wragge/b2af9dc56f7cb0a9476b">RecordSearch show pages</a></li>
+<li><a href="https://gist.github.com/wragge/2941e473ee70152f4de7">RecordSearch show people</a></li>
+<li><a href="https://gist.github.com/wragge/ab6a9d6b612bee6bc4d98658e947c420">Trove lists hide tags</a></li>
+<li><a href="https://gist.github.com/wragge/af8bd20a14005d267ffc759463bd832c">Trove newspapers keyboard navigation</a></li>
+</ul>
+<p>As with anything you install on your computer, you want to make sure that you trust the source of any userscripts you add.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
 			<h1><a href="https://updates.timsherratt.org/2025/07/09/the-rebirth-of-wragge-labs.html">The rebirth of Wragge Labs (and moving my Heroku apps)</a></h1>
 		
 
