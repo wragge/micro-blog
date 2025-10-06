@@ -24,6 +24,150 @@
 	
 	  <div class="h-entry">
 		
+			<h1><a href="https://updates.timsherratt.org/2025/10/06/creating-bounding-boxes-for-parish.html">Creating bounding boxes for parish maps in the SLV collection</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2025/10/06/creating-bounding-boxes-for-parish.html" class="u-url"><time class="dt-published" datetime="2025-10-06 14:17:51 &#43;1000">Oct 6, 2025</time></a>
+
+		<div class="e-content">
+			 <p>The State Library of Victoria holds a collection of <a href="https://find.slv.vic.gov.au/discovery/search?query=series,exact,Parish%20maps%20of%20Victoria&amp;vid=61SLV_INST:SLV&amp;offset=0">8,804 parish maps</a>. As part of my residency at the SLV LAB, I&rsquo;ve been poking around in the metadata.</p>
+<p>SLV staff have geocoded many of the parish maps using the <a href="https://placenames.fsdf.org.au">Composite Gazetteer of Australia</a>, which provides coordinates for Victorian parishes and boroughs. These coordinates give us a point which should be roughly at the centre of each map, enabling us to visualise their locations and distribution. But how much area do they cover? To answer that question we need a bounding box that includes the coordinates of each corner of the map. We could create bounding boxes by using something like AllMaps or MapWarper to georeference each individual map, but that&rsquo;s going to take a while! As a quick and dirty alternative, I wondered if it was possible to generate approximate bounding boxes from the available metadata. It seems we can!</p>
+<h2 id="the-metadata">The metadata</h2>
+<p>There are three pieces of metadata we need to construct bounding boxes:</p>
+<ul>
+<li>the latitude and longitude of the centre point</li>
+<li>the size of the physical map</li>
+<li>the scale of the map (ie how the size of the map relates to real world)</li>
+</ul>
+<p>The coordinates and scale can be included in a couple of different places in the map&rsquo;s MARC record. The <a href="https://www.loc.gov/marc/bibliographic/bd034.html"><code>034</code></a> field is specifically for &lsquo;Coded Cartographic Mathematical Data&rsquo;. The relevant subfields are:</p>
+<ul>
+<li><code>$a</code>: category of scale</li>
+<li><code>$b</code>: constant ratio linear horizontal scale (this is the most likely type of scale)</li>
+<li><code>$d</code>: westernmost longitude</li>
+<li><code>$e</code>: easternmost longitude</li>
+<li><code>$f</code>: northernmost latitude</li>
+<li><code>$g</code>: southernmost latitude</li>
+</ul>
+<p>If the coordinates describe a point rather than a bounding box, then <code>$d</code> and <code>$e</code> will be the same, and <code>$f</code> and <code>$g</code> will be the same.</p>
+<p>String representations of coordinates and scale can be found in the <code>255</code> field. The relevant subfields are:</p>
+<ul>
+<li><code>$a</code>: statement of scale, eg <code>Scale [ca. 1:90,000].</code></li>
+<li><code>$c</code>: statement of coordinates, eg <code>(E 142°18'/S 37°33')</code></li>
+</ul>
+<p>The size of the map is recorded in <a href="https://www.loc.gov/marc/bibliographic/bd300.html"><code>300</code></a> (physical description) field under the <code>$c</code> (dimensions) subfield. For example: <code>on sheet 40 x 51 cm </code>.</p>
+<h2 id="the-method">The method</h2>
+<p>I started with an existing dataset downloaded from the catalogue by SLV staff. This dataset included the scale and coordinate information in the <code>034</code> field, and the coordinate string in <code>255$c</code>. At first I didn&rsquo;t realise that the <code>034</code> held geo data, so I separately downloaded the scale information from <code>255:$a</code> in each item&rsquo;s MARC record (d&rsquo;oh). If the maps were digitised, I also wanted their image identifiers so I could access them through the SLV&rsquo;s IIIF service. The image id from the <code>956$e</code> field of the MARC record can be used to construct an IIIF manifest url, so I extracted them as well.</p>
+<p>Once I had all the catalogue data, I had to make sure everything was in a format I could work with. The coordinates in the MARC records are recorded as degrees/minutes/seconds, so I had to convert them to decimal values. The scale factor needed to be an integer, and I needed to extract the height and width as integers from the dimensions field.</p>
+<p>I used <a href="https://pypi.org/project/lat-lon-parser/">lat_lon_parser</a> to convert the coordinates to decimal, but needed a bit of regex string manipulation to get the values into a format that could be parsed. Regex also came to the rescue in getting the map dimensions. All the details are <a href="https://github.com/StateLibraryVictoria-SLVLAB/geo-maps-residency/blob/main/process_parish_maps.ipynb">in this notebook</a>.</p>
+<h3 id="creating-bounding-boxes">Creating bounding boxes</h3>
+<p>After some searching I found <a href="https://stackoverflow.com/a/76910048">this StackOverflow comment</a> that described how to create a bounding box from a point, distance, and bearing. The point I already had, but the distance and bearing had to be calculated. Trigonometry to the rescue!</p>
+<img src="uploads/2025/parish-maps-box-trig.png" width="600" height="334" alt="">
+<p>The distance from the point at the centre of the box to one of its corners is the hypotenuse of a right-angled triangle whose sides are equal to half the width and half the height of the map, and thanks to Pythagorus we know:</p>
+<p>$$
+distance^2 = \sqrt{(height/2)^2 + (width/2)^2}
+$$
+Once I had the distance in cm, I converted to inches, then multiplied by the scale factor, and finally converted the inches to miles. (It now occurs to me that there&rsquo;s no need to convert to imperial measurements, but it doesn&rsquo;t make any difference either way.)</p>
+<p>The bearing that points to the corner of the box is the angle inside the same right-angled triangle, so can be calculated using:
+$$
+\tan((width/2) / (height/2))
+$$
+With the point of origin, distance, and bearing I could use <a href="https://github.com/geopy/geopy">geopy</a> to calculate the corners of the bounding box!</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#000;font-weight:bold">from</span> <span style="color:#555">geopy.distance</span> <span style="color:#000;font-weight:bold">import</span> geodesic
+
+destination <span style="color:#000;font-weight:bold">=</span> geodesic(miles<span style="color:#000;font-weight:bold">=</span>distance)<span style="color:#000;font-weight:bold">.</span>destination(origin, bearing)
+coords <span style="color:#000;font-weight:bold">=</span> destination<span style="color:#000;font-weight:bold">.</span>longitude, destination<span style="color:#000;font-weight:bold">.</span>latitude
+</code></pre></div><p><a href="https://github.com/StateLibraryVictoria-SLVLAB/geo-maps-residency/blob/main/process_parish_maps.ipynb">See this notebook</a> for the full details.</p>
+<h2 id="limitations">Limitations</h2>
+<p>Of course, this method is very rough and has a number of major limitations, in particular:</p>
+<ul>
+<li>only about 38% of the maps have point coordinates</li>
+<li>the point values don&rsquo;t necessarily locate the centre of the map</li>
+<li>not all the maps are oriented towards north</li>
+<li>sometimes a parish includes multiple maps</li>
+<li>the size of the margin around the map will affect the accuracy of the bounding box</li>
+</ul>
+<p>But despite these problems the results seem pretty good. To test this I <a href="https://github.com/StateLibraryVictoria-SLVLAB/geo-maps-residency/blob/main/parish_maps_browser.ipynb">created a notebook</a> to overlay the digitised maps on a modern basemap using the bounding boxes. Here&rsquo;s an example.</p>
+<img src="uploads/2025/parish-maps-overlay.png" width="600" height="471" alt="Screenshot of a parish map of French Island overlaid on a modern basemap. The parish map is slightly offset to the north, but you can see that the size matches the modern map fairly well">
+<p>You can see the map is slightly offset (presumably due to the second problem listed above). But the size seems about right. Certainly good enough to use the bounding boxes in some exploratory analyses!</p>
+<h2 id="visualising-the-results">Visualising the results</h2>
+<p>I&rsquo;ve saved the processed data as a <a href="https://github.com/StateLibraryVictoria-SLVLAB/geo-maps-residency/blob/main/parish_maps_final.csv">new dataset</a>, and started playing around with a couple of ways of visualising the results. These are experiments, not discovery interfaces. But you can use them for a bit of exploration if you don&rsquo;t mind a few bugs. They&rsquo;re all in Jupyter notebooks that can be run <a href="https://mybinder.org/v2/gh/StateLibraryVictoria-SLVLAB/geo-maps-residency/HEAD">using the Binder service</a>.</p>
+<p>The <a href="https://github.com/StateLibraryVictoria-SLVLAB/geo-maps-residency/blob/main/parish_maps_browser.ipynb">parish maps browser</a> includes a dropdown list of parish maps with point coordinates.  Select a map and:</p>
+<ul>
+<li>if there&rsquo;s a bounding box and an image identifier, the image of the parish map will be overlaid on the modern base map using the bounding box coordinates</li>
+<li>if there&rsquo;s a bounding box, but no image identifier, a rectangle will be drawn on the base map showing the dimensions of the bounding box</li>
+<li>if there are point coordinates, but no bounding box, a marker will be placed on the base map</li>
+</ul>
+<img src="uploads/2025/parish-maps-browser.png" width="600" height="429" alt="Screenshot of a parish map of Mallacoota overlaid on a modern basemap. The opacity of the digitised map has been reduced making it easier to see how the two maps align. A popup is visible on the map, listing the basic metadata and including a link to the SLV catalogue.">
+<p>If the image of the map is displayed you can use the slider to adjust the opacity. Clicking on either the image, rectangle, or marker will display metadata about the parish map and a link to the SLV catalogue.</p>
+<p>There&rsquo;s also a <a href="https://github.com/StateLibraryVictoria-SLVLAB/geo-maps-residency/blob/main/parish_maps_visualise_bounds.ipynb">visualisation of all the bounding boxes</a> overlaid on a modern base map.</p>
+<img src="uploads/2025/parish-maps-bounds.png" width="600" height="474" alt="Screenshot of a modern digital map of Victoria overlaid with 3,000+ transparent blue rectangles, showing the bounds of parish maps. A couple of the maps seem to be in Bass Strait.">
+<p>As you move your mouse over the bounding boxes the titles are displayed on the map, and if you click on a bounding box the metadata is displayed beneath the map, including a link to the SLV catalogue.</p>
+<p>It&rsquo;s obvious from the image above that some of the coordinates must be wrong! Visualisation is a great way of finding problems with your data. I now need to work through the results, documenting the problems, and thinking about how to make best use of the data. More to come!</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
+			<h1><a href="https://updates.timsherratt.org/2025/09/23/exploring-slv-urls.html">Exploring SLV urls</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2025/09/23/exploring-slv-urls.html" class="u-url"><time class="dt-published" datetime="2025-09-23 16:22:45 &#43;1000">Sep 23, 2025</time></a>
+
+		<div class="e-content">
+			 <p>I like urls. They take you places. And if you know how to read them, they can tell you things about the systems that created them.
+One of the first things I did when I started <a href="https://updates.timsherratt.org/2025/09/22/creative-technologistinresidence-at-the-state.html">my residency at SLV LAB</a>, was to try and understand how their collection urls work. There&rsquo;s a couple of well-worn methods I use when digging into a new site.</p>
+<p>The first is url hacking – this involves fiddling around with the parameters in a url and submitting the result to see what happens. The Trove Data Guide includes <a href="https://tdg.glam-workbench.net/understanding-search/search-hacks.html">some examples of hacking Trove urls</a> to change the delivery of search results.</p>
+<p>The second method involves opening up the developer console in your web browser and watching the activity in the network tab as you click on links. This tells you where the information that gets loaded into your browser actually comes from – sometimes exposing handy urls that you can use to shortcut access to useful data.</p>
+<h2 id="permalinks">Permalinks</h2>
+<p>The SLV uses Primo for its public-facing catalogue, as well as other systems such as Rosetta and IIIF to deliver digitised content. I&rsquo;d noticed that <a href="https://www.zotero.org">Zotero</a> gets some useful data from the catalogue using the default &lsquo;Primo 2018&rsquo; translator, however, important things like the item url aren&rsquo;t captured. The problem is that Primo&rsquo;s &lsquo;permalinks&rsquo; are generated as required by a browser click – they&rsquo;re not embedded anywhere on the page. This makes it hard to Zotero to grab them. So I started wondering how Zotero could construct short, persistent(ish) links to items.</p>
+<p>Here&rsquo;s a link to an item in Primo: <a href="https://find.slv.vic.gov.au/discovery/fulldisplay?vid=61SLV_INST:SLV&amp;search_scope=slv_local&amp;tab=searchProfile&amp;context=L&amp;docid=alma9941325055707636">https://find.slv.vic.gov.au/discovery/fulldisplay?vid=61SLV_INST:SLV&amp;search_scope=slv_local&amp;tab=searchProfile&amp;context=L&amp;docid=alma9941325055707636</a></p>
+<p>It looks pretty long and messy, but if you start deleting parameters and resubmitting, you&rsquo;ll find that only two parameters are essential, <code>vid</code> and <code>docid</code>. This means we can rewrite the url as: <a href="https://find.slv.vic.gov.au/discovery/fulldisplay?vid=61SLV_INST:SLV&amp;docid=alma9941325055707636">https://find.slv.vic.gov.au/discovery/fulldisplay?vid=61SLV_INST:SLV&amp;docid=alma9941325055707636</a> Much nicer.</p>
+<p>The &lsquo;permalink&rsquo; for the same item is: <a href="https://find.slv.vic.gov.au/permalink/61SLV_INST/1sev8ar/alma9941325055707636">https://find.slv.vic.gov.au/permalink/61SLV_INST/1sev8ar/alma9941325055707636</a> If you look closely at the url path and compare it to the example above you&rsquo;ll see the path is constructed from <code>/vid/[some other id]/docid</code>. One of the librarians explained to me that the other identifier in the permalink is an encoding of the view type, but given that the &lsquo;fulldisplay&rsquo; view is the default, we don&rsquo;t really need it. So the shortened url seems fine for use in Zotero and is easy to generate from the current url. Nice.</p>
+<p>It&rsquo;s also worth noting that the <code>vid</code> value doesn&rsquo;t seem to change, so to construct catalogue urls in your code, all you really need is the ALMA identifier that&rsquo;s in the <code>docid</code> parameter.</p>
+<h2 id="structured-data">Structured data</h2>
+<p>Item pages in Primo include a link labelled &lsquo;Display source record&rsquo;. If you click on this you&rsquo;re taken to a representation of the item&rsquo;s metadata in MARC. Here&rsquo;s what the urls look like: <a href="https://find.slv.vic.gov.au/discovery/sourceRecord?vid=61SLV_INST%3ASLV&amp;docId=alma9941325055707636&amp;recordOwner=61SLV_INST">https://find.slv.vic.gov.au/discovery/sourceRecord?vid=61SLV_INST%3ASLV&amp;docId=alma9941325055707636&amp;recordOwner=61SLV_INST</a> Notice that the &lsquo;fulldisplay&rsquo; in the url path above has changed to &lsquo;sourceRecord&rsquo;. There&rsquo;s also a new <code>recordOwner</code> parameter, but it seems you can delete this and still get the same result.</p>
+<p>Having access to the MARC record is handy, because it delivers the metadata in a simple, structured plain text format. But while the &lsquo;source record&rsquo; page looks like a plain text file, it&rsquo;s actually a HTML page that embeds a plain text record. If you open up the network tab of your browser&rsquo;s developer console and reload the &lsquo;source record&rsquo; page, you&rsquo;ll see a different url is loaded under the hood: <a href="https://find.slv.vic.gov.au/primaws/rest/pub/sourceRecord?docId=alma9941325055707636&amp;vid=61SLV_INST:SLV&amp;recordOwner=61SLV_INST&amp;lang=en">https://find.slv.vic.gov.au/primaws/rest/pub/sourceRecord?docId=alma9941325055707636&amp;vid=61SLV_INST:SLV&amp;recordOwner=61SLV_INST&amp;lang=en</a> See how the url path has changed from <code>/discovery/</code> to <code>/primaws/rest/pub</code>? This url <em>does</em> deliver a plain text version of the MARC record.</p>
+<img src="uploads/2025/screenshot-from-2025-09-23-15-21-05.png" width="600" height="215" alt="">
+<p>Once you have the plain text version you can parse the contents to extract the structured data. There are tools that can probably do this automatically, but it&rsquo;s also pretty easy using regular expressions. Here&rsquo;s an example of some code I used to parse map records.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#000;font-weight:bold">def</span> <span style="color:#900;font-weight:bold">get_marc_value</span>(marc, tag, subfield):
+    <span style="color:#d14">&#34;&#34;&#34;
+</span><span style="color:#d14">    Gets the value of a tag/subfield from a text version of an item&#39;s MARC record.
+</span><span style="color:#d14">    &#34;&#34;&#34;</span>
+    <span style="color:#000;font-weight:bold">try</span>:
+        tag <span style="color:#000;font-weight:bold">=</span> re<span style="color:#000;font-weight:bold">.</span>search(<span style="color:#d14">rf</span><span style="color:#d14">&#34;^</span><span style="color:#d14">{</span>tag<span style="color:#d14">}</span><span style="color:#d14">\t.+&#34;</span>, marc, re<span style="color:#000;font-weight:bold">.</span>M)<span style="color:#000;font-weight:bold">.</span>group(<span style="color:#099">0</span>)
+        subfield <span style="color:#000;font-weight:bold">=</span> re<span style="color:#000;font-weight:bold">.</span>search(<span style="color:#d14">rf</span><span style="color:#d14">&#34;\$</span><span style="color:#d14">{</span>subfield<span style="color:#d14">}</span><span style="color:#d14">([^\$]+)&#34;</span>, tag)<span style="color:#000;font-weight:bold">.</span>group(<span style="color:#099">1</span>)
+    <span style="color:#000;font-weight:bold">except</span> <span style="color:#900;font-weight:bold">AttributeError</span>:
+        <span style="color:#000;font-weight:bold">return</span> <span style="color:#000;font-weight:bold">None</span>
+    <span style="color:#000;font-weight:bold">return</span> subfield<span style="color:#000;font-weight:bold">.</span>strip(<span style="color:#d14">&#34; .,&#34;</span>)
+</code></pre></div><p>You can also access a JSON representation of the record by adding the parameter <code>&amp;showPnx=true</code> to the catalogue url: <a href="https://find.slv.vic.gov.au/discovery/fulldisplay?vid=61SLV_INST:SLV&amp;search_scope=slv_local&amp;tab=searchProfile&amp;context=L&amp;docid=alma9941325055707636&amp;showPnx=true">https://find.slv.vic.gov.au/discovery/fulldisplay?vid=61SLV_INST:SLV&amp;search_scope=slv_local&amp;tab=searchProfile&amp;context=L&amp;docid=alma9941325055707636&amp;showPnx=true</a></p>
+<p>Once again, this is a JSON representation embedded in a web page. Using the same developer console trick, you can identify the direct url is: <a href="https://find.slv.vic.gov.au/primaws/rest/pub/pnxs/L/alma9941325055707636?vid=61SLV_INST:SLV&amp;lang=en&amp;search_scope=slv_local&amp;showPnx=true&amp;lang=en">https://find.slv.vic.gov.au/primaws/rest/pub/pnxs/L/alma9941325055707636?vid=61SLV_INST:SLV&amp;lang=en&amp;search_scope=slv_local&amp;showPnx=true&amp;lang=en</a> You should be able to parse the response from this url as JSON and use it in your code. I think the Zotero translator makes use of this <code>pnx</code> data.</p>
+<p>If you want to download the MARC or JSON representations in your code, all you really need is the <code>alma</code> identifier. Just use it to construct one of the direct urls, such as this: <a href="https://find.slv.vic.gov.au/primaws/rest/pub/sourceRecord?docId=alma9941325055707636&amp;vid=61SLV_INST:SLV">https://find.slv.vic.gov.au/primaws/rest/pub/sourceRecord?docId=alma9941325055707636&amp;vid=61SLV_INST:SLV</a> The <code>recordOwner</code> and <code>lang</code> parameters are not needed, and the <code>vid</code> parameter doesn&rsquo;t change.</p>
+<p>Librarians using Primo have documented a number of tricks like this and <a href="https://igelu.org/products-and-initiatives/product-working-groups/primo/special-projects/primo-community-support-primo-useful-bookmarklets/">shared handy bookmarklets</a> to rewrite urls and get catalogue data in different forms.</p>
+<h2 id="iiif-and-images">IIIF and images</h2>
+<p>SLV delivers digitised images using <a href="https://iiif.io">IIIF</a>. The IIIF manifest urls are not directly exposed through the web interface, but you can construct your own.</p>
+<p>IIIF manifest urls look like this: <a href="https://rosetta.slv.vic.gov.au/delivery/iiif/presentation/2.1/IE24074939/manifest.json">https://rosetta.slv.vic.gov.au/delivery/iiif/presentation/2.1/IE24074939/manifest.json</a> All we need to construct them is the <code>IE</code> identifier, in this case <code>IE24074939</code>. But where do you find this identifier?</p>
+<p>If you&rsquo;re looking at an image in the SLV&rsquo;s image viewer, the url will be something like this: <a href="https://viewer.slv.vic.gov.au/?entity=IE24074939&amp;mode=browse">https://viewer.slv.vic.gov.au/?entity=IE24074939&amp;mode=browse</a> Yep, the <code>IE</code> identifier is right there in the url. Just extract it from the viewer url, and plug it into the manifest url!</p>
+<p>If you&rsquo;re looking at a catalogue record, or starting with one of the <code>alma</code> identifiers, you can get the <code>IE</code> identifier from the <code>956$e</code> field of the MARC record.</p>
+<p>The IIIF manifest will, in turn, provide identifiers for individual images that can be requested using the standard IIIF syntax.</p>
+<p>To save myself a bit of fiddling about, I created <a href="https://gist.github.com/wragge/a37a4db854deffad956abc7bf918f6b0">a userscript that exposes the IIIF manifest url</a> within the image viewer. If you install it you&rsquo;ll see something like this:</p>
+<img src="uploads/2025/screenshot-from-2025-09-23-15-54-09.png" width="510" height="229" alt="">
+<h2 id="handles">Handles</h2>
+<p>Links to digitised items sometimes come in the form of &lsquo;handles&rsquo;: <a href="http://handle.slv.vic.gov.au/10381/4338980">http://handle.slv.vic.gov.au/10381/4338980</a> These urls are redirected to the image viewer.</p>
+<p>If you want to construct one of these handles, the identifier can be found in <code>956$a</code> field of the MARC record.</p>
+<h2 id="from-old-to-new">From old to new</h2>
+<p>I was looking at the datasets created about 8 years ago in the <a href="https://github.com/statelibraryvic/opendata">SLV open data repository</a> and noticed they included urls from the previous catalogue. Fortunately, the old urls redirect to the new system.</p>
+<p>For example, this url: <a href="http://search.slv.vic.gov.au/MAIN:Everything:SLV_VOYAGER1842440">http://search.slv.vic.gov.au/MAIN:Everything:SLV_VOYAGER1842440</a></p>
+<p>Redirects to: <a href="https://find.slv.vic.gov.au/discovery/fulldisplay?context=L&amp;vid=61SLV_INST:SLV&amp;search_scope=slv_local&amp;tab=searchProfile&amp;docid=alma9918424403607636">https://find.slv.vic.gov.au/discovery/fulldisplay?context=L&amp;vid=61SLV_INST:SLV&amp;search_scope=slv_local&amp;tab=searchProfile&amp;docid=alma9918424403607636</a></p>
+<p>If you look closely at the urls you&rsquo;ll see that the identifier from the old system is embedded in the new identifier: <code>1842440</code> is in <code>9918424403607636</code> – <code>99_1842440_3607636</code>. This means if you have a lot of old urls, such as in the open datasets, you can easily rewrite them in your code.</p>
+<h2 id="the-process-of-glam-hacking">The process of GLAM hacking</h2>
+<p>No doubt a lot of this is well-known to librarians, and there&rsquo;s probably many subtleties or complexities that my poking about has missed. But I wanted to document the process as much as the results – to give an idea of what I do when I approach a new GLAM collection online. I suppose this is GLAM hacking 101.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
 			<h1><a href="https://updates.timsherratt.org/2025/09/22/creative-technologistinresidence-at-the-state.html">Creative Technologist-in-Residence at the State Library of Victoria!</a></h1>
 		
 
@@ -31,12 +175,12 @@
 
 		<div class="e-content">
 			 <p>I&rsquo;m very excited to be the new <a href="https://lab.slv.vic.gov.au/residencies-opportunities">Creative Technologist-in-Residence at the SLV LAB</a>. For the next few months I get to play around with metadata and images, think about online access, experiment with different technologies, and build things to help people to explore the State Library&rsquo;s collections. In other words, I get to be in my happy place!</p>
-<img src="https://cdn.uploads.micro.blog/8371/2025/2025-09-22-11.36.59.jpg" width="600" height="450" alt="">
+<img src="uploads/2025/2025-09-22-11.36.59.jpg" width="600" height="450" alt="">
 <p>My group at <a href="https://updates.timsherratt.org/2025/08/29/wikifest-at-the-state-library.html">the recent SLV WikiFest</a> was thinking about ways of helping researchers find resources relating to particular locations – how do I find material about my suburb, or my street? Coincidentally, the main focus of my residency will also be place-based collections, so I get to really think through some of the possibilities. SLV staff have already pointed me to some amazing maps and photographs, such as the <a href="https://find.slv.vic.gov.au/discovery/collectionDiscovery?vid=61SLV_INST:SLV&amp;collectionId=81271917420007636">Committee for Urban Action collection</a>, the <a href="https://find.slv.vic.gov.au/discovery/search?query=any,contains,mahlstedt%20melbourne&amp;tab=searchProfile&amp;search_scope=slv_local&amp;vid=61SLV_INST:SLV&amp;facet=tlevel,include,online_resources&amp;offset=0">Mahlstedt fire survey maps</a>, the <a href="https://guides.slv.vic.gov.au/MMBWplans">MMBW plans</a>, and the <a href="https://find.slv.vic.gov.au/discovery/search?query=series,exact,Parish%20maps%20of%20Victoria&amp;vid=61SLV_INST:SLV&amp;offset=0">Victorian parish maps</a>.</p>
 <p>At the same time, I&rsquo;ll be using my usual GLAM hacking approach to poke around in the SLV website to try and understand what data is currently available, identify any roadblocks, and document opportunities for computational research.</p>
 <p>The results of my residency will be shared on the <a href="https://lab.slv.vic.gov.au">SLV LAB site</a>, in <a href="https://github.com/StateLibraryVictoria-SLVLAB/geo-maps-residency">GitHub</a>, in the <a href="https://glam-workbench.net/state-library-victoria/">SLV section of the GLAM Workbench</a>, and of course here. As usual, I&rsquo;ll be working in the open, documenting things as I go along, so please join me on the journey!</p>
 <p>Although the residency was formally announced today, I&rsquo;ve actually been working with SLV data for the last couple of weeks and I&rsquo;ve already got a backlog of stuff I need to blog about. Here&rsquo;s a taster – what happens when you generate bounding boxes for thousands of parish maps from the available metadata and throw them on a map…?</p>
-<img src="https://cdn.uploads.micro.blog/8371/2025/screenshot-from-2025-09-22-23-08-25.png" width="600" height="406" alt="">
+<img src="uploads/2025/screenshot-from-2025-09-22-23-08-25.png" width="600" height="406" alt="">
 
 		</div>
 	  </div>
@@ -53,11 +197,11 @@
 <p>The day kicked off with a series of presentations demonstrating possible uses of Wikidata. I talked a bit about some of my recent GLAM/Wikidata experiments. My <a href="https://slides.com/wragge/wikifest-slv-2025">slides are online</a> and contain plenty of links to code, demonstrations, and documentation. They&rsquo;re openly-licensed, so feel free to take anything of use.</p>
 <iframe src="https://slides.com/wragge/wikifest-slv-2025/embed" width="100%" height="500" title="WikiFest SLV 2025" scrolling="no" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 <p>The rest of the day was spent in groups, working on particular projects and learning more about Wikidata in the process. My group was looking at providing placed-based entry points to SLV collections, and spent a lot of time exploring the representation of Victoria&rsquo;s <a href="https://query.wikidata.org/embed.html#%23Country%20populations%20together%20with%20total%20city%20populations%0ASELECT%20%3Flga%20%3FlgaLabel%20%3FstartDate%20%3FendDate%20%3Fpoint%20%7B%0A%20%20%3Flga%20wdt%3AP31%20wd%3AQ30129411%20%3B%0A%20%20%20%20%20%20%20wdt%3AP131%20wd%3AQ36687.%0A%20%20%3Flga%20p%3AP625%20%3Fcoordinate.%0A%20%20%3Fcoordinate%20ps%3AP625%20%3Fpoint.%0A%20%20OPTIONAL%20%7B%3Flga%20wdt%3AP571%20%3FstartDate.%7D%0A%20%20OPTIONAL%20%7B%3Flga%20wdt%3AP576%20%3FendDate.%7D%0A%20%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22%5BAUTO_LANGUAGE%5D%2Cmul%2Cen%22%20%7D%0A%7D">Local Government Areas (LGAs) in Wikidata</a>. We realised there was quite a bit of work to do in adding things like dates and boundaries, but we could see some exciting future possibilities. We also made a start, adding an &lsquo;inception&rsquo; date for the <a href="https://www.wikidata.org/wiki/Q5123821">City of Moe</a>, based on the Victorian Government Gazette, <a href="https://gazette.slv.vic.gov.au">digitised by the SLV</a>.</p>
-<img src="https://cdn.uploads.micro.blog/8371/2025/screenshot-from-2025-08-29-14-45-09.png" width="600" height="271" alt="Screen capture from Wikidata showing the inception property for the City of Moe">
+<img src="uploads/2025/screenshot-from-2025-08-29-14-45-09.png" width="600" height="271" alt="Screen capture from Wikidata showing the inception property for the City of Moe">
 <h2 id="bonus-userscript">Bonus userscript</h2>
 <p>While I was preparing my presentation I was thinking about the the way entries for Australian people in Wikidata are linked to a range of different identifiers, such as DAAO, the Encyclopedia of Australian Science, and the Australian Dictionary of Biography (ADB). Often a single person can have multiple identifiers and this means that those identifiers themselves become connected through that person&rsquo;s record. You can query Wikidata with one identifier, and get back links to a range of other information sources about that person.</p>
 <p>To demonstrate this, I created <a href="https://gist.github.com/wragge/40f66af72c400b2563f95bda60e713dd">a simple userscript</a> that adds additional links to biographies in the ADB. The script grabs the ADB identifier from the url, queries Wikidata for additional identifiers, and writes the results into the page&rsquo;s &lsquo;Life Summary&rsquo;. Basic, but useful!</p>
-<img src="https://cdn.uploads.micro.blog/8371/2025/adb-userscript-example.png" width="600" height="253" alt="Screenshot from the ADB showing the related links from Wikidata added to the Life Summary of Margaret Baskerville">
+<img src="uploads/2025/adb-userscript-example.png" width="600" height="253" alt="Screenshot from the ADB showing the related links from Wikidata added to the Life Summary of Margaret Baskerville">
 <p>For something more advanced, have a look at the <a href="https://addons.mozilla.org/en-US/firefox/addon/entity-explosion/">Entity Explosion extension</a> for Firefox.</p>
 
 		</div>
@@ -73,25 +217,25 @@
 		<div class="e-content">
 			 <p>In teaching and workshops I used to get students to question the idea that websites are &lsquo;published&rsquo;. They&rsquo;re not released into the world in a fixed, immutable form – they&rsquo;re a set of blueprints which only reach their final form in your browser window. This makes it possible to change the way websites look and behave.</p>
 <p>Mozilla used to have a nifty educational tool called X-Ray Googles. Using it you could explore the code underlying a web page and do fun things like inserting new text or images. I encouraged students to try hacking ASIO&rsquo;s home page.</p>
-<img src="https://cdn.uploads.micro.blog/8371/2025/asio-eggplants.jpg" width="600" height="629" alt="Old, modified screenshot of ASIO homepage with a section of a cartoon from First Dog On the Moon inserted.">
+<img src="uploads/2025/asio-eggplants.jpg" width="600" height="629" alt="Old, modified screenshot of ASIO homepage with a section of a cartoon from First Dog On the Moon inserted.">
 <p><em>ASIO home page with some added First Dog on the Moon.</em></p>
 <p>There are other ways you can fiddle with websites. For example, most browsers have a developer console that exposes the code and styling of a page. You can use the console to edit HTML elements or toggle styles, but your changes won&rsquo;t be saved.</p>
 <p>One way you can save and share your web site customisations is by creating userscripts. Userscripts are little bits of Javascript code that run in your browser after a web page loads. These scripts can change many aspects of a page – not just how it looks, but also how it works.</p>
 <h2 id="some-old-userscripts">Some old userscripts</h2>
 <p>I&rsquo;ve been playing around with userscripts for a long time. Back in 2008, I created a userscript that <a href="https://discontents.com.au/shoebox/archives-shoebox/archives-in-3d.html">completely overhauled the way that digital files were presented</a> in the National Archives of Australia&rsquo;s online database, RecordSearch. My userscript added new options for navigating and printing the file, and even made it possible to view the complete file contents on a 3D zoomable wall.</p>
-<img src="https://cdn.uploads.micro.blog/8371/2025/userscript-screenshot1.jpg" width="600" height="577" alt="Screenshot of a digitised file in RecordSearch showing the features added by the userscript.">
+<img src="uploads/2025/userscript-screenshot1.jpg" width="600" height="577" alt="Screenshot of a digitised file in RecordSearch showing the features added by the userscript.">
 <p><em>This customised RecordSearch interface was created by a userscript.</em></p>
 <p>The userscripts I&rsquo;ve created over the years have tended to either be useful little hacks aimed at fixing annoying aspects of GLAM websites, or experiments in thinking about the sort of information that&rsquo;s presented online by GLAM organisations, and how it might be different.</p>
 <p>In the first category are hacks like my <a href="https://gist.github.com/wragge/b2af9dc56f7cb0a9476b">RecordSearch show pages userscript</a>. In 2009, I got annoyed that there was no way of knowing how many pages were in a digitised file until you clicked on the link. <a href="https://discontents.com.au/doing-it-yourself/index.html">So I fixed it.</a> With my userscript running, the links to digitised files are rewritten to display the number of pages. I&rsquo;ve updated the code numerous times over the years, adding new features, and dealing with changes to RecordSearch. The last update was just a few days ago.</p>
 <p>In the second category is my userscript that inserts photos from <a href="https://www.realfaceofwhiteaustralia.net/">The Real Face of White Australia</a> into RecordSearch. The are many thousands of records in the National Archives of Australia that document the impact of the White Australia Policy on the lives of ordinary people. But it&rsquo;s often hard to understand this from the file descriptions. The userscript displays portrait images extracted from the files alongside the metadata – it tells you there are <a href="https://doi.org/10.5281/zenodo.3579530">people inside</a>.</p>
-<img src="https://cdn.uploads.micro.blog/8371/2025/people-inside-list.gif" width="600" height="450" alt="Animated gif showing how the userscript changes the display of a list of files in RecordSearch by adding pictures of people.">
-<img src="https://cdn.uploads.micro.blog/8371/2025/people-inside-item.gif" width="600" height="412" alt="Animated gif showing how the userscript changes the display of an individual files in RecordSearch by adding pictures of the people inside.">
+<img src="uploads/2025/people-inside-list.gif" width="600" height="450" alt="Animated gif showing how the userscript changes the display of a list of files in RecordSearch by adding pictures of people.">
+<img src="uploads/2025/people-inside-item.gif" width="600" height="412" alt="Animated gif showing how the userscript changes the display of an individual files in RecordSearch by adding pictures of the people inside.">
 <p>Amidst <a href="https://updates.timsherratt.org/2025/07/09/the-rebirth-of-wragge-labs.html">my recent self-archiving binge</a>, I realised I&rsquo;d never updated this userscript to work with the latest data from The Real Face of White Australia, so I spent some time getting it working again. In the process I realised that RecordSearch now included content security policies that made it a bit harder to insert new images. The solution was to use one of the special userscript functions, <a href="https://www.tampermonkey.net/documentation.php?locale=en#api:GM_addElement">GM_addElement()</a>, rather than plain old Javascript. But then I discovered that the if the show pages userscript ran after this one, it would trigger the security restrictions nonetheless! To avoid this I made sure that the two userscripts operated on separate elements. So now the <a href="https://gist.github.com/wragge/2941e473ee70152f4de7">show people userscript</a> is working again!</p>
 <h2 id="and-a-new-userscript-to-improve-trove-lists">And a new userscript to improve Trove lists</h2>
 <p>Fixing up the &lsquo;people inside&rsquo; code reminded me of how much fun it was playing around with userscripts, so when David Coombe mentioned a problem he had using Trove lists on Mastodon last night, I had to have a go at fixing it.</p>
 <p>The problem is that Trove lists display all the tags associated with each individual item. Some items have lots of tags, so this eats up the screen real estate, making it harder to browse the contents of a list. Notes attached to items can be hidden, but not tags. Why not?</p>
 <p>My <a href="https://gist.github.com/wragge/ab6a9d6b612bee6bc4d98658e947c420">brand new userscript</a> hides tags by default, and adds a new link to toggle their visibility for each individual item. The link also displays the number of tags attached to each item. This gives the user control over which tags are displayed and when.</p>
-<p><video src="https://cdn.uploads.micro.blog/8371/2025/simplescreenrecorder-2025-07-17-12.53.06.mp4" poster="https://updates.timsherratt.org/uploads/2025/poster.png" controls="controls" preload="metadata" width="600px"></video></p>
+<p><video src="https://updates.timsherratt.org/uploads/2025/simplescreenrecorder-2025-07-17-12.53.06.mp4" poster="https://updates.timsherratt.org/uploads/2025/poster.png" controls="controls" preload="metadata" width="600px"></video></p>
 <p><em>The new userscript in action – toggle your tags!</em></p>
 <p>The main difficulty in creating this userscript was knowing when the page had actually finished loading. The current version of Trove uses a lot of Javascript to load and manipulate content, so you have to tell the userscript to wait until  everything has settled down. Otherwise the script could fire too soon and cause unexpected results. I tried a number of different approaches to handling this problem, but eventually settled on the <a href="https://gist.github.com/BrockA/2625891">waitForKeyElements script</a>. (I just realised there&rsquo;s a <a href="https://github.com/CoeJoder/waitForKeyElements.js">more recent version</a> of this script that doesn&rsquo;t require JQuery, so I might need to investigate this further.)</p>
 <p>Another Trove problem fixed!</p>
@@ -99,7 +243,7 @@
 <p>In addition to the userscripts mentioned above, I&rsquo;ve also created one that <a href="https://gist.github.com/wragge/af8bd20a14005d267ffc759463bd832c">enables you to browse Trove newspaper pages using the arrows on your keyboard</a>. Left and right arrows go to the next and previous pages, while up and down arrows jump between issues. Searching is great, but sometimes you just want to browse. Install this userscript for that old-time, authentic newspaper reading experience!</p>
 <p>But how do you install userscripts? First of all you need a browser extension to manage your userscripts – I use <a href="https://www.tampermonkey.net/">TamperMonkey</a> or <a href="http://violentmonkey.com/">ViolentMonkey</a>. Just follow the instructions to add one of them to your browser.</p>
 <p>To install one of my userscripts, you need to go to the script (saved as a GitHub Gist) and click on the &lsquo;Raw&rsquo; button. Your userscript manager will then ask you if you want to add the userscript. Click install!</p>
-<img src="https://cdn.uploads.micro.blog/8371/2025/screenshot-from-2025-07-17-16-59-11.png" width="600" height="244" alt="">
+<img src="uploads/2025/screenshot-from-2025-07-17-16-59-11.png" width="600" height="244" alt="">
 <p><em>Click on the &lsquo;Raw&rsquo; button to install.</em></p>
 <p>Once they&rsquo;re installed the userscripts will run automatically when specified pages are loaded. If you ever want to disable them, you can do that from your userscript manager&rsquo;s dashboard.</p>
 <p>For convenience, here are the Gist links to all the userscripts I&rsquo;ve mentioned:</p>
@@ -126,10 +270,10 @@
 <h2 id="a-new-old-home">A new (old) home</h2>
 <p>The first thing I had to figure out was how to group together a series of individual <a href="https://flask.palletsprojects.com/en/stable/">Flask</a> apps so I could easily run and maintain them on a single server, without making major changes to the apps themselves. I decided to go with the <a href="https://flask.palletsprojects.com/en/stable/patterns/appdispatch/">application dispatching pattern</a> described in the Flask documentation. This groups the apps within a single Python environment so I had to do some alignment of Python versions and packages, but it wasn&rsquo;t too hard and having just one virtual environment to manage seems a lot easier in the long run.</p>
 <p>The application dispatching pattern configures the server to run one application at the web root ('/'), with the other apps assigned individual sub-paths. This raised the question, what did I want sitting at the root address? Rather than selecting an existing application for the prime slot, I decided to take the opportunity to build a showcase that included details of many of the things I&rsquo;ve created over the years.</p>
-<img src="https://cdn.uploads.micro.blog/8371/2025/wraggelabs.png" width="600" height="720" alt="Screenshot of the original Wragge Labs">
+<img src="uploads/2025/wraggelabs.png" width="600" height="720" alt="Screenshot of the original Wragge Labs">
 <p><em>The old Wragge Labs (circa 2012)</em></p>
 <p>I also needed a new domain name. Or did I? Back in the old days, I had a site where I shared many of my tools and experiments – Wragge Labs. In the intervening years, I&rsquo;d moved or migrated much of the content away and pointed the wraggelabs.com domain to my main site at timsherratt.au. But this seemed like a good opportunity to resurrect it. So if you&rsquo;d like to have a play around with some of the things I&rsquo;ve created over the last 30 years, head along to the all new <a href="https://wraggelabs.com">wraggelabs.com</a>!</p>
-<img src="https://cdn.uploads.micro.blog/8371/2025/new-wraggelabs.png" width="600" height="569" alt="Screenshot of part of the new Wragge Labs!">
+<img src="uploads/2025/new-wraggelabs.png" width="600" height="569" alt="Screenshot of part of the new Wragge Labs!">
 <p><em>The new <a href="https://wraggelabs.com">Wragge Labs</a> showcases websites, apps, and experiments from the past 30 years – some useful, some playful, and some creepy&hellip;</em></p>
 <p>A surprising amount of the things I&rsquo;ve built are still working. As I was compiling my list, I made a few running repairs – for example, fixing broken links in <a href="https://timsherratt.au/shed/culturevic/">Linking history in place</a> and <a href="https://timsherratt.au/shed/magicsquares/">Magic Squares</a> to get them working again. However, some things only exist now in web archives, and others have been broken by the recent actions of the <a href="https://updates.timsherratt.org/2025/05/07/farewell-trove.html">NLA</a> and <a href="https://updates.timsherratt.org/2025/05/19/no-more-harvesting-data-from.html">NAA</a>.</p>
 <p>To provide a bit of extra context, I&rsquo;ve grouped together publications and presentations documenting many of the experiments. These are saved in <a href="https://www.zotero.org/">Zotero</a>, and tagged with the name of the app. When you click on a &lsquo;Related&rsquo; link, the details of any linked resources are retrieved using the Zotero API and displayed on a new page. This means I can add new related resources simply by dropping  them into Zotero.</p>
@@ -8133,8 +8277,7 @@ images = download_images('107024751')
 		<div class="e-content">
 			 <p>It was Open Access Week last week, so I tried a little experiment. How many research articles published in <em>Australian Historical Studies</em> between 2008 and 2018 are available via Open Access? Just <strong>9.5%</strong> (23 out of 242). This is despite the fact that all articles published in 2018 or earlier are outside of the journal’s embargo period and Green OA versions could be shared through repositories.</p>
 <p>Here’s all the code, it could be easily modified to work with other journals: <a href="https://nbviewer.jupyter.org/github/wragge/ozhist-openaccess/blob/master/finding-oa-versions-of-AHS-articles.ipynb">nbviewer.jupyter.org/github/wr&hellip;</a> #dhhacks</p>
-<img src="uploads/2020/5323332221.jpg" width="600" height="339" alt="" />
-600" height="339" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2020/5323332221.jpg" width="600" height="339" alt="" />
 
 		</div>
 	  </div>
@@ -8157,7 +8300,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Calling users of Australian galleries, libraries, archives, &amp; museums – <a href="https://ozglam.chat/">OzGLAM Help</a> is now live! Ask a question or simply share your latest discoveries. There’s handy tips, news about recent developments, &amp; links to useful tools. Please use &amp; share! #dhhacks</p>
-<img src="uploads/2020/6aff8fd452.jpg" width="600" height="571" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2020/6aff8fd452.jpg" width="600" height="571" alt="" />
 
 		</div>
 	  </div>
@@ -8203,7 +8346,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Another #GLAMWorkbench update! Snip words out of @TroveAustralia newspaper pages and create big composite images. OCR art! <a href="https://glam-workbench.github.io/trove-newspapers/#create-large-composite-images-from-snipped-words">glam-workbench.github.io/trove-new&hellip;</a> #dhhacks</p>
-<img src="uploads/2020/84a098fba1.jpg" width="600" height="380" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2020/84a098fba1.jpg" width="600" height="380" alt="" />
 
 		</div>
 	  </div>
@@ -8215,7 +8358,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Just in time for #GovHack, I’ve given the Trove API Console a major overhaul. It’s been updated for the latest API versions and has MANY MANY more examples. Explore all the data you can get from @TroveAustralia! <a href="https://troveconsole.herokuapp.com/">troveconsole.herokuapp.com</a> #dhhacks</p>
-<p><img src="uploads/2020/d548f71ad1.jpg" width="600" height="484" alt="" /><img src="uploads/2020/55b3c90d67.jpg" width="600" height="481" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2020/d548f71ad1.jpg" width="600" height="484" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2020/55b3c90d67.jpg" width="600" height="481" alt="" /></p>
 
 		</div>
 	  </div>
@@ -8227,7 +8370,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Ok, so do you want to make your own ‘scissors &amp; paste’ messages using words from @TroveAustralia  newspaper articles? Go to <a href="https://glam-workbench.github.io/trove-newspapers/#create-scissors-and-paste-messages-from-trove-newspaper-articles">the notebook</a> in #GLAMWorkbench &amp; click on ‘Run live on Binder in Appmode’. #dhhacks</p>
-<img src="uploads/2020/f81fa29de5.jpg" width="600" height="534" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2020/f81fa29de5.jpg" width="600" height="534" alt="" />
 
 		</div>
 	  </div>
@@ -8239,7 +8382,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Another #GLAMWorkbench update! The Trove Harvester will now download both newspaper <em>and gazette</em> articles in bulk. You can optionally include full text, and save copies of the articles as images and PDFs. #dhhacks <a href="https://glam-workbench.github.io/trove-harvester/">glam-workbench.github.io/trove-har&hellip;</a></p>
-<p><img src="uploads/2020/6517b75846.jpg" width="600" height="401" alt="" /><img src="uploads/2020/f24a2a85a7.jpg" width="600" height="418" alt="" /><img src="uploads/2020/8512bd6dcc.jpg" width="600" height="426" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2020/6517b75846.jpg" width="600" height="401" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2020/f24a2a85a7.jpg" width="600" height="418" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2020/8512bd6dcc.jpg" width="600" height="426" alt="" /></p>
 
 		</div>
 	  </div>
@@ -8251,7 +8394,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Interested in using web archives in your research? Join us on 5/6 August for a free @netpreserve webinar introducing the tools and examples available in the new #webarchives section of the #GLAMWorkbench. There are two timeslots to cover multiple timezones: <a href="https://www.eventbrite.com/e/iipc-rss-webinar-jupyter-notebooks-for-web-archives-i-tickets-111349651806">www.eventbrite.com/e/iipc-rs&hellip;</a> and <a href="https://www.eventbrite.com/e/iipc-rss-webinar-jupyter-notebooks-for-web-archives-ii-tickets-112728556146">www.eventbrite.com/e/iipc-rs&hellip;</a></p>
-<p><img src="uploads/2020/7c05a95c47.jpg" width="600" height="600" alt="" /><img src="uploads/2020/2b04bdefc6.jpg" width="600" height="534" alt="" /><img src="uploads/2020/97c4d924f2.jpg" width="600" height="255" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2020/7c05a95c47.jpg" width="600" height="600" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2020/2b04bdefc6.jpg" width="600" height="534" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2020/97c4d924f2.jpg" width="600" height="255" alt="" /></p>
 
 		</div>
 	  </div>
@@ -8263,7 +8406,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Introducing a brand new section of the #GLAMWorkbench, exploring the @MuseumsVictoria collection API. Harvest species records, display random images, and download ALL THE ANTECHINUSES! <a href="https://glam-workbench.github.io/museumsvictoria/">glam-workbench.github.io/museumsvi&hellip;</a> #dhhacks</p>
-<p><img src="uploads/2020/49e33f96fa.jpg" width="504" height="600" alt="" /><img src="uploads/2020/4c51985cb0.jpg" width="600" height="510" alt="" /><img src="uploads/2020/8e81a5f34f.jpg" width="600" height="369" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2020/49e33f96fa.jpg" width="504" height="600" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2020/4c51985cb0.jpg" width="600" height="510" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2020/8e81a5f34f.jpg" width="600" height="369" alt="" /></p>
 
 		</div>
 	  </div>
@@ -8275,7 +8418,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>New additions to the @TroveAustralia books section of the #GLAMWorkbench – word frequency examples with OCRd text from digitised books, and a random recipe generator powered by a 19th C cook book! <a href="https://glam-workbench.github.io/trove-books/">glam-workbench.github.io/trove-boo&hellip;</a> #dhhacks</p>
-<p><img src="uploads/2020/70f278df90.jpg" width="600" height="485" alt="" /><img src="uploads/2020/5fdbedbcea.jpg" width="600" height="229" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2020/70f278df90.jpg" width="600" height="485" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2020/5fdbedbcea.jpg" width="600" height="229" alt="" /></p>
 
 		</div>
 	  </div>
@@ -8297,7 +8440,7 @@ images = download_images('107024751')
 </ul>
 <p>Just click on the link below each image to explore the complete issue on Trove. You can also download the full collection of images <a href="https://cloudstor.aarnet.edu.au/plus/s/NaKjoKNFOGXXDNN">from Cloudstor</a>. There&rsquo;s a <a href="https://github.com/GLAM-Workbench/trove-newspapers/blob/58307d3ccae4d2c939ecb6aff59944f27d213842/data/aww-issues.csv">CSV file</a> containing all the issue metadata.</p>
 <p>The <a href="https://glam-workbench.github.io/trove-newspapers/#harvest-australian-womens-weekly-covers-or-the-front-pages-of-any-newspaper">notebook used to harvest the images</a> is in the Trove newspapers section of the GLAM Workbench. You could easily adapt the notebook to harvest the front pages of any newspaper. #dhhacks</p>
-<img src="uploads/2020/a8730e6b43.jpg" width="447" height="600" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2020/a8730e6b43.jpg" width="447" height="600" alt="" />
 
 		</div>
 	  </div>
@@ -8309,7 +8452,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>The <a href="https://glam-workbench.github.io/trove-books/">Trove books section</a> of the #GLAMWorkbench has been updated. There&rsquo;s a fresh harvest of OCRd text &amp; the notebooks have been changed to work with the new @TroveAustralia interface. Download &amp; explore 24,620 files (3gb) of OCRd text! #dhhacks</p>
-<img src="uploads/2020/766d9155ba.jpg" width="600" height="527" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2020/766d9155ba.jpg" width="600" height="527" alt="" />
 
 		</div>
 	  </div>
@@ -8321,7 +8464,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Revisiting my Historic Hansard XML repository &amp; realising how easy it is to load files as needed via the GitHub API &amp; explore with Pandas &amp; Jupyter. This #GLAMWorkbench <a href="https://glam-workbench.github.io/hansard/#convert-a-years-worth-of-historic-hansard-into-a-dataframe-for-analysis">notebook</a> helps you explore a particular year/house. #dhhacks</p>
-<p><img src="uploads/2020/2839d8e003.jpg" width="600" height="357" alt="" /><img src="uploads/2020/ec52714756.jpg" width="600" height="265" alt="" /><img src="uploads/2020/a4c3f7667d.jpg" width="600" height="396" alt="" /><img src="uploads/2020/a788b76bb3.jpg" width="600" height="436" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2020/2839d8e003.jpg" width="600" height="357" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2020/ec52714756.jpg" width="600" height="265" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2020/a4c3f7667d.jpg" width="600" height="396" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2020/a788b76bb3.jpg" width="600" height="436" alt="" /></p>
 
 		</div>
 	  </div>
@@ -8333,7 +8476,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>The <a href="https://glam-workbench.github.io/trove-journals/">Trove Journals section</a> of the #GLAMWorkbench has been updated to work with the new @TroveAustralia interface! I’ve also re-harvested ALL the OCRd text from digitised journals — 6gb of text from 397 journals now downloadable in bulk from CloudStor. #dhhacks</p>
-<img src="uploads/2020/d9b0c2e64d.jpg" width="600" height="264" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2020/d9b0c2e64d.jpg" width="600" height="264" alt="" />
 
 		</div>
 	  </div>
@@ -8345,7 +8488,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>New in #GLAMWorkbench! After you’ve used the @TroveAustralia Newspaper Harvester to download lots &amp; lots of articles, try exploring the results in Datasette. <a href="https://glam-workbench.github.io/trove-harvester/#display-the-results-of-a-harvest-as-a-searchable-database-using-datasette">This notebook</a> sets everything up, you can even add full text search &amp; images! #dhhacks</p>
-<img src="uploads/2020/43c8c5e1e7.jpg" width="600" height="428" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2020/43c8c5e1e7.jpg" width="600" height="428" alt="" />
 
 		</div>
 	  </div>
@@ -8357,7 +8500,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Download newspaper articles in bulk! The Trove Newspaper Harvester has been updated to work with the new @TroveAustralia interface. I’ve also added the ability to save articles as .jpg images! The easiest way to get started is <a href="https://glam-workbench.github.io/trove-harvester/">via the #GLAMWorkbench</a>. #dhhacks</p>
-<p><img src="uploads/2020/fe9cb9a58b.jpg" width="600" height="487" alt="Screenshot of Trove Harvester page in GLAM Workbench" /><img src="uploads/2020/5b8395e147.jpg" width="600" height="255" alt="Screenshot of TroveHarvester web app" /><img src="uploads/2020/39a828a8c3.jpg" width="600" height="270" alt="Details of image file naming scheme" /><img src="uploads/2020/af98a9856b.jpg" width="600" height="302" alt="Thumbnails of newspaper articles saved as images" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2020/fe9cb9a58b.jpg" width="600" height="487" alt="Screenshot of Trove Harvester page in GLAM Workbench" /><img src="https://cdn.uploads.micro.blog/8371/2020/5b8395e147.jpg" width="600" height="255" alt="Screenshot of TroveHarvester web app" /><img src="https://cdn.uploads.micro.blog/8371/2020/39a828a8c3.jpg" width="600" height="270" alt="Details of image file naming scheme" /><img src="https://cdn.uploads.micro.blog/8371/2020/af98a9856b.jpg" width="600" height="302" alt="Thumbnails of newspaper articles saved as images" /></p>
 
 		</div>
 	  </div>
@@ -8369,7 +8512,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>My <a href="https://trove-titles.herokuapp.com/">app for searching</a> in @TroveAustralia’s digitised journals has been updated to work with the new Trove interface. You’ll need to have switched over to the new interface before you try searching (just click the link on the Trove home page). #dhhacks</p>
-<img src="uploads/2020/bf6d84e823.jpg" width="600" height="479" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2020/bf6d84e823.jpg" width="600" height="479" alt="" />
 
 		</div>
 	  </div>
@@ -8383,7 +8526,7 @@ images = download_images('107024751')
 			 <p>Another db migrated and app updated!</p>
 <p>Have you ever wondered what interjections in historic hansard would look like as tweets? Well I did… Now with longer interjections &amp; more emojis!</p>
 <p><a href="https://hansard-interjections.herokuapp.com/tweets/">hansard-interjections.herokuapp.com/tweets/</a> #dhhacks</p>
-<img src="uploads/2020/6842a3978c.jpg" width="600" height="501" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2020/6842a3978c.jpg" width="600" height="501" alt="" />
 
 		</div>
 	  </div>
@@ -8395,7 +8538,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Here&rsquo;s a map of places where @TroveAustralia digitised newspapers were published/circulated. Click on the map to find the closest newspapers to a place. Updated with new titles from the last year! <a href="https://troveplaces.herokuapp.com/map/">troveplaces.herokuapp.com/map/</a> #dhhacks</p>
-<img src="uploads/2020/ce6d32a952.jpg" width="600" height="576" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2020/ce6d32a952.jpg" width="600" height="576" alt="" />
 
 		</div>
 	  </div>
@@ -8413,7 +8556,7 @@ images = download_images('107024751')
 <p>Have you ever wanted to find when a particular fragment of text first appeared in a web page?  Or compare full-page screenshots  of archived sites?  Perhaps you want to explore how the text content of a page has changed over time, or create a side-by-side comparison of web archive captures. There are notebooks to help you with all of these.</p>
 <p>To dig deeper you might want to assemble a dataset of text extracted from archived web pages, construct your own database of archived Powerpoint files, or explore patterns within a whole domain. The notebooks provide a range of approaches that can be extended or modified according to your research questions.</p>
 <p>The development of these notebooks was supported by the International Internet Preservation Consortium&rsquo;s <a href="http://netpreserve.org/projects/">Discretionary Funding Programme 2019-2020</a>, with the participation of the British Library, the National Library of Australia, and the National Library of New Zealand. #dhhacks</p>
-<p><img src="uploads/2020/b678824058.jpg" width="600" height="569" alt="" /><img src="uploads/2020/7db7dee281.jpg" width="600" height="600" alt="" /><img src="uploads/2020/deac772182.jpg" width="600" height="132" alt="" /><img src="uploads/2020/5bfddf3b1a.jpg" width="600" height="255" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2020/b678824058.jpg" width="600" height="569" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2020/7db7dee281.jpg" width="600" height="600" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2020/deac772182.jpg" width="600" height="132" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2020/5bfddf3b1a.jpg" width="600" height="255" alt="" /></p>
 
 		</div>
 	  </div>
@@ -8425,7 +8568,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Thanks to @NetPreserve, I’ve been spending time lately working on a set of web archive exploration notebooks for the #GLAMWorkbench. Here’s <a href="https://mybinder.org/v2/gh/GLAM-Workbench/web-archives/master?urlpath=%2Fapps%2Fsave_screenshot.ipynb">an example</a> to create/compare screenshots of captures. #dhhacks</p>
-<img src="uploads/2020/3c45289d77.jpg" width="600" height="534" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2020/3c45289d77.jpg" width="600" height="534" alt="" />
 
 		</div>
 	  </div>
@@ -8437,7 +8580,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Do you have a CSV file you&rsquo;d like to make searchable, maybe even share online? New on #dhhacks, I show you how with @simonw&rsquo;s awesome Datasette tool &amp; <a href="https://micro.blog/Glitch">@Glitch</a>. Give it a try! <a href="https://101dhhacks.net/share-searchable-csvs/">101dhhacks.net/share-sea&hellip;</a></p>
-<img src="uploads/2020/a261dde75a.jpg" width="543" height="600" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2020/a261dde75a.jpg" width="543" height="600" alt="" />
 
 		</div>
 	  </div>
@@ -8449,7 +8592,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>New on #dhhacks – <a href="https://101dhhacks.net/headline-roulette/">make your own</a> @TroveAustralia newspaper game! Thanks to <a href="https://micro.blog/glitch">@glitch</a>, just edit a couple of files to create your own customised edition of Headline Roulette – make it about cats, or Queensland, or Communist Party newspapers, or whatever!</p>
-<img src="uploads/2020/9f2321be33.jpg" width="600" height="307" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2020/9f2321be33.jpg" width="600" height="307" alt="" />
 
 		</div>
 	  </div>
@@ -8461,7 +8604,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>I&rsquo;ve given my #dhhacks site a refresh, and updated my @TroveAustralia <a href="https://101dhhacks.net/trove-bots-for-all/">Twitter bot tutorial</a> to link to the latest versions of the bots on <a href="https://micro.blog/glitch">@glitch</a>. The new code is actually easier to customise, so plenty of opportunities to play around! More DHHacks coming soon…</p>
-<img src="uploads/2020/95625b6d27.jpg" width="600" height="517" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2020/95625b6d27.jpg" width="600" height="517" alt="" />
 
 		</div>
 	  </div>
@@ -8473,7 +8616,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>If you’d ever wished you could get a random(ish) newspaper article from @TroveAustralia’s API, here’s a hack for you! I’ve added an option to return a random article to my Trove proxy app. You can filter by normal API facets. Go to: <a href="https://trove-proxy.herokuapp.com/">trove-proxy.herokuapp.com</a> #dhhacks</p>
-<img src="uploads/2020/39c75669e5.jpg" width="600" height="270" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2020/39c75669e5.jpg" width="600" height="270" alt="" />
 
 		</div>
 	  </div>
@@ -8485,7 +8628,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>The GLAM CSV Explorer has had a few updates — you can now filter by organisation, and upload your own CSV files! #GLAMWorkbench <a href="https://mybinder.org/v2/gh/GLAM-Workbench/csv-explorer/master?urlpath=%2Fapps%2Fcsv-explorer.ipynb">Try it live on Binder.</a></p>
-<img src="uploads/2020/7bdc1f9c9a.jpg" width="600" height="523" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2020/7bdc1f9c9a.jpg" width="600" height="523" alt="" />
 
 		</div>
 	  </div>
@@ -8503,7 +8646,7 @@ images = download_images('107024751')
 <p>With this harvest I’ve added a <a href="https://ozglam-datasets.glitch.me/data/glam-datasets-from-gov-portals">new way of searching and filtering the harvested data</a> using <a href="https://github.com/simonw/datasette">Datasette</a> running on Glitch. This interface lets you narrow your queries by field or facet, and search text fields for keywords.</p>
 <p>But what’s actually in all those CSV files? If you’d like to start exploring the <em>content</em> of the datasets, then give my <a href="https://glam-workbench.github.io/csv-explorer/">GLAM CSV Explorer</a> a go! The CSV Explorer looks at each column in the dataset and tries to identify the type of data inside. It then attempts to tell you something useful about it.</p>
 <p>For all the details, links, and harvesting code, <a href="https://glam-workbench.github.io/glam-data-portals/">see the #GLAMWorkbench</a>. #dhhacks</p>
-<img src="uploads/2020/9b14bfb26b.jpg" width="448" height="600" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2020/9b14bfb26b.jpg" width="448" height="600" alt="" />
 
 		</div>
 	  </div>
@@ -8515,7 +8658,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Updated! My <a href="https://glam-workbench.github.io/trove-newspapers/#upload-trove-newspaper-articles-to-omeka-s">notebook</a> to upload digitised newspapers from @TroveAustralia to an @Omeka-S site has been improved — no longer trips over non-newspaper articles in Zotero collections, and does a check to avoid uploading existing articles. #dhhacks</p>
-<p><img src="uploads/2020/a7c18a9523.jpg" width="600" height="371" alt="" /><img src="uploads/2020/d389c71944.jpg" width="578" height="600" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2020/a7c18a9523.jpg" width="600" height="371" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2020/d389c71944.jpg" width="578" height="600" alt="" /></p>
 
 		</div>
 	  </div>
@@ -8527,7 +8670,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>My <a href="https://github.com/wragge/sydney-stock-exchange/blob/master/nsw_holidays_1900_1950.csv">data file of public holidays in NSW from 1900-1950</a> has been updated – now including variations in the King’s Birthday holiday and extra days like VE Day.  #dhhacks</p>
-<img src="uploads/2020/82f064bea5.jpg" width="575" height="600" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2020/82f064bea5.jpg" width="575" height="600" alt="" />
 
 		</div>
 	  </div>
@@ -8539,7 +8682,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>My harvest of OCRd text from @TroveAustralia digitised books, ephemera, and parliamentary papers has been updated! There&rsquo;s now 19,795 text files (about 3gb) to explore! Harvesting details and links to browse/download files from Cloudstor are <a href="https://glam-workbench.github.io/trove-books/">in the #GLAMWorkbench</a>. #dhhacks</p>
-<p><img src="uploads/2020/bc31f3a83b.jpg" width="600" height="278" alt="" /><img src="uploads/2020/cf8c124f49.jpg" width="585" height="600" alt="" /><img src="uploads/2020/6ca36757e7.jpg" width="600" height="341" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2020/bc31f3a83b.jpg" width="600" height="278" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2020/cf8c124f49.jpg" width="585" height="600" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2020/6ca36757e7.jpg" width="600" height="341" alt="" /></p>
 
 		</div>
 	  </div>
@@ -8562,7 +8705,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>I’ve added some more documentation to the <a href="https://glam-workbench.github.io/trove-harvester/https://glam-workbench.github.io/trove-harvester/">Trove Newspaper Harvester</a> page in the #GLAMWorkbench. Get your @TroveAustralia newspaper articles in bulk! #dhhacks #collectionsasdata</p>
-<img src="uploads/2020/6538bf262c.jpg" width="600" height="462" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2020/6538bf262c.jpg" width="600" height="462" alt="" />
 
 		</div>
 	  </div>
@@ -8574,7 +8717,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p><a href="https://glam-workbench.github.io/slv/">New section added</a> to the #GLAMWorkbench with examples from @Library_Vic! #slvdata #dhhacks #collectionsasdata</p>
-<img src="uploads/2020/33f7643329.jpg" width="600" height="468" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2020/33f7643329.jpg" width="600" height="468" alt="" />
 
 		</div>
 	  </div>
@@ -8586,7 +8729,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>More fun with @iiif_io and images from @library_vic – resize, rotate, crop and more! Try it out with this <a href="https://github.com/GLAM-Workbench/state-library-victoria/blob/086f17821d0ffcb0d7d6db4251a6208d1da6a146/more_fun_with_iiif.ipynb">new notebook</a> in the #GLAMWorkbench. #slvdata #dhhacks</p>
-<p><img src="uploads/2020/10c0427d8b.jpg" width="600" height="320" alt="" /><img src="uploads/2020/284c6f2898.jpg" width="600" height="435" alt="" /><img src="uploads/2020/671198b3cf.jpg" width="600" height="382" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2020/10c0427d8b.jpg" width="600" height="320" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2020/284c6f2898.jpg" width="600" height="435" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2020/671198b3cf.jpg" width="600" height="382" alt="" /></p>
 
 		</div>
 	  </div>
@@ -8598,7 +8741,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>New #GLAMWorkbench <a href="https://nbviewer.jupyter.org/github/GLAM-Workbench/state-library-victoria/blob/master/download_image_from_iiif.ipynb">notebook</a>! Download images from @Library_Vic using IIIF and Handle… #dhhacks</p>
-<img src="uploads/2020/2029641121.jpg" width="600" height="593" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2020/2029641121.jpg" width="600" height="593" alt="" />
 
 		</div>
 	  </div>
@@ -8610,7 +8753,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>And for a taste of the recent additions to @TroveAustralia&rsquo;s digitised journals, <a href="https://wke.lt/w/s/5BdkNQ">check out this thread</a>.</p>
-<p><img src="uploads/2020/5e2dae55fb.jpg" width="449" height="600" alt="" /><img src="uploads/2020/476be6a8b3.jpg" width="460" height="600" alt="" /><img src="uploads/2020/f9ab342df1.jpg" width="448" height="600" alt="" /><img src="uploads/2020/4addf6d73f.jpg" width="385" height="600" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2020/5e2dae55fb.jpg" width="449" height="600" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2020/476be6a8b3.jpg" width="460" height="600" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2020/f9ab342df1.jpg" width="448" height="600" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2020/4addf6d73f.jpg" width="385" height="600" alt="" /></p>
 
 		</div>
 	  </div>
@@ -8622,7 +8765,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Explore @TroveAustralia’s digitised journals with <a href="https://trove-titles.herokuapp.com/">this simple app</a>. Now updated with the latest additions to Trove, and a new page for government publications. #dhhacks</p>
-<img src="uploads/2020/5bfe33a3fd.jpg" width="600" height="377" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2020/5bfe33a3fd.jpg" width="600" height="377" alt="" />
 
 		</div>
 	  </div>
@@ -8634,7 +8777,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Want to save @TroveAustralia newspaper articles as images (that aren&rsquo;t sliced up in annoying ways)? There&rsquo;s an <a href="https://glam-workbench.github.io/trove-newspapers/#save-a-trove-newspaper-article-as-an-image">app for that</a> in the #GLAMWorkbench. #dhhacks</p>
-<img src="uploads/2020/d6dedfab88.jpg" width="600" height="530" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2020/d6dedfab88.jpg" width="600" height="530" alt="" />
 
 		</div>
 	  </div>
@@ -8646,7 +8789,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>I’ve updated the <a href="https://github.com/wragge/realface-data">repository of data</a> transcribed from White Australia policy records in @naagovau. Remember to follow @invisibleaus for daily snapshots.</p>
-<p><img src="uploads/2020/ed548dcf9c.jpg" width="252" height="341" alt="" /><img src="uploads/2020/4a10b23514.jpg" width="240" height="355" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2020/ed548dcf9c.jpg" width="252" height="341" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2020/4a10b23514.jpg" width="240" height="355" alt="" /></p>
 
 		</div>
 	  </div>
@@ -8658,7 +8801,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>I’ve added a few updates to my <a href="https://docs.google.com/document/d/1PRT_6GNknZfO2M11vNwRpkFi-v-cmTt2jJ6uw3Z3X1U/edit?usp=sharing">‘Digital tools and such like…’</a> list for Australian historians. Hope you find it useful! #ozhist</p>
-<img src="uploads/2020/e9b4494987.jpg" width="600" height="536" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2020/e9b4494987.jpg" width="600" height="536" alt="" />
 
 		</div>
 	  </div>
@@ -8670,7 +8813,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>New <a href="https://glam-workbench.github.io/trove-images/">‘Trove images' section</a> added to the #GLAMWorkbench! Here you’ll find my latest Jupyter notebook harvesting data about the use of standard licences &amp; rights statements in Trove&rsquo;s picture zone. #dhhacks</p>
-<img src="uploads/2020/117cf2e18f.jpg" width="600" height="463" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2020/117cf2e18f.jpg" width="600" height="463" alt="" />
 
 		</div>
 	  </div>
@@ -8682,7 +8825,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Ok, the <a href="https://github.com/wragge/lodbook-plugin">LODBook Jekyll plugin</a> is cleaned &amp; commented enough for me to put it aside for a while and work on the theme and data structure. I also took the opportunity to improve the way context strings are created…</p>
-<img src="uploads/2020/dca8f2dd9f.jpg" width="600" height="474" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2020/dca8f2dd9f.jpg" width="600" height="474" alt="" />
 
 		</div>
 	  </div>
@@ -8694,7 +8837,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Voting in the 2019 @dhawards is <a href="http://dhawards.org/dhawards2019/voting/">now open</a>! Go and check out all the cool #DigitalHumanities projects from around the world. And while you’re there, you might like to vote for my #GLAMWorkbench in the ‘Tools’ category!</p>
-<img src="uploads/2020/f9821a9126.jpg" width="600" height="532" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2020/f9821a9126.jpg" width="600" height="532" alt="" />
 
 		</div>
 	  </div>
@@ -8706,7 +8849,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Gathering together videos of past presentations. Here they are on YT: <a href="https://www.youtube.com/playlist?list=PLAclcciEeCD3INz0o1t_E9-bkW_BWTmSv">https://www.youtube.com/playlist?list=PLAclcciEeCD3INz0o1t_E9-bkW_BWTmSv</a> and Vimeo: <a href="https://vimeo.com/showcase/6754045">vimeo.com/showcase/&hellip;</a></p>
-<img src="uploads/2020/1d59d8640e.jpg" width="600" height="460" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2020/1d59d8640e.jpg" width="600" height="460" alt="" />
 
 		</div>
 	  </div>
@@ -8718,7 +8861,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Archived via Zenodo – ‘Inigo Jones: the weather prophet’ – exploring our desire for certainty amidst a highly variable climate. <a href="https://doi.org/10.5281/zenodo.3586044">doi.org/10.5281/z&hellip;</a></p>
-<img src="uploads/2019/d7989066d7.jpg" width="597" height="600" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/d7989066d7.jpg" width="597" height="600" alt="" />
 
 		</div>
 	  </div>
@@ -8730,7 +8873,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Archived via Zenodo – ‘Civilization versus the giant, winged lizards’ – a thing I wrote about the climate emergency in 2006. <a href="https://doi.org/10.5281/zenodo.3586002">doi.org/10.5281/z&hellip;</a></p>
-<img src="uploads/2019/72d79292b9.jpg" width="600" height="540" alt="Screenshot of Zenodo record" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/72d79292b9.jpg" width="600" height="540" alt="Screenshot of Zenodo record" />
 
 		</div>
 	  </div>
@@ -8742,7 +8885,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>One of my favourite things this year was finally publishing ‘The People Inside' with @baibi — describing the start of our @invisibleaus experiments eight years ago with records relating to the White Australia policy held by @naagovau.  <a href="https://doi.org/10.5281/zenodo.3579530">doi.org/10.5281/z&hellip;</a></p>
-<p><img src="uploads/2019/80fbed37e9.jpg" width="467" height="600" alt="" /><img src="uploads/2019/4809f63efe.jpg" width="397" height="600" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2019/80fbed37e9.jpg" width="467" height="600" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2019/4809f63efe.jpg" width="397" height="600" alt="" /></p>
 
 		</div>
 	  </div>
@@ -8754,7 +8897,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>New #GLAMWorkbench <a href="https://glam-workbench.github.io/trove-random/">section</a> with examples of how to get <em>random-ish</em> works and newspaper articles from @TroveAustralia. #dhhacks</p>
-<img src="uploads/2019/ea26af5df6.jpg" width="600" height="394" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/ea26af5df6.jpg" width="600" height="394" alt="" />
 
 		</div>
 	  </div>
@@ -8794,7 +8937,7 @@ images = download_images('107024751')
 <li><a href="https://glitch.com/edit/#!/trove-collection-bot-2">Trove Collection Bot 2</a></li>
 </ul>
 <p>My <a href="https://twitter.com/wragge/lists/trove-bots">feed of Trove bot tweets</a> is looking a little sad tonight. Most of the 43 bots on my list seem to have stopped tweeting. I hope that their owners won&rsquo;t feel discouraged, and will instead take the chance to upgrade their creations. And maybe a few new bots will be created as well.</p>
-<p><img src="uploads/2019/8eae6ae9a9.jpg" width="600" height="397" alt="" /> #dhhacks</p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2019/8eae6ae9a9.jpg" width="600" height="397" alt="" /> #dhhacks</p>
 
 		</div>
 	  </div>
@@ -8806,7 +8949,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Updated my NSW public holidays data to include a few extras proclaimed by the government: <a href="https://nbviewer.jupyter.org/github/wragge/sydney-stock-exchange/blob/master/nsw_holidays.ipynb">nbviewer.jupyter.org/github/wr&hellip;</a></p>
-<img src="uploads/2019/2693471d1d.jpg" width="600" height="229" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/2693471d1d.jpg" width="600" height="229" alt="" />
 
 		</div>
 	  </div>
@@ -8863,7 +9006,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Over the last few weeks I&rsquo;ve been exploring ways of recording dates for 70,000 digitised pages from Sydney Stock Exchnage records in the @TheANUArchives. Here&rsquo;s <a href="https://nbviewer.jupyter.org/github/wragge/sydney-stock-exchange/blob/master/summary.ipynb?flush_cache=true#Identifying-page-dates">the progress so far</a>&hellip;</p>
-<img src="uploads/2019/c161548b99.jpg" width="600" height="493" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/c161548b99.jpg" width="600" height="493" alt="" />
 
 		</div>
 	  </div>
@@ -8875,7 +9018,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Here&rsquo;s my attempt to calculate NSW holidays from 1900 to 1950. It&rsquo;s probably incomplete, but it&rsquo;s a start&hellip; <a href="https://nbviewer.jupyter.org/github/wragge/sydney-stock-exchange/blob/master/nsw_holidays.ipynb">nbviewer.jupyter.org/github/wr&hellip;</a></p>
-<img src="uploads/2019/2fb0414891.jpg" width="600" height="424" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/2fb0414891.jpg" width="600" height="424" alt="" />
 
 		</div>
 	  </div>
@@ -8887,7 +9030,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>A couple of years ago I gave a talk in which I tried to justify what I do as research. I was going to turn it into an article, but never did. So here’s <a href="http://timsherratt.org/blog/muliplication-of-contexts/">‘The multiplication of contexts’</a> as a blog post.</p>
-<img src="uploads/2019/403e9a298f.jpg" width="600" height="483" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/403e9a298f.jpg" width="600" height="483" alt="" />
 
 		</div>
 	  </div>
@@ -8899,7 +9042,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>The @naagovau RecordSearch section of the #GLAMWorkbench has been updated with more notebooks to help you get Australian archives data in a usable form. <a href="https://glam-workbench.github.io/recordsearch/">glam-workbench.github.io/recordsea&hellip;</a> Useful for #twitterstorians, #ozhist, &amp; #govhack!</p>
-<img src="uploads/2019/2443ab1a76.jpg" width="600" height="474" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/2443ab1a76.jpg" width="600" height="474" alt="" />
 
 		</div>
 	  </div>
@@ -8911,7 +9054,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Crikey, my notebook for getting useful data out of @naagovau keeps growing! Now with sections on tackling large series, and harvesting ALL the images from digitised files. <a href="https://nbviewer.jupyter.org/github/GLAM-Workbench/recordsearch/blob/master/harvesting_items_from_a_search.ipynb">https://nbviewer.jupyter.org/github/GLAM-Workbench/recordsearch/blob/master/harvesting_items_from_a_search.ipynb</a></p>
-<img src="uploads/2019/ced4e37d17.jpg" width="600" height="432" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/ced4e37d17.jpg" width="600" height="432" alt="" />
 
 		</div>
 	  </div>
@@ -8923,7 +9066,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Want to save searches for items in @naagovau&rsquo;s RecordSearch as CSVs for exploration &amp; analysis? <a href="https://nbviewer.jupyter.org/github/GLAM-Workbench/recordsearch/blob/master/harvesting_items_from_a_search.ipynb">This notebook</a> walks through the process of constructing, managing, and saving data harvests. #dhhacks</p>
-<img src="uploads/2019/941444ac5f.jpg" width="600" height="495" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/941444ac5f.jpg" width="600" height="495" alt="" />
 
 		</div>
 	  </div>
@@ -8935,7 +9078,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>I’ve updated my harvest of OCRd text from digitised journals in @TroveAustralia. The complete dataset now includes 33,035 issues from 720 titles – about 8gb of text to explore. Details in the #GLAMWorkbench: <a href="https://glam-workbench.github.io/trove-journals/#data-and-text">glam-workbench.github.io/trove-jou&hellip;</a> #dhhacks</p>
-<img src="uploads/2019/799cee870c.jpg" width="600" height="277" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/799cee870c.jpg" width="600" height="277" alt="" />
 
 		</div>
 	  </div>
@@ -8947,7 +9090,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>My app to browse &amp; search @TroveAustralia&rsquo;s digitised journals has been updated! Since 4 July, 112 new titles &amp; 86,211 new articles have been added to Trove. Many of these new titles are parliamentary papers. Explore here: <a href="https://trove-titles.herokuapp.com/">trove-titles.herokuapp.com</a> #dhhacks</p>
-<img src="uploads/2019/ec50a163f3.jpg" width="600" height="266" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/ec50a163f3.jpg" width="600" height="266" alt="" />
 
 		</div>
 	  </div>
@@ -8959,7 +9102,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Another WIP notebook in need of additional documentation… This one explores the stats around <a href="https://nbviewer.jupyter.org/github/GLAM-Workbench/trove-newspapers/blob/master/Analysing_OCR_corrections.ipynb">volunteer correction of OCR errors</a> in @TroveAustralia&rsquo;s newspapers. More to come!</p>
-<img src="uploads/2019/f746be4618.jpg" width="600" height="445" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/f746be4618.jpg" width="600" height="445" alt="" />
 
 		</div>
 	  </div>
@@ -8971,7 +9114,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>And this notebook <a href="https://nbviewer.jupyter.org/github/GLAM-Workbench/trove-journals/blob/master/tfidf_in_digitised_journals.ipynb">uses TF-IDF</a> to explore the OCRd text of a digitised journal from Trove. Get the top TF-IDF scores for each year across a journal&rsquo;s life and see how they change. More documentation coming!</p>
-<img src="uploads/2019/38eb13cc0c.jpg" width="547" height="600" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/38eb13cc0c.jpg" width="547" height="600" alt="" />
 
 		</div>
 	  </div>
@@ -8983,7 +9126,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>This notebooks lets you download the OCRd text of a digitised journal from @TroveAustralia (via CloudStor) and then explore <a href="https://nbviewer.jupyter.org/github/GLAM-Workbench/trove-journals/blob/master/word_frequences_in_digitised_journals.ipynb">word frequencies</a> over time. More documentation coming soon!</p>
-<p><img src="uploads/2019/7ca8674552.jpg" width="600" height="240" alt="" /><img src="uploads/2019/d6ca29cdf8.jpg" width="600" height="445" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2019/7ca8674552.jpg" width="600" height="240" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2019/d6ca29cdf8.jpg" width="600" height="445" alt="" /></p>
 
 		</div>
 	  </div>
@@ -8995,7 +9138,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>A <a href="https://nbviewer.jupyter.org/github/GLAM-Workbench/trove-journals/blob/master/info_about_digitised_journals.ipynb">new notebook</a> looking at the data about digitised journals on @TroveAustralia. #dhhacks</p>
-<img src="uploads/2019/5783fd3e05.jpg" width="600" height="268" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/5783fd3e05.jpg" width="600" height="268" alt="" />
 
 		</div>
 	  </div>
@@ -9007,7 +9150,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>There’s a <a href="https://glam-workbench.github.io/nma/">new section of the GLAM Workbench</a> devoted to the National Museum of Australia collection API! Harvest @nma data, then explore it by time and place. #dhhacks</p>
-<p><img src="uploads/2019/600a9eb2f5.jpg" width="600" height="359" alt="" /><img src="uploads/2019/07e1f50468.jpg" width="600" height="341" alt="" /><img src="uploads/2019/5ffd854d09.jpg" width="600" height="472" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2019/600a9eb2f5.jpg" width="600" height="359" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2019/07e1f50468.jpg" width="600" height="341" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2019/5ffd854d09.jpg" width="600" height="472" alt="" /></p>
 
 		</div>
 	  </div>
@@ -9019,7 +9162,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>The <a href="https://nbviewer.jupyter.org/github/GLAM-Workbench/trove-newspapers/blob/master/visualise-total-newspaper-articles-by-state-year.ipynb">second new notebook</a> looks at @TroveAustralia’s newspapers as a whole, visualising both by time and by state. Along the way it looks at favourites such as the WWI effect and the copyright cliff of death. #dhhacks</p>
-<p><img src="uploads/2019/2c9ff4df02.jpg" width="600" height="585" alt="" /><img src="uploads/2019/0d34f1efe3.jpg" width="600" height="482" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2019/2c9ff4df02.jpg" width="600" height="585" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2019/0d34f1efe3.jpg" width="600" height="482" alt="" /></p>
 
 		</div>
 	  </div>
@@ -9031,7 +9174,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Some brand new Jupyter notebooks for those interested in #ozhist &amp; digital exploration of @TroveAustralia’s newspapers. <a href="https://nbviewer.jupyter.org/github/GLAM-Workbench/trove-newspapers/blob/master/visualise-searches-over-time.ipynb">The first</a> walks through different ways of visualising newspaper searches over time. #dhhacks</p>
-<p><img src="uploads/2019/5a929381bc.jpg" width="600" height="420" alt="" /><img src="uploads/2019/a6899f1f14.jpg" width="600" height="428" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2019/5a929381bc.jpg" width="600" height="420" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2019/a6899f1f14.jpg" width="600" height="428" alt="" /></p>
 
 		</div>
 	  </div>
@@ -9043,7 +9186,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>I’ve updated the @invisibleaus <a href="https://github.com/wragge/realface-data">data repository</a> with latest transcriptions/markings from White Australia Policy records in @naagovau.</p>
-<p><img src="uploads/2019/189f98e398.jpg" width="292" height="356" alt="" /><img src="uploads/2019/3ba1ed9755.jpg" width="373" height="351" alt="" /><img src="uploads/2019/4d523c0700.jpg" width="379" height="583" alt="" /><img src="uploads/2019/bb19e41440.jpg" width="330" height="340" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2019/189f98e398.jpg" width="292" height="356" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2019/3ba1ed9755.jpg" width="373" height="351" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2019/4d523c0700.jpg" width="379" height="583" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2019/bb19e41440.jpg" width="330" height="340" alt="" /></p>
 
 		</div>
 	  </div>
@@ -9055,7 +9198,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>According to my last harvest, @TroveAustralia’s digitised journals comprise 31,216 separate issues. Here are the number of issues by year.</p>
-<img src="uploads/2019/f093028fa8.jpg" width="600" height="289" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/f093028fa8.jpg" width="600" height="289" alt="" />
 
 		</div>
 	  </div>
@@ -9067,7 +9210,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Updates to the <a href="https://glam-workbench.github.io/trove-newspapers/">Trove newspapers section</a> of GLAM Workbench – adding links to app-ified versions of some notebooks, &amp; direct links to @mybinderteam for everything. If you work with @TroveAustralia newspapers you might find it useful.</p>
-<img src="uploads/2019/10876f160b.jpg" width="600" height="547" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/10876f160b.jpg" width="600" height="547" alt="" />
 
 		</div>
 	  </div>
@@ -9084,7 +9227,7 @@ images = download_images('107024751')
 <p>I’ve created a series of Jupyter notebooks to harvest the all the indexes and save the data in a series of CSV-formatted files. I’ve also updated my repository containing all the harvested CSV files. It’s available from the new <a href="https://glam-workbench.github.io/nsw-state-archives/">NSW State Archives section</a> of my GLAM Workbench. There are currently 64 different index datasets, containing 1,499,259 rows of data.</p>
 <p>And to help you get a sense of what&rsquo;s actually in all those CSV files, I’ve created an interactive Index Explorer. Just select an index from the list, and the Index Explorer will generate a series of tables and visualisations that provide an overview of the data. Try <a href="https://mybinder.org/v2/gh/GLAM-Workbench/nsw-state-archives/master?urlpath=%2Fapps%2Findex-explorer.ipynb">running it live</a> on Binder.</p>
 <p>Thanks to the State Archives staff and volunteers for preparing all this most excellent data. #dhhacks</p>
-<img src="uploads/2019/61527f660d.gif" width="600" height="497" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/61527f660d.gif" width="600" height="497" alt="" />
 
 		</div>
 	  </div>
@@ -9096,7 +9239,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Visualising CV-detected column widths across 100 volumes (30,000+ pages) of Sydney Stock Exchange records from @TheANUArchives&hellip;</p>
-<img src="uploads/2019/e7cf22ccb5.jpg" width="600" height="62" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/e7cf22ccb5.jpg" width="600" height="62" alt="" />
 
 		</div>
 	  </div>
@@ -9108,7 +9251,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>New in GLAM Workbench! <a href="https://glam-workbench.github.io/pm-transcripts/">Notebooks</a> to harvest, index, analyse, and aggregate transcripts of speeches &amp; interviews by Australian prime ministers. Plus links to harvested data and aggregated files. #dhhacks</p>
-<img src="uploads/2019/72363568ec.jpg" width="600" height="233" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/72363568ec.jpg" width="600" height="233" alt="" />
 
 		</div>
 	  </div>
@@ -9121,7 +9264,7 @@ images = download_images('107024751')
 		<div class="e-content">
 			 <p>I’ve updated my harvest of the PM Transcripts site — 22,814 XML files with transcripts of speeches, interviews, media releases etc by Australian Prime Ministers. Now with added @TurnbullMalcolm…</p>
 <p><a href="https://github.com/wragge/pm-transcripts">Repository</a> includes an index of the files, and aggregations by PM. #dhhacks</p>
-<img src="uploads/2019/e0dfd85b0c.jpg" width="600" height="545" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/e0dfd85b0c.jpg" width="600" height="545" alt="" />
 
 		</div>
 	  </div>
@@ -9133,7 +9276,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Reorganising things a little at <a href="https://glam-workbench.github.io/">GLAM Workbench</a>. @statelibrarynsw gets its own section. Hansard and @datagovau GLAM datasets now under ‘Australian government’. Making some space for further additions…</p>
-<img src="uploads/2019/a32652f0ce.jpg" width="600" height="448" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/a32652f0ce.jpg" width="600" height="448" alt="" />
 
 		</div>
 	  </div>
@@ -9145,7 +9288,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>What’s that? You want MORE GLAM data? Well, I’ve <a href="https://github.com/GLAM-Workbench/glam-data-list">started a list of sources</a> for Australian GLAM data. Metadata, full text, images &amp; more. Contributions welcome! #dhhacks</p>
-<img src="uploads/2019/2004b729d9.jpg" width="534" height="600" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/2004b729d9.jpg" width="534" height="600" alt="" />
 
 		</div>
 	  </div>
@@ -9157,7 +9300,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>I’ve updated my <a href="https://glam-workbench.github.io/glam-data-portals/">harvest of GLAM datasets</a> from data.gov.au. Now there&rsquo;s 584 CSV files available for download! #dhhacks</p>
-<p><img src="uploads/2019/1259860206.jpg" width="600" height="436" alt="" /><img src="uploads/2019/ff65c6d8ea.jpg" width="600" height="388" alt="" /><img src="uploads/2019/2b6ea44109.jpg" width="600" height="270" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2019/1259860206.jpg" width="600" height="436" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2019/ff65c6d8ea.jpg" width="600" height="388" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2019/2b6ea44109.jpg" width="600" height="270" alt="" /></p>
 
 		</div>
 	  </div>
@@ -9169,7 +9312,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>I’ve put a copy of my article on using @TroveAustralia for digital research/play, written for the @HTANSW journal, <a href="http://timsherratt.org/blog/trove-connecting-us/">up on my blog</a>. #dhhacks</p>
-<img src="uploads/2019/66060f43cd.jpg" width="600" height="401" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/66060f43cd.jpg" width="600" height="401" alt="" />
 
 		</div>
 	  </div>
@@ -9192,7 +9335,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Today I finished updating a harvest of all OCRd text available from Trove’s digitised journals. That’s about 7gb of text from 30,462 issues of 384 different journals — a fab corpus for text analysis! <a href="https://glam-workbench.github.io/trove-journals/">Here’s all the metadata, links, and harvesting code</a>. @TDHASSN #dhhacks</p>
-<img src="uploads/2019/22102a1e7c.jpg" width="600" height="272" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/22102a1e7c.jpg" width="600" height="272" alt="" />
 
 		</div>
 	  </div>
@@ -9204,7 +9347,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Update time! Yesterday I updated my <a href="https://trove-titles.herokuapp.com/">Trove digitised journals app</a> to include all the exciting new titles added to Trove in the last few months. This includes ABC Weekly, Current Notes on International Affairs &amp; much more. #dhhacks</p>
-<img src="uploads/2019/7e6b261456.jpg" width="423" height="600" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/7e6b261456.jpg" width="423" height="600" alt="" />
 
 		</div>
 	  </div>
@@ -9216,7 +9359,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>A quick interactive view of newspaper articles in @TroveAustralia by state and year. Click on the bars or legend to filter by state. Jupyter notebook on its way&hellip;  <a href="https://vega.github.io/editor/#/url/vega-lite/N4KABGBEDGD2B2AzAlgc0gLjMSA3ZApgO6baRHIAmALgBakAsADEwDRS0Fq3WkDMLAL7tIAWwCGAJwDWpHNViwANtWQAHUvACuSpYOHgouOPGjjeWANqGIoCPY4mzFsNYcO77h5ErnxcyHhxUQJSHz8AWnEAdnE+cXEATmhEPkQARkSANgAOBhykpmi+HL4CPkoAI0osvnTIAy9vCRkwqQJ-VhsmyAJTWEpkeHQsTyb7GGVYSTlu8Yg8cSUtUKxIJW5qVElxAE9ILvn3SfhB1QRZo69Ial21Vah4WFEhpYO5q8gUAiVKMIBnajmUKHK7eJQEVB9P5YbS6UFghb-H4EaDneAAlFo6ZMABMAFZIB9xoJie5Gp8FMpVBorGSvPI7g9As9XkoDlBvr8AUDqKEKWDGfcwgBHLTieCqXnIXAgzmEblrXYdGYiKUQsIATRVDQRVzGiJuTNF4slyGlsveiImXJhUAUQKUAH1JAR-jpqP8rdbOdMJC4Dt7rTdzRq1gBBSSqaAQr308nxiAAXT140gAA9LobbsK1mKJVLzDKQYmJuJ08gvaMvn7zGFoByQ9Qw1BtVJdaWFrawsr26WBfNIPtRp37ca86bC6pLanB+XKwFELWA6w-mrQ8yAHJaUSVAiSMCwRBgKTR2Md4PdtYOpYut0er2ztOA8TQWRYaiSFb9+MD66cTZGBYJ8Jk-CV-iXSRRFISwcBQFR9wCZEITRZALjWZDUQUSQ8UJfQU3jcgqDoUhohYMk-3sA1rl8IEAiCEIwlo8QIhqRJEESfEclxAh8XxXFoFxRICHSLJEEqHJ8UQXFxByaB8SycREDwkCFhad8oFdNEgx6Po4EGYYsyOSYlGmIzPlwJYVjCDZUB4bY9h04yTDONCMRHH0x1zR5WSCdlVJ6K8oBfPknM+CEoVOTQdCUALrkw1D0OCrFsNwolrVJMFKOuYdsFHI1vJZF4-LCtN5yrMhpkISUwkkQD12bB44T0OKbQVO1IBC0IfyObKJgS9FzOfFKcQJAIc2ZUQPWQRs9IGIZUAqywTLMpNMvmdavE2+wk26AdqKgZj6OCZlmNYrJ2M47jeP4wThNE8TJOk2T5MU5SL2OdSwkqdtZ16foDJGPK0zgUyZg8wdLOWZlbPsnZ9gCk5XKSg7rgmsInmKt5Wq+dqeWBUrjgi6FovhUtOpStzMRQ1Kxt-CiQJuRQVHUGD4yFZlMbZRsgs63k5SbFtIAAZX5j7xlR450YnAtzSLGdyd5m9nVdd0VEfRXlzCVhCe8dVmUjM83XSjayQItNM2raWfKx-z5R+DqusbfWwlFgm+qHIapfHKB8zNC0S2M8rFy1tZV2djcwm3Xd90PY9T2QGNjb6rs8evWBHTvNXPRNraPkoyAALslx0nxNgPgpmmqerAbRsJK2fbEabZoBhalpWmY1oLigaHoLAyKYPbDHNqAABJ-mgTgJDCHhqDUf4MAAekX2VUHEAA6VBzVoLRKnXtDF4nqfxBXyEWI2PkV74dfr6YdeACt-guUFwiBZEc4hhYzpiOIEmSVIMjZDyAURIRQShlAqNUWo9Q6QMj5gTNYm5iBgGFrALQdAwAAHUljGzVBnW8qsHykH4lkEQvZwZgHSDkJgfBKI4Cdog5BqD0G0CwTgx89p8Eq3vOrUgWRMhkJ1FgKhTAGB0PgaFRhRAUFoIwdg88eDM6EN4VgBgAhBHtmEdQ-E4iGFQCQdI5hcj2HOy4VnIhWA+BZGiBoihIisi6LFlImRLC2EKM4UonhH9KF8AYLY0gIjoiOIQfophsjWHyNwR4ghXiKql3xP4rRTAcjBMkaEwx4S3FRKZp47OFVcR8BsVAchATqGJFSVuMJrjIkcJyTEvJpBcQXUSZQnI6QmAVKjlU4x7i6ncIaVgXEuIcgtKoekdInTnFGIiSYxR9SLFgFxMk0ZbTcSTPSS4np2TlbmJUYs3xKz0i0NnPQpxGzplZNqTs5R3ilnpEOWIk5EjKkZOqbM6J-SFlDNIcUoRrTS7rMgAYzZMzenXNiYwSShyHFPL0UC7poLtlmJuRVXICTfmaP+UE2FZz4WvK2Vc5FEL+45ESIclJOKQl4pBZc0xuSFnRHSEUocfyxnlMpWk6lFyal0vmXstp6KWWYqoUswFwLuXvL6bs7xxQyUYrsdxCZHKXk0p5XMz5-LcT3PlaUoZYqEW0vVdKiqnFmUlK0QU-V+LEWEvpXs9IWrcQrNxI8j4pyqXisyWqj5xrGmlzNay7iOjlVdOtYan1KL+A5FqM6mFbrnmhtVZK8FAywD8Tac67F8a4WereWColqay58WdRS7NuLc0Et5Rq7xWQi3OvZWWj1BrvVSsjVgfEZEflCoVQIK1Sb812prbkLt5rWl1D7RKgdfLvGJAYLOlZfA1khqmV65NBaFmksSHK7tpS+DHMbZyitNqq2+uEQ68ZC7XVwJzc2tdg64l1CZQu4NB6VWTqRfegJDAGAKQXXG695bb1TurXE-E7SnU6q0YUidq7gOnsobUJg2qd1QdLQBptYaW0pq+SwZZkGx0NvQ4eoDH7p35LqDkANwq8gdOXec2DpGQONIYOkb9KyWMwbzYx+DQzOJ8HY0u19ib322rI368ZIz8NULUZxytRq22LPxIkKh7Gr3uHdcRzDd6xODIYFkIS7GX1EbfQx0TTHBmsYzVJvI-71MJpXVxszPHcTRDyOxrNxnhOmZPQpoZOQoXWfyLJ498niWUNc0UdjhG7M3q03B3zLACkrLLsF8Nrawt1CyJF6zYHUtYfXXsvdklBWjqofxPL2nzNgF8dJ5L+7PMObkxGjL-m+DbtK5JNTHh7P0ccz5sLemhIQZQ60viFX4thfxAwJZ7XA0KXG9xhTCkXV+Jyx5mLgG4uLcm6xl1yW0MbYw-27bha1GUeS9F7rsXjtOYU7WySbBrNZYW7dsLWQLrcRWfwl7-XU1ZB-YUr7gmGu9aa+lv7zB-Nffq4dzTN3fsLNyAIYbHX-s-dC6m6IBTa1faM7DkzfWMcMr3Wxp7tmrubfh0TvZF0t0lcDdY9HzXMcOsB09g7FOjsiYR3s6IiRJL8ae5dqiPWuXeepzOySVmRtULIkz8HCz+csGQx1xl8vsP2qYJxJDKysfq4K948ZeJXO65h5zuH3OJdxL8zG6z0Qusi+u5b5nCyHVCSYPT6j0Q8fm4J2DjXhuXXUMezLyj5PHeU+dwr+1TSpuza9+t33XnCcu-tXp97knQ+uf15+4R3vXOZ9V8L2wouj1pYD3E6NNDPcKuoTnnTlDEje+Uystp9eqtLKWcUVvwP8fJ-9wb-JWvvco8DaUdvPGGDe-yK3h3Jenfi9T7c6ItaDnWckhPhTAhVnx9r+H+fkfF-R+8QICLo-qOUc3xlrifOR1j45xHrnR+K+MCOQUkPHXSVX9TXpjtU+VmgLf4LL5CJArYAFKpCaNYhZL4VRgbJKgEAG95J5QHl6D7EJULaIAFm6P4W7P5oHtr4h1B4ah6zpAF7JKZbrd7WacRkE1pDLTY16lLZC0GoqlxT4f6BpN4sGkSlz3YAEP4H5P4p7H4VTRqZBTYAHF5kAL7CEv5YCJB8B8TNJSagK0aQGg7QEiGkDZAdq24y6gIQEg5i6yH4GUIsBKb8SjKgJIE4F+6aFyFmFa5NKrb6E0LcHCIe4UZUZ2KgJz7SGH4mG55mGUZ4h37CqgI+62H972GmHjLDIdoq6sqgL77+FCED5BHjKgFtIuGlagKJ5REoH5YZEOpTaMpWHJLuGUKiQr444qFa6VFu587S65HtINGFLMAt4qHjINFqJgZuZdE2GCG4GBEN6sZcSd5WFHINFgZboKGTF+EaZ2GoEZGEHDJY6TGRFDFLFFGjElBtJ7qTEpGLHRHLG7E0LTa74BLKb5FbEnE7FVZu7UKKGTECGpHDHpGjEuYr4EiTFSHHGFGVbwYSYOpUH6Gip0bGEfEPErYzFWFaoNEuqd7n4+F6oQll73FAmLpT65BwnYG3EAkTapqsZMD6ZgZwkLGl4kavZEnTaiRlxwmbFvHbGAkKasb8JCSXHCKgFHGUlbbUmu5gZ6bZZgk3FMl3EslhalxMpgJwmvH-EaGnEPH6ZV7eFXFCTTHe5cSF5JG9polUk86G7fpzqgJWHjp6l8kGlxLTaiL-ammDFikEknau5T55DZCml4kOkKkYmsn8T8TRCqlcm+IakubtKmmMnymQkxEZFZYhEcHhFWLTHKazqMGBmikRnokSlEmIbiGmlym8lU4wEBJgZKZ86ml-H5lR4OFHIe5gbIlXHMANFMoZ5hE+EcbmkFlaHyF8TY5WHTaVEqn+m9kenpn6lW6kDcRnaC76Hfr9mMq0m9nhkVl4FBFN4e7nYqF6aVH841F1lclT5bmiIum9l5kyFQnwacT8TAQbnlmnlRmjG4bVlWEpbtmVmmHJkUFPmGF96On8l7J8YRFPn2kjkWljkeFFD24BmN6EENHV4kkplQUUm3mKnwb+ntLwXiGLlIXekZbWKgm5HzYvnLkN7fpZboWmqVE-p4hTn4UnkBFnkKbMCFKJHhFKaVFWJLJkXPaEUjFVYCCcScmN7fbcX0VhbDIFKcVAVLk8XOa1AtlXG1CVFLK1pyVclo7CV3kd7tKkpWG1qKUsCfYqHvZ6V4janhGM7qXIUJY1k6W0VpEaVAncT846U3l0X2WsnKaiJWFy4WXYVZlfFeVfnIFemZmu725N5eWSVYUhX2pZFkXFCKVHKsZeWIWuWWWSlJk5FJHe4NERZxU8lRWEmu7WKEFeVplSUiU0ntKQWZDZ4+XRXeKlBKZeUuV2VpWprcTRpWF151WFW861rVX86BUFHBW9U1pboqWN7cSVFkTMBdXDnlVuWTbUKZXhF5CVFlxa5dWYWpW+XAGlATWZDRrrXK5dVlUFVOk04ipdW2XvGLV-Ye4CWHUtW3VtULJTa-oqGAE9UXXeJKalBWHKaVHWJNIA2RU7X1UVRkT24A3zXnW-kyo-orU+GkHfXw2or+YDU0Go2WmkQKGY35Xg2jWiGs4A1nWE0-VWkr6Y03XMlE2NJcSbWfXPW00U303KZI2NK4bTU-qQVLJIbTWFKmUUJ81g2tW7U07UITV82w3k1o3EL6YCV80pVi0Q0BL6ZS3mFbmdX4Z80E0q103yFqItJ81k362s0eHe7G36UC1xnC0sDM3ikG1ppbpW2tHY2gWKbMV23dEQkACKKwfQ-wSgEoa4hZlioZgWetnK-tBAgdwdUUHt+mHNWi+5ftAd8AQdIdONWAbSXtpSQWadsdGd8dodnZYAA8UWgKMdcdWdHt-pj1D2Vd6dmdCdYd5ds1OWQ1+JUA1dxdtdbdjK6Fkkot0dzdJd2dYA3Eu5o2MtVKvdLdpdDhy1yWyto9RdC9E9pKQ9Y2hdNdrdZdWqDqyWUdzI8949HtBSUOa2Td6959bd02ltOWNNYQZ9-dZdZcJuOWDtawr9+9DhWOa+oeXF6hkAv9i9sRdQi6X2XdnpoDY9b9VZfO0NT2I9p98Df9sR2QEdQDs9a9e94DQRQyRQedWialIDYDE9LqyOuON9+DlD0aJQX2J9L96DBDDeihQy1FDOpteDfdGDQRbWAgB10az9P9rDE9hSXEJDrSF0tDfDbDVWzAuQydrS3l5D4jHtihWOQtpSauu98jEjoBc6uuqDLDt9CDph+QxQOjWi8V+jG9Htc6lGQ99ucjDjbdXE85du21c9Gjbd92zxduzDYj5j-DDeF0wyttujPDaDoTCjKF6awjtV6jcTm9ViF6du39PdfjZd3EoiUTWi3VKTdDHtlGpKKjGBMDEZFDHtoBySQ9U19jd9Zd2QChXDF+uDsTJTbd7SiNFT-mq9XTBjHtRuYVrePjvD7jZdRyRW09GBwT2TqTIzWjwpn+MTZj3T0z-2N+reojizmziDWuUD6+WTcDSzPT+1xBHWX1xTwzFzDD-TgNTTFjhD8BKm1BpjITBzphdyP6wjChbjzTDhSye6-CABgzGzdzB9Qk2zABEzQzUzwLfE4y0jVCzBzzYTHekjAWJB6zXzULwLLGxQqLpKezZz3zhDfEihBTrSW6gLLz7Dfz+m5RahRhNTbdgjViA1-NGL8TW+s6P6NjjeeI9LmL8GihihLG5RnTkLiLljsz3LEL+LcrQRRLai7TPhHuorfLLWAgHdrhCz5LBLlj-ERyFTeR2rE9vpViNLmQFRvLVrvGH1rhpz7L79CkAqkxrL35+zxrQRCRBIczymVToubrDhWW-pehLRnzvrKr4Tq5YLXRMryrQLphZEmQ+rLRSrsbqbQRWOZc2t+hAKDriduQxuhxlrddtaJJQbTKlbA9WqJJB1ymZLYbabSmHRvx9bZdq+emGrap3rQVRrcbVWjKJJT6Kh8JJbA9U2D1cJMbw7ubDeiq4xuJ3bDhLbtQ5rLq67b5dyeIDJu7K5hSe6A1TSR7y7pK7ucJeLObDLVWAzVDspF7VW-O2QgDuR6p07LTs6NCj1Chg7w1i79755U+lmppIbcKbbK5BIW6trChC70HDeTeCk9JKhe6L755JJXLpp2bwHYrCmym-CZJ6H8LsrS7r7bWpQQbCZ37G7yO1Cppt7+HOrqaoBviib+hJQmHhHeIBIQrmQbWPHYWWOw6-7DZdHphf1h5vZkHuKSHij-pLmzbfZknAj9uTS-be5ybd7BHLWokwyvZeHCn8GaiWuzLG5ZHKbIHDF25nEvZhrJnS20mVivZzHTnA2MZBxG5rbOTDhl5pKWnjec6wnhaAgrG-7z5tzI78GgpCRn5oXb1h972gFiX5Bv+E7+h0FanDehBprzbU2aXJ+oiyDWXVnunrHru2+kXjnfnphbWJpKhX+OXijJFAN5XLHE9ZRn17ndXhDLm5r-ORXFU1pmNrrfXxF-E09Itw3fCQXJts3li-2NLfNvn5zZdvi4VOt9ti31WbWKjdycnvj63Dhe6QyrtiHE3vFP60jdyOnIsmS4YWggIOwGwnQFzf6gKFyT3L3SwyA73Wz-T0GEJ33z3YEb3E9rOwj3HIPj3YPr3-3lDRQQ9QnsPriP34PiPHtYGgToeEnIDoPv3EPjjLGczeQR3nKhPmPAPp3JQDdqnBPcPRPWP-j02ZPMmaPGCGPCPNPabfO7PeHVPPPm9bS9PHXQvf3vPK536JLm5nPrC3PkvE9cH-TqdjP6P8PSvtTHa1VwCX3TP1PkPDqM+gWpzEvxPbdQyqFyWgH3dD3GvzPUvDeBIxVyWFPzI5vLP0z6aJL5W8vYAivFv0zUuZP2X6vXPmvQfhLoBuvhX-vgfXvp3cBQXZW4vBvwvmjbWK+x9+vDvhvmjb+sfzHnvTvvFJO-TXEufEfjvE9D9TlX9VfCvkfifljSyJvQDtvsDJftfP6TVT27vrs6fWv99BS2DqOC73fjjdQ9nT293k-Hj56uvZDRh8-79e6bWND8fzfpfsX1pAn0ahrq--nxQ-+T2xfQ-UfUnYh+-uQjfAf2-E9ZbRtQud-CfO-CmonV5WenfEZR-ab+QnHVXAPzWB-882tQdYnbgn4X8W+QRZajiTtxz9oB7-MLI1SSp25BeSAzelNhcy640+efDPm3WcZkRdch-TAbUyZT9Es85-fAcP2mbI9-qduMlqANGIOoGGuuM3mQJ6YFJjSreH-qLmYEPE2s-2Bum3i3418RmfbGhD3lf4P8RmYGLSq3kQE0DL+0ZQgo11DxrUxB+fHpiviQy68N8WgggdMz5we59BpA5QTANGJ84pswjS-IYNoGIMyIJVdfEwM4HTNkypXT-BwIsHIDU0h3ToiQT4FwoBBPGGhIdXAIyDxBlvURMmUQKRDtBB9IoJLSwLxCjBwLOCs-xIIYCfBlDEEltxIJ4Dq+CQ4FqJCORD10W4fJvlEIPqsYV85Q6gUULSE-MKMOLa5q4JyEX0Gunlagt4MaEOCfmJFA9nUSCG4oQhvmUimh1cLACoAYw0SvwmoQCdrCqQ-oYQzqHaU6iSgvoSoOd61AXUzbURMsO2Ed4scHueDlq3sFHCeMwbNnAa0OGWDeKLATUuUQaFVDih9XJlMMkWH2tKh9-aoad3EoWcXWdw3wQsiEFKEvWwI2vjEPnRdFph9vLYfcNM7r9GaRbKAR0Pvp1BCC8HKYhcMREMVSg+QbEdkIREgi9k6eVzKi2UyFDXhTQ1VmomyADVRIkIxxrxjQFFsXhvwt4QIwUIlEXizIjlpJHtwp8ky-IjbsUEXRBtwSPwt-oY1KAu1J2cI2YT-kyzFpJ2aIkkbX1py2lJ2mwmkSsOIrVtPBSRHdriNJHeJ08emSkQSFFEOESKWOSUeYI1GONsBzgkUjaMsZ5Fmixo9oU6PvpKcjkcJXoXqMuEMVqWlhdDiMKpRKjQRbfXHrkTNLSjZBHLD3HETtLuiBG7SPEPBww6miJGGbRjuh2JHBi8RGWJpFuzDLpj2GexAsVx0dHFizRFUU9paKY6VjruemAylxx9H1iJGJOWolxyDGcjaR7DUwdYl7KRjKebg4FtYiRyydWxoQmouJ3VHdiRm1CcZOaw56Ji-hsRDqvX2nJFjBx+oh4pxFhaWc5xvmF1Lfgc5njRKSjbPhuQ5EyiL6o-T+tOS7EHiQxolMuLHl7IDjHxlvFfPtyfLjiPek45oWWzIq5ZcxF9OdES1S5QTLeF0d7OazD4r9QJqwnkZF33F-iy6WOGEWV2vE-56CT5Ose+JLE-54CT5B8UmLLo81kJb47CbaILZPlfx1E20ZAx0rATB+6I9+jQiDZCVNxXI9hgSAGr6YCJXyKjjpV1GkSGxjSXYTpSwmsSfmfEf9rpXgkH01BOlEiQxJ+b8J4O5lASUOI7xZZm2t-NScCwnLOUxJeyJpHMRUJqNUJ3E4FljnNZ6MDJh4njApEpF64zJPzYoEGzsZuSPxfggDslSskn5MgXk6kdJIkZjM7JWkxSQI0ozCj-SYUkbnBS8r0SEpuXHQs1VSl8Jl6TXTiSALQnhNLxTXRUSVKqzWJXOTXJcdFLrqnC5qeU-uHkS6oKStxK5f0sKIMGBSyJiuWtGRSOo+TiirA06s1MoRt9zW-mcaZkVaFJFmuvUmSWeiFIA0ipMwyqUCVLh4TciTzRaUbw8qg0ZpQkPCkkQBbDTPinEINijT2kjMZmg3KKdpNgFNJ8a40sPIsK4LnTX2BIQbplI6n3lTBANU5gADVE42EPqdZKjaBoYeIDEGdiDqhLTFkWuElqjxhmgyqoCMgkKJHYxrTIAsMsGQjPyAGZAscIvGejKta1Ah6DPIwqTPhlWtmAtrPIPdxpngzzR3EFPnkDw7MyEZfGWXh1y5n7T2+HWOXqjLhkszrc7SWXsx35kjMZs+-AuiLPxmQ8XSDMkLhCWlk6ClONvQFOrOD7Hi3e2stGbTJGZIzt6C7HWYcx-R1YDZosjGVNixk5ZOZhssWfwCyKx8+ZTsgmZE1j6GtzZUnDjgzI7TWzFZ2PAaQ3Ur5qyPZj-V0hX2BmRyGpvfL7DjN9l5tI2DdfidTLjmECXMG-FBkHLJmlMFaDMhShHJtmb1XMj9IBo7NLm1M5RwjVSQrPzlt1+c8XMnHnKNk9NTh8ooBlLMzl0D387M0yQ3Pbl0D02dc2OdXK4FFBLZduJOb3KrKCchhWeEmXPNiIioXxquM2SvIyJtZGpCAtuc7OES+Jv0+-VxiXODk9N8gCkfptlTPmNzpmhMwtqrh9lbzRiXEd7C4x7kTzjBJJdclnjJbJyrBWOO8VnnHnnzg+uhBprPK-lVkFCtQEQcvOgVKSSgX-T-JvMQWUtiStgpmS-I7xYjH5Y+KuWAuj4sZ+mPUjOegud7e4TKreZ+RQt4oOpiGreT+UQveFiFbB-8nBeK2qKlkTm+8hGXuk4ilwACUClhQI1rT8cIht84eUn2yCjiPmfCiRrWiOQN0zpQ8g+dViAVyKshCizRozLdLUF3ZdC8VivkVQAFaFoi9hg9gya4sdF99UuMj34K2KaJhSWKSQVAV3zbRFMr0eESEBSL1Fc6XIAGLqIIKLFVWKbsZPKJoLQlsXbfJQNyJuE-FCMviHkCSx1FCFHiqThE0XnxLDF0SpbNxHLnlFzFGSoIllgYVBsigTi8Nv3P-bfDyFeSt7NNgEBnD3F0i0wrkGASLC3aaihGf9gujAKWiISkpeE0oyzpKRDqKpe0vewuYul2CoxayQJB-tzWrGSZdvPiQ5yi2uS4ZQ8SoRWI4lSRJkYkqN6JYfiXRZhdsqBKiJF06glohwvmUDYbSV9Itq0vUUlA9M+isEiIouVb5XMc6eDlOx6W198xZFVEoCudENdm2lqI5Y42yBzoz26Stpaq1wmADjRWyxFZNwULhiwSxS9FYowGYkkb2qy3LiSRtLPtoVfom1pKJeUEyLCqSrjl8txWmdHUNynUkMsZUMV389srjlEu+UDYuIfEAajmLBUL8lMAiQsUSrCWZBWppHCVbFxcw0JhRtHYVe-S1QnsWx5K9+kcgP65lZV+I76eaxRn1LeVqaIQRxTHG6qMsRLPbBuTZXqKmkMLeDlTJ9a4zOF545SeJzmUNK-BhIp5bkRnIaqpxrA9cWiteVCQmU4nHFa8vYrrDpy5y9lXMK3TWrXxFqk1SxiZTCjVZyq07jdwCH4UGVryplM3gS4Br3hdTCCTyvjUmqmK+Clip6uNWgilGxzLLgivUWMoq8T5ENb0uKqLCCKWa+rrB0okprgClI5fs6oAVl8+Jnawxl5UjUYyUV4RFKSWoEZNqdpFa-xUTJGwLcISAAFXED-AJA8AdRUPW6VGFd1+6iUK2sOQLsz1B615fvxWU7q91t6hGVtOhSAob1F6-hQwNDx1tH156w9QTKyzkp31T6z9bXzjGBpMgIG-9f4qA3WYpRp60DQBsoYpd4NcIj9chovpH14N16pDeoqlXOp7uGG-xR+0DQmiQGxGl9TNmdQddKNkPIrLGmg3PrIeLvTNExrA0jNrEJLYZOxsw0XMhF8G05nRovrvZ2ZupCjXhv4WkkF06GyTbX0voLpcNMGpJZRjJ5CrENymqOR8o6xBk-1zGxOroOfS8aj1-EIHoa2E0eMOlC6ZjhZp7ZtMF0ZLWzeGymxiahNcm0phgWxnGaEZbC9jLJs03Gy4OAmbzUb3tyq8iN7mnpqJBQWBp-VEmgLT0woLs9aNkW++eJXYzmbUtVZC8arxs1ZaIGpPdjI5vy3bySgwjTNRpv00XyDCWsvTRxovnTL9ZdWvjdM0XSTCOsfveLVVq2aCKrZzW-DVumnmh44+XW+rQfX8zvNhtKWhLRt0SxhzMtM24FjMt955bFtzQsrfthC0jMm8UrBvv1pfW7CyewDSrWNqrIY0B5-m7rUtrawktRJ+23IVPiHrFzRtLWxBrWn6ajqh2Tm7ca6U34va7V-mZQkAwW1XafmmQU5d3K22W8Gaac4rWtsIaFyvsbm+Hc70oxcrVcOM77YQwECMM7cl207T80B0ktvJ-2-hTjvZkBSTtr2+rn0V16nzSdEjfYsTum2g7uRCkCnSDoJ2qsSSLKhPFDvfrWJbJf8-nbaO-Q4DMmIu+rjvP35FMqdryl0a3nx3U7uRThaQfdqn7vVFBku0pasXZmaCGdidTpeM213hN7sIgzncrobzijMuazE3ZR3B27M7dlykVHruR2s77yTeAZZwUx0laWBK+MfpwSV34bhkJQcoUpvd2CDp+7M1RXLqo2EiSW102PSxqToJ6WdXOz4p2gT0W78NJQWrNQVW0R6gSvpbxQqiG7q6Lm-HR5m7vT1HjCZZwn3SjoeKSQEO5RIPS+vLkQafF4emvQ5UVS1KItjehygBOFEHDy9B9DhruJyVO7fMaiO5EUun2iVT8HaZ4Qvr8FKcpBdROHYXt8yMyId8S6vZbvoUSj-2J651VjvYbnprFgy1faCNZxJro2N+6yYylnTNscRBu6Hf9grlZtH9tyfnNNlf1p7D9VwiLMsuz0Yzo0LqcZQXp72+YTFXu8IlQh-35J-S7BLtmPqnFKYV1xohvdvtEqkoKRcJNvRIzARDbP23eoA1vmkx98wSA+3AyaoGl1BySSB-gOO21FglADdq79B2n-bnt0DPzcSjPzdF8HXmHuODWCS30wHRK9TGNZ+wP34ayIViA1TgckNZl32ZFBMUnpXFgJFV5B-Dapr7HxjaDKhr5KqpuHxi8O5+o8VQwNUcGMZWuJDIqrAOUNNOvOnwsD3f3QsiBOq4Q87wvGQz4ychuw8QwGr49NDOg1cZSLbIeGqyBbdHUkSdVfbfdggudMvo3JGGKDkpdonSr9UWGkjDlaLRmtsOQ966Yhv1U4ZXGlAxVsa5g8IixGkH4jEhjI0SWTKGdryNRxvO0iB15r2j6agkBBKIMjNviQu-Crofb3ZA99SRFCWfryOslKj7WyY7kcH2skeBKhHetEcsaCz5pyhpo4jldG5FRB6xlctkvmmjHN6KI-Y+kfUWDU2pPRqiltXaN04uq5RjuffvmnQGdj9qCTNdR6O7KuqgR+jVop2nbHg9MW8IrtLCN0DsN+hUAj0cAmfVLjL6xigDUWN0HXcvGdrj0bnRXTnjWzOaWCfeP4aWM-7MvYcf+nEn-jyzc438j5rAnuZrRzdcrnaNFrtuIrHw6Ox4UMmElpJsJbzRYB4dMEboPkJIHgD1TLNuvdTc6oFOAh9wIpx6dlPFP8nBTMp0U5qrU0dcpTQp2U1lLCWqjQ8SqowhqeVNynR2mQnTcx0NPCmVTjE-ftDINNKnLTxp0ztNgXSnMLTWpv6VVOdZCycZbpq07ESGx+bAUvpx0wsvyFCyF2wZ7U0CWGThagz9p904JOhKk48eip6Uw6ajMLLUjePdU-Gb9Pbz-DCqYWXabTMJnDJmJG3bFvNO5mQzkpQVkVrjMlm8zoxPTKr1dPVmMzkpFfGHJ9PtmPTQJRlMI0gkgNIzfZ9yjVOG0RneziZovRIRyz3cRz052Y3sbmypnNTTZjvCC2Sw5nGzNZvweMkHOGsFzZZ1kv6W3pVmdzHZokqKs20Qkjz7k1krWjDltmLzo5zs6ho74Nm1zu5oqsY376fmjTl550lSeox3bhzU54852auYM55z4F+86JXiJfZVzAF180SVcxPbtzX5wC-ajHZMN-z6ZlC6CPM5fZzzmFgi4ViaQ38yWd5oKbfqNEgXnzpFxc5aq6OBp7Jkp2CzRfIuCGgBeF0s3BarV0WFUJO4s4xYgsmrA2puXi+ufFYuYG69OkS8haYvKj6TquDC4pbEvAEWASTQ8xxf8Xe4kmJF9S-xcRy9NdcVF3S70tM3sCpL35iWlmc-w9mXzSlxHDRkV02WsLDVZbGrrAtOWNLnxlI1rtvMWXk9JHDQUhfwvOXrJgtPXWpYit+Xl8wCGhe5bIu-6V8pCwy3FeMuFZdJ7C5K5FZPwRYSWC0hS5lc4vmiCkrhpgo5dEtZXzR72SfYHryvxXYC4alRZOd8u1XUUJKhmTHvYsdWyrkNRKo83Ct8WBr2hQNqnqaudWv0aO-fhUJKujXOD4yeY9Rg+k+WarY1wZAsMBFtCprm1xZG2qwOrWGLRl-a0JC4P7Dqrp1zg6h3NY8t1r11jGTC3gOat2rG1u1dYzDNJEuTC16S1vkXQC5yiI1v6xlmckB6fFsVxa-wtQ7abvrOl-q-LpYzfr4lGVqG4otNYj7zLCNqTaEUpH1Egr2NxRQLlf1XXSrd67stiLhHUXXl72WoF0reuPWYpCkBqwgZguE3HGpgjZd-oJvvWv1viPEz4WLYPWybZOv5eMvhu82exfFMir+uFto3NGo-bIwcqxuS3NG9tI64LZOsi3KG-OQLnCVJvy3LegO985+ypvBWL6bSBQ-Oz2sFrFCbIz9mzdVsctMRjBydsDdssn41E4QydpDZBupr2CkKiW4zc0bA0sVn7VG37eHURNJRKt4O-fXEUg1J2Wtw2zRL+VmGdSBtyO2SLGK+rWVNtgmYugUHocGb2tknkhkm2GH87PfNrZSN01y2s75ovnOxwrE8247NE4lipZ1JB3S7fo2krXYjse2RufzZM-GNjs92aJySMpmWSruZ9KMpp+I5ncHv8AhGGt+smbfZvQ6tKiwhI0B2ptPXhBjqx223eBb82OTORmewhNERxHwiP6C+xt0yD6YQj3dlO0n06MqcB7Hlxsf9gozHk77p3f7GWJ-F-33hpPZCYvc-tXEkMHY-CuvadvuDZ0XNyYyXZfs-NeJEx2tcA4yLscKzLFd2xA8GRiUIJvtpe2en8wQTn7Dd2AhG0HWt3x7-nBB0+THsoP-W6bZiZg+IqdtDK4DlK42PAo6VYHx9yxsop0rIPKH45IZJxSPt0OhHzpwyng54eNJROOlYh-g4OvLmzKFDkh4pmgdJF9Jv1rRwNz0lMOxHW1na7o+TsmPqsr6uydw-yuNiQyAVdh2Xxwc+FhLfVuB7aK1VeUpHzD4ikUH-byX3HgjsRaRoXUqOFHliWfTOqcdcLxzuRRdfXYMfWIXJxjgx7+1ym0PfHD7ee6tVsfNX+A9l+aQI+kf+sECtUmJ0tm4vzSfHljt+TccyeWPZL9xhp1o-GTdTNHqj-ZatQ-sROwAwx+aak9UevHVqFjrR3l1WkVOUBG+6E8U6yfnlE70J0R1o+4jNterQ7Pe4-1KOnT5HdjvhJ3bBPhPdngyD3ADUNbhgAAwtuq65MGISFzq586LPYdc7ntfOtJOzOeXOWNP8wlbc4+cX0AJVosls84tuEjAxgKIF0bcEamkcZ4L9Sau3Q5wiYXhLDPGmJ+f3PLeoLGjvd0RfNCGCuHMF788t5UJ51bhp5wS8SFtd0O7ztF+PtNbqqQG2L-rhJPQ6AuyXSLVzDR1OYMvneX4yI9C9Zc4vM28RhF-y8IbtjHVC7Ll1izaxBsNxRhSV85g20bk8O8rmfeMhCOkvqX5kpxleNRfEHPCbnfF5q-q5FBjjN9ll0a8IbRoyn05TlyK52FZZIufLi1zsL8zFr6Xdr44YiTgnuvnXRk-pU+SxcevnMNW1Y8q6DfniasHaw1yhsPrETo3F9ODhBOY4quMsoegrua4kbfov9kx2176-FZI2VJTrmKS-v4fxu7FsxER2W7X71XJJVb8NiZU4phu83d2OApOrrftKvbnFKl4-wlF8Tk34bxpQOsMoZvE64xEybm8f4FuvKRb0tnUMce6vE6okbaVlQlcDvC0l0xYZTudUpu-srGHJ646bdWtBRcVDV4-xoRbOF13bxOqPwCf9vm3b2OUV5JHczshBGTn111xJz-tZd27td8ThNddVhX97zHB0vg6NN33idIxs23HwLuB6pPUD4e7rohEg2ZCn90B4ZQDnQPV72DyETGkwfcmdQbrvoWml4el6mM5DxO480uaJnJH0wg9nO6fVAPm9egldNXdof+U4GeDms6A47uGUxWYkwh8IFIYtUGJmj7AMQdgmsP+H96Xe667EDPqz7n9oDPbcZEN1o6Pmox9ndW1WT4H2D9NxYCBu2PNabN5iiVrKfiK686k5rVE-sMWbdtEkmZ+OG3dHhYqaYHQGVPbr9wdUbCAjEs1I6XPUYTgJaY8+SAvP0wHz+4OJ33dNwrnwLyKeC+hfJA4Xqspw6zx4dovAX9z55-NBhfIe9tXAf57c9Besv3n5Xug6EuGt0vhXuL8V5y+1MlbfOtEjF8y8hfsviXljXJ+F2NeMvRXlryV5ln1GvcpzSr7F7ADxfWvSXgrbYJxnDfmvCXib9vJkNj44RM3nr3N8h4KQGZYHowit+q+9favlvIievii9NfVv43xneLrCsFeRvY3vrxy0JnG6uvVX0bzV7a8JulkSVx79d5e-zeqxVTi-Mxx2-Pe9vr352ws8-xktAfN3-b-fYE0aChvJ33b2t86Gw3Vr03hH0D6R-Q7gLpe5b+j6h8g+D6SdOIZ99m9neRNJepgsd+6+I+yfCE+r6XrS94-vvlDVDnCyu+k-bvB9P5WYvZ+nfOfTk8G6XoB9M-gfP344dQd2sk++f0P07jQjmvw-qfGP2n+4LDvfW0fiv-H2L9CG7aphvPmn-z7B1xPvrC7SH8z+22AnvrVPp75r8h4x8gbevpXwb6wfTOp9Uv-XzL9iJQ159bvx3x78Ia1CV9Pvm39tsF+QOIfIvzH9MzpLlEFf1vs31FuJdXFT9Q7U36L-W+h+uSPtEBqn8j9VlfE2Ik3xH+V9IsLvLRK3197T+aM4V8xB38H45YXkNitf+Pxt1WIVsg-zf20RRcmLC+NfHf9pYumxHh-e-lf-xm1rQPZ+i-Tv3LhLP1tN+R-dA2doQbn+5-aPJJbdoX+H8r+82yRNdu3-n--1I2Nzif5v+L-tsdH4Ra0Xv638jLVPxoir5P79-IdpS3z4-3H-3+xEaExnlEkP7f-X+HiuERYS-ZX-Cvz-9LlAfyhdl-U-2KJqGeF0gCp-V9hRYUXYAI59H-T0wMMdScvxQCCff+lBY8XK-ygCrdMuGbZFCOANQD4MMQmzF7-E-3gCEmboS44e-X-wIDR2JpGzEf-EAKYDyA6ynQ5Y-dgJoCW3UKz9V1fRgL4C3sQgnXFcfagLICGKcsQ3IN-YQKkCwsP-RldMA6X2wDUHb+yM5SAtQP65h8Bci0CtfdylkdpyKgPkDtA8JiOQQjBgN4CFAzHFcwVONgKwCDAlAX0wM1HgMcDH+WBSAl9Arrkao3Xbbwf8zA0dn-dVjOQOsDAg+DAplkJFQPd9wgpbGZsnyRn0kDYggbCCV8JNEiLAEAbGAHp4BPHmm8MgkqFHdBXeMii98grIKj9ImPAOz9Sgu2Cj8t6FuyqD0QMoOy09WU0gq9qg3Lz6U6Xbb3aDjZLv2ZcxUHoI7lkkWuyG9Bg3JgAdzVdIMaCag8Nn9JHVZbzGDbRe0V7ITfRYPq5etNIwGDpgl5zK96yNLzWD-WLVDIpb7KYLcgmgqTjSsdXBoLOCZg9pWU4DXU4MyDbg1Vi3RIjCHwOCrdZJEdVRg7YNKYdeLwMeCCgmdkW8WKBYN+CB6Z-xCCtgm4K64XMINimMU-D4IfZOjBIOhCngzej7Yo3QEPODYBACTjdsQ54OXZMxGh2uD0Qyj3g5w5UkKBDcmQrVWMfgmELrpriDiTRDqQpen5tS3AkIxDCnMylWDwQ3Jlwxa3TkI810Asyn2C+QpelGlDKDrk3AkQlCibwR1NoPFD22TvR8I9HZ1RlClQo41P59CQeW6DNQp-36czKekLJDCBIxmncWQnEOXYKredypDLQ0diTIIqC0MJDR2O2W8cnQ2EJBCD3d0LrppXLymlDZQu7GUZonIUP8Ym8fyQB8AwkTn4hkpd4P1DR2Yjjfc9QhkMIF8gKaTyC4w8gL8kAPb0JnYXfE40BQAASUlAZTSMJ-wdfVHA64iwzU1LC0TUEwVQjKCEirCSwjMJ31iLQsOLDhTGsM1xQnQWzhEmwzsJbDJSe1UmIF2fsKCBBw5o11My-dsOrCJw0KiqNubEBjHCuww3EfNG-RsI7Dxw5MKj8dcLokNZlwucPtQAbbvxnDmw7cOS8-vQWzJYDw88NXkewpP1OYbwk0Na1f5T9hxknw1kIgZJRPsM3CVwuJAilD2DcNnDbwrBxyDP2fcN-DDw5fDoDw7U8IHCQIyhRrFP2a8MgiEIjvDaRIVR8NQjnwpySgt4yd8OwjPwhHRR83DH8OAicIgYUukkAowg-C7Q-NyPl3SOCK3CKIgRisZFhOuxojCIuiJn0VpGVSAizwliPYZ3tWuwgjyIoiPYZ7cFi3jJmOWiOdD83JTFYCmIv8MaROGQVSwixI7iLmFShSYKXCuIuSJPMKBWcX4j4IwSKPFRIdcVHC9ImKXmEhyJSKgj8kHbW3s8OWSPW90mPQOMjmI8SN4pDQ1slEiBIryJQoLfUELsi0IiIMqsuSTrU4iNI-SKmdhRBEKA4XIhqTijnIqyIvoPcejx1D1I-yM0iTVDmWbY2LIdkSiOWfpQGpXJKKOyiYok1TCp-JSyOijGdK5TdCPI5SMsQKrFyRSi6otW2UxkpSsNSiOWeggCc-IkyICj-rKxDioZI3qI25SeAJxQiOojlkIIFwrKiyihonKNBEeXLqgIjZo73l5FypbaBHgv4SIDYgOIcYhugBIISBEgxICSCkgZIOSAUglIeuFcAdPDbhhZKCEKNMjyAj+huYkwt6P5YuIEk229RyQTzC1WMCQNMCnA8iQQd7uDznIkTFQgiolenKhljECTF9TtkLoH6zHVXVUG1XJ7FSZz8EayfTHPZugXaAgBSQQQCAA/view">vega.github.io/editor/</a></p>
-<img src="uploads/2019/2b8afeefb5.jpg" width="600" height="499" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/2b8afeefb5.jpg" width="600" height="499" alt="" />
 
 		</div>
 	  </div>
@@ -9228,7 +9371,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Anyone who’s been to one of my Trove workshops will be pleased to know that the WWI effect is still evident when viewing the total number of @TroveAustralia newspaper articles by year. As is the copyright cliff of death…</p>
-<p><img src="uploads/2019/207a667ff0.jpg" width="600" height="332" alt="" /><img src="uploads/2019/89b225d4b1.jpg" width="600" height="346" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2019/207a667ff0.jpg" width="600" height="332" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2019/89b225d4b1.jpg" width="600" height="346" alt="" /></p>
 
 		</div>
 	  </div>
@@ -9240,7 +9383,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>So there are now almost twice as many newspaper articles in @TroveAustralia from NSW as there are from any other state. (cc @statelibrarynsw)</p>
-<img src="uploads/2019/c5711fed5b.jpg" width="535" height="600" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/c5711fed5b.jpg" width="535" height="600" alt="" />
 
 		</div>
 	  </div>
@@ -9252,7 +9395,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Well look at that! – a selection of my @TroveAustralia related Jupyter notebooks turned into simple apps using Voila and <a href="http://trove-newspaper-apps.herokuapp.com/">delivered via Heroku</a>. Save complete newspaper articles as images, create thumbnails, or download pages! #dhhacks</p>
-<img src="uploads/2019/98c36ce05e.jpg" width="600" height="283" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/98c36ce05e.jpg" width="600" height="283" alt="" />
 
 		</div>
 	  </div>
@@ -9264,7 +9407,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Kicked off a new GLAM Workbench repository dedicated to @SLSA with a <a href="https://nbviewer.jupyter.org/github/GLAM-Workbench/slsa/blob/master/Getting-higher-res-images.ipynb">quick notebook hack</a> to get higher res versions of digitised photos. #dhhacks</p>
-<img src="uploads/2019/7d61a71399.jpg" width="600" height="474" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/7d61a71399.jpg" width="600" height="474" alt="" />
 
 		</div>
 	  </div>
@@ -9276,7 +9419,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Search @TroveAustralia newspapers without leaving Twitter using the updated and enhanced @TroveNewsBot! After 6 years of regular tweeting, TroveNewsBot needed an upgrade. Check out all its new features, including article thumbnails, <a href="https://wragge.github.io/trovenewsbot2019/">here</a>. #dhhacks</p>
-<img src="uploads/2019/a4bfd7624c.jpg" width="498" height="600" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/a4bfd7624c.jpg" width="498" height="600" alt="" />
 
 		</div>
 	  </div>
@@ -9288,7 +9431,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Recent additions to the Trove Newspapers section of the GLAM Workbench: getting images from @TroveAustralia newspaper articles, and uploading article to @Omeka-S: <a href="https://glam-workbench.github.io/trove-newspapers/">glam-workbench.github.io/trove-new&hellip;</a></p>
-<img src="uploads/2019/9990b25c5b.jpg" width="600" height="498" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/9990b25c5b.jpg" width="600" height="498" alt="" />
 
 		</div>
 	  </div>
@@ -9300,7 +9443,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Want to upload @TroveAustralia newspaper articles to @Omeka-S to create an exhibition or populate a research database? <a href="https://nbviewer.jupyter.org/github/GLAM-Workbench/trove-newspapers/blob/master/Upload-Trove-newspapers-to-Omeka.ipynb">This notebook</a> collects article references from a search, a Trove list, or Zotero, &amp; uploads metadata, images &amp; PDF to your Omeka site. #dhhacks</p>
-<img src="uploads/2019/ab5e4a76bb.jpg" width="600" height="326" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/ab5e4a76bb.jpg" width="600" height="326" alt="" />
 
 		</div>
 	  </div>
@@ -9323,7 +9466,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Ever wanted to save a @TroveAustralia newspaper article as an image? <a href="https://nbviewer.jupyter.org/github/GLAM-Workbench/trove-newspapers/blob/master/Save-Trove-newspaper-article-as-image.ipynb">This notebook</a> lets you do just that. Paste in an article url and you get nice big JPGs to download. It even works with article spread across multiple pages. #dhhacks</p>
-<img src="uploads/2019/437c9515a3.jpg" width="600" height="580" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/437c9515a3.jpg" width="600" height="580" alt="" />
 
 		</div>
 	  </div>
@@ -9335,7 +9478,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>More GLAM Workbench updates! More full text of Australian books! I&rsquo;ve added <a href="https://glam-workbench.github.io/trove-books/">the notebook &amp; data</a> from my harvest of @TroveAustralia books in the @InternetArchive. There&rsquo;s metadata and text of 1,153 books to explore. #dhhacks</p>
-<img src="uploads/2019/1f1ac0e8f8.jpg" width="600" height="440" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/1f1ac0e8f8.jpg" width="600" height="440" alt="" />
 
 		</div>
 	  </div>
@@ -9358,7 +9501,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Here&rsquo;s how you can <a href="https://nbviewer.jupyter.org/github/GLAM-Workbench/trove-books/blob/master/Getting-Trove-books-from-Internet-Archive.ipynb">get the text of Australian books</a> in @TroveAustralia from the Internet Archive (via the Open Library). #dhhacks</p>
-<img src="uploads/2019/8376bb4dfa.jpg" width="600" height="496" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/8376bb4dfa.jpg" width="600" height="496" alt="" />
 
 		</div>
 	  </div>
@@ -9370,7 +9513,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>I&rsquo;ve updated the data that sits behind <a href="https://troveplaces.herokuapp.com/map/">my Trove Places app</a> and added more than 140 newspaper titles. To find @TroveAustralia newspapers published in any region of Australia simply click on the map! #dhhacks</p>
-<img src="uploads/2019/ebde2b82a0.jpg" width="600" height="376" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/ebde2b82a0.jpg" width="600" height="376" alt="" />
 
 		</div>
 	  </div>
@@ -9382,7 +9525,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>If you&rsquo;re researching foreign policy using @naagovau you might find this little tool useful – it tries to find the file containing a specific numbered cable. Good for tracking down rogue references! <a href="https://mybinder.org/v2/gh/GLAM-Workbench/recordsearch/master?urlpath=apps%2FFind_cables.ipynb">Try it live!</a> #dhhacks</p>
-<img src="uploads/2019/e801b02a1d.jpg" width="600" height="596" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/e801b02a1d.jpg" width="600" height="596" alt="" />
 
 		</div>
 	  </div>
@@ -9394,7 +9537,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>And what can you do with 400 CSV files? Well, you could explore their contents using my <a href="https://glam-workbench.github.io/csv-explorer/">GLAM CSV Explorer</a>. Select one of the files to peek inside, or upload your own CSV. #dhhacks</p>
-<img src="uploads/2019/b78c7bdd55.jpg" width="600" height="578" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/b78c7bdd55.jpg" width="600" height="578" alt="" />
 
 		</div>
 	  </div>
@@ -9406,7 +9549,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Some overdue updates to the GLAM Workbench. First here&rsquo;s <a href="https://glam-workbench.github.io/glam-data-portals/">details, data, and code</a> from a harvest of GLAM datasets on @datagovau. Includes details of more than 400 CSV datasets. #dhhacks</p>
-<p><img src="uploads/2019/8ecb3eba56.jpg" width="600" height="438" alt="" /><img src="uploads/2019/58c8fa43a4.jpg" width="554" height="600" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2019/8ecb3eba56.jpg" width="600" height="438" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2019/58c8fa43a4.jpg" width="554" height="600" alt="" /></p>
 
 		</div>
 	  </div>
@@ -9438,7 +9581,7 @@ images = download_images('107024751')
 </ul>
 <p>There&rsquo;s some details of the method that I used to find the cartoons <a href="https://nbviewer.jupyter.org/github/GLAM-Workbench/trove-journals/blob/master/Finding_editorial_cartoons_in_the_Bulletin.ipynb">in this notebook</a>. I&rsquo;ve also documented everything in the <a href="https://glam-workbench.github.io/trove-journals/">Trove Journals section</a> of my GLAM Workbench.</p>
 <p>Be warned – the language, images, and ideas presented in <em>The Bulletin</em> were often racist, anti-Semitic, and sexist. You won’t have to look far within this collection to find something offensive. This was, after all, the journal whose slogan for many years was ‘Australia for the white man’. This is our history&hellip; #dhhacks</p>
-<img src="uploads/2019/a92c91b746.jpg" width="380" height="600" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/a92c91b746.jpg" width="380" height="600" alt="" />
 
 		</div>
 	  </div>
@@ -9450,7 +9593,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>After a number of unsuccessful attempts, I seem to be getting <em>The Bulletin</em> title art fairly reliably now. Tricky because it&rsquo;s not always on the same page&hellip;</p>
-<img src="uploads/2019/0b78cf04f9.jpg" width="600" height="422" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/0b78cf04f9.jpg" width="600" height="422" alt="" />
 
 		</div>
 	  </div>
@@ -9473,7 +9616,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>I&rsquo;ve reharvested Commonwealth Hansard from 1901 to 1980 and updated <a href="https://github.com/wragge/hansard-xml">my repository of XML files</a>. This should pick up the work of @ParlLibrary staff over recent years to improve the XML output. #dhhacks</p>
-<img src="uploads/2019/7367cc5b3e.jpg" width="600" height="376" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/7367cc5b3e.jpg" width="600" height="376" alt="" />
 
 		</div>
 	  </div>
@@ -9485,7 +9628,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>And now my GLAM Workbench has a &lsquo;Trove Maps&rsquo; section to document examples and explorations using data from @TroveAustralia&rsquo;s &lsquo;map&rsquo; zone: <a href="https://glam-workbench.github.io/trove-maps/">glam-workbench.github.io/trove-map&hellip;</a> Includes a list of 20,158 maps with high-res downloads. #dhhacks</p>
-<img src="uploads/2019/4b7e1bf53e.jpg" width="600" height="545" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/4b7e1bf53e.jpg" width="600" height="545" alt="" />
 
 		</div>
 	  </div>
@@ -9497,7 +9640,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>The other night @OpenGLAM was sharing collections of high-res images from GLAM orgs that are free to download. That <a href="https://nbviewer.jupyter.org/github/GLAM-Workbench/trove-maps/blob/master/Exploring-digitised-maps.ipynb">got me thinking</a> about @TroveAustralia&rsquo;s digitised maps because there&rsquo;s lots of them, most are out of copyright, and the images are BIG. #dhhacks</p>
-<img src="uploads/2019/4a8b89f9e2.jpg" width="600" height="354" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/4a8b89f9e2.jpg" width="600" height="354" alt="" />
 
 		</div>
 	  </div>
@@ -9520,7 +9663,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Australian pilots, aviators, airmen, and flyers — 4,950 thumbnails from a search in @TroveAustralia&rsquo;s newspapers combined into <a href="https://www.easyzoom.com/imageaccess/9d26953ccdf5475cad9c11f308cd7988">one very big, zoomable image</a>.</p>
-<img src="uploads/2019/6d9a60ee81.jpg" width="600" height="372" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/6d9a60ee81.jpg" width="600" height="372" alt="" />
 
 		</div>
 	  </div>
@@ -9532,7 +9675,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>I&rsquo;ve been busy lately harvesting LOTS of full text data from @TroveAustralia&rsquo;s digitised journals – so many opportunities for research! You should be able to get to all the code &amp; data from the new <a href="https://glam-workbench.github.io/trove-journals/">Trove journals section</a> of my GLAM Workbench. #dhhacks</p>
-<img src="uploads/2019/9f44f2edae.jpg" width="600" height="571" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/9f44f2edae.jpg" width="600" height="571" alt="" />
 
 		</div>
 	  </div>
@@ -9544,7 +9687,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>I’ve <a href="https://glam-workbench.github.io/trove-books/">added a section</a> for the @TroveAustralia ‘book’ zone to the GLAM Workbench.</p>
-<img src="uploads/2019/452579e763.jpg" width="600" height="483" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/452579e763.jpg" width="600" height="483" alt="" />
 
 		</div>
 	  </div>
@@ -9579,7 +9722,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>So @TroveAustralia includes more than 370,000 press releases, speeches, and interview transcripts issued by Aust federal politicians &amp; saved by the Parliamentary Library. Learn how to harvest metadata &amp; full text to create your own datasets <a href="https://nbviewer.jupyter.org/github/GLAM-Workbench/trove-journals/blob/master/Harvest-parliament-press-releases.ipynb">in this notebook</a>. #dhhacks</p>
-<img src="uploads/2019/7ae09344a8.jpg" width="600" height="515" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/7ae09344a8.jpg" width="600" height="515" alt="" />
 
 		</div>
 	  </div>
@@ -9591,7 +9734,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Among the OCRd texts I’m currently harvesting from Trove&rsquo;s journals zone are things like the NSW Post Office Directories from 1886 onwards. Useful sources for compiling data about occupations, locations etc?</p>
-<img src="uploads/2019/18d9242fb0.jpg" width="460" height="600" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/18d9242fb0.jpg" width="460" height="600" alt="" />
 
 		</div>
 	  </div>
@@ -9614,7 +9757,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Another collection of OCRd text from @TroveAustralia is on its way…</p>
-<img src="uploads/2019/efef7839d4.jpg" width="508" height="600" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/efef7839d4.jpg" width="508" height="600" alt="" />
 
 		</div>
 	  </div>
@@ -9626,7 +9769,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Playing with @TroveAustralia newspaper results. Here’s illustrated articles with ‘White Australia Policy' in their title…</p>
-<img src="uploads/2019/6b604b5d23.jpg" width="600" height="600" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/6b604b5d23.jpg" width="600" height="600" alt="" />
 
 		</div>
 	  </div>
@@ -9638,7 +9781,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>The final tally – after much tweaking I’ve downloaded OCRd text from 9,738 works in the @TroveAustralia books zone. This includes ephemera such as pamphlets and posters as well as more booky books. <a href="https://nbviewer.jupyter.org/github/GLAM-Workbench/trove-books/blob/master/Harvesting-digitised-books.ipynb">Here’s the full metadata, all the text files, &amp; harvesting code.</a> #dhhacks</p>
-<p><img src="uploads/2019/9c8cd20e47.jpg" width="595" height="600" alt="mp-photo-alt[]=" /><img src="uploads/2019/f078114749.jpg" width="600" height="323" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2019/9c8cd20e47.jpg" width="595" height="600" alt="mp-photo-alt[]=" /><img src="https://cdn.uploads.micro.blog/8371/2019/f078114749.jpg" width="600" height="323" alt="" /></p>
 
 		</div>
 	  </div>
@@ -9650,7 +9793,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>I’m looking for books in @TroveAustralia, but there’s lots of ephemera (pamphlets, posters etc) in the book zone. So I tried grabbing the images of ‘books’ with one page &amp; found some nice stuff including this collection of  <a href="https://trove.nla.gov.au/book/result?q=subject%3A%22Playbills%22+%22nla.obj%22&amp;l-availability=y">playbills</a>. #dhhacks</p>
-<p><img src="uploads/2019/b7867cd7ce.jpg" width="228" height="600" alt="mp-photo-alt[]=mp-photo-alt[]=mp-photo-alt[]=" /><img src="uploads/2019/a2ab93f4ec.jpg" width="228" height="600" alt="" /><img src="uploads/2019/891f24a540.jpg" width="228" height="600" alt="" /><img src="uploads/2019/626007a22a.jpg" width="237" height="600" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2019/b7867cd7ce.jpg" width="228" height="600" alt="mp-photo-alt[]=mp-photo-alt[]=mp-photo-alt[]=" /><img src="https://cdn.uploads.micro.blog/8371/2019/a2ab93f4ec.jpg" width="228" height="600" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2019/891f24a540.jpg" width="228" height="600" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2019/626007a22a.jpg" width="237" height="600" alt="" /></p>
 
 		</div>
 	  </div>
@@ -9662,7 +9805,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Text of over 3 thousand digitised books and pamphlets downloaded so far from @TroveAustralia…</p>
-<p><img src="uploads/2019/f3a5866b90.jpg" width="487" height="600" alt="mp-photo-alt[]=" /><img src="uploads/2019/5027148962.jpg" width="458" height="600" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2019/f3a5866b90.jpg" width="487" height="600" alt="mp-photo-alt[]=" /><img src="https://cdn.uploads.micro.blog/8371/2019/5027148962.jpg" width="458" height="600" alt="" /></p>
 
 		</div>
 	  </div>
@@ -9674,7 +9817,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>After talking to @PrimahadiWijaya today about work at @MonashLing, I <a href="https://github.com/GLAM-Workbench/trove-books/blob/master/Harvesting-digitised-books.ipynb">started harvesting</a> metadata &amp; full text from digitised books in @TroveAustralia. OCRd text from about 2,000 books downloaded so far. More soon&hellip; #dhhacks</p>
-<img src="uploads/2019/91c3e48888.jpg" width="600" height="286" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/91c3e48888.jpg" width="600" height="286" alt="" />
 
 		</div>
 	  </div>
@@ -9686,7 +9829,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>What I did at #valatechcamp! Here&rsquo;s a <a href="https://github.com/GLAM-Workbench/trove-books/blob/master/trove_digitised_books.csv">CSV with basic details of 7,719 digitised books</a> available through @TroveAustralia. I&rsquo;m not sure if they all have OCRd text available, but if they do I&rsquo;ll attempt to download it once I&rsquo;m back home.</p>
-<img src="uploads/2019/75870ce4d6.jpg" width="600" height="313" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/75870ce4d6.jpg" width="600" height="313" alt="" />
 
 		</div>
 	  </div>
@@ -9698,7 +9841,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>TIL that the web pages for digitised works (like books and journal issues) on @TroveAustralia embed a lot of useful metadata that you can&rsquo;t get through the API. Here&rsquo;s <a href="https://nbviewer.jupyter.org/github/GLAM-Workbench/trove-books/blob/master/Metadata-for-Trove-digitised-works.ipynb">how to extract it</a>.</p>
-<img src="uploads/2019/a74ce08c2b.jpg" width="600" height="357" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/a74ce08c2b.jpg" width="600" height="357" alt="" />
 
 		</div>
 	  </div>
@@ -9710,7 +9853,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Just posting the link to my <a href="https://slides.com/wragge/introducing-apis-vala">&lsquo;Introducing APIs&rsquo;  slides</a> for #VALATechCamp again, so that they show up in my MicroBlog feed&hellip;</p>
-<img src="uploads/2019/1e24519847.jpg" width="600" height="373" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/1e24519847.jpg" width="600" height="373" alt="" />
 
 		</div>
 	  </div>
@@ -9733,7 +9876,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>So, I’ve finally figured out a way to automatically generate nice-looking thumbnails from @TroveAustralia newspaper articles. <a href="https://mybinder.org/v2/gh/GLAM-Workbench/trove-newspapers/master?urlpath=%2Fapps%2FGet-article-thumbnail.ipynb">Demo notebook here.</a> #dhhacks</p>
-<img src="uploads/2019/8afa5ea3b9.jpg" width="535" height="600" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/8afa5ea3b9.jpg" width="535" height="600" alt="" />
 
 		</div>
 	  </div>
@@ -9745,7 +9888,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>So I put the recent report into Australia&rsquo;s national cultural institutions into the @TDHASSN instance of @VoyantTools. Here&rsquo;s the <a href="https://voyant.tinker.edu.au/?corpus=fb9792f3b08eff6d02643b4e32ff14a2&amp;query=story*&amp;docIndex=0&amp;view=Contexts">contexts of the word &lsquo;story&rsquo;</a>&hellip;</p>
-<img src="uploads/2019/5d62e1d094.jpg" width="600" height="421" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/5d62e1d094.jpg" width="600" height="421" alt="" />
 
 		</div>
 	  </div>
@@ -9768,7 +9911,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Sneak preview of my <a href="https://mybinder.org/v2/gh/wragge/hass-devl-experiments/master?urlpath=%2Fapps%2Fcsv-explorer.ipynb">GLAM CSV Explorer</a> now live on @MyBinderTeam! Select one of 447 GLAM-related CSVs from @datagovau for analysis, or load your own. Coming soon to @TDHASSN. #dhhacks</p>
-<img src="uploads/2019/f64d04bfef.jpg" width="600" height="494" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/f64d04bfef.jpg" width="600" height="494" alt="" />
 
 		</div>
 	  </div>
@@ -9791,7 +9934,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Now to load that new CSV of GLAM CSVs into my CSV Explorer&hellip;</p>
-<img src="uploads/2019/18a4f47b6d.jpg" width="600" height="429" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/18a4f47b6d.jpg" width="600" height="429" alt="" />
 
 		</div>
 	  </div>
@@ -9803,7 +9946,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Quick notebook to <a href="https://nbviewer.jupyter.org/github/GLAM-Workbench/ozglam-data/blob/master/harvest_glam_datasets_from_datagovau.ipynb?flush_cache=true">harvest GLAM datasets</a> via the new(ish) @datagovau API. Includes 447 CSVs from 19 institutions.</p>
-<p><img src="uploads/2019/3db584bd1f.jpg" width="600" height="390" alt="mp-photo-alt[]=mp-photo-alt[]=" /><img src="uploads/2019/7922c60682.jpg" width="600" height="243" alt="" /><img src="uploads/2019/3f7bbaf411.jpg" width="555" height="600" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2019/3db584bd1f.jpg" width="600" height="390" alt="mp-photo-alt[]=mp-photo-alt[]=" /><img src="https://cdn.uploads.micro.blog/8371/2019/7922c60682.jpg" width="600" height="243" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2019/3f7bbaf411.jpg" width="555" height="600" alt="" /></p>
 
 		</div>
 	  </div>
@@ -9815,7 +9958,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>This is why we can&rsquo;t have nice things&hellip;</p>
-<img src="uploads/2019/c889fcee8b.jpg" width="391" height="600" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/c889fcee8b.jpg" width="391" height="600" alt="" />
 
 		</div>
 	  </div>
@@ -9829,7 +9972,7 @@ images = download_images('107024751')
 			 <p>Still plenty to do, but my CSV Explorer is taking shape… (coming soon to @TDHASSN &amp; elsewhere!)</p>
 <p>I’ll be giving a demo at the @HumanitiesAU <a href="https://www.humanities.org.au/special-event-1903/">data summit</a> on Friday.</p>
 <p>Now with animated gif&hellip;</p>
-<img src="uploads/2019/3f1df26988.jpg" width="600" height="555" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/3f1df26988.jpg" width="600" height="555" alt="" />
 
 		</div>
 	  </div>
@@ -9841,7 +9984,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Doesn&rsquo;t take much to show when there&rsquo;s a problem with dates in metadata…  (Yep, post 1900 dates have all jumped 100 years into the future.)</p>
-<img src="uploads/2019/23db19eceb.jpg" width="600" height="261" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/23db19eceb.jpg" width="600" height="261" alt="" />
 
 		</div>
 	  </div>
@@ -9864,7 +10007,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Currently working on a CSV explorer to give researchers an overview of the contents of GLAM datasets. Sort of like WTFCSV, but in a Jupyter notebook…</p>
-<img src="uploads/2019/ebcb9c0586.jpg" width="559" height="600" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/ebcb9c0586.jpg" width="559" height="600" alt="" />
 
 		</div>
 	  </div>
@@ -9876,7 +10019,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>A bit more progress. Having found columns with OpenCV, I can use Tesseract to help me find the rows…</p>
-<p><img src="uploads/2019/0c242221bb.jpg" width="433" height="600" alt="mp-photo-alt[]=" /><img src="uploads/2019/7a80831423.jpg" width="600" height="50" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2019/0c242221bb.jpg" width="433" height="600" alt="mp-photo-alt[]=" /><img src="https://cdn.uploads.micro.blog/8371/2019/7a80831423.jpg" width="600" height="50" alt="" /></p>
 
 		</div>
 	  </div>
@@ -9888,7 +10031,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>After much OpenCV fiddling &amp; tweaking, sorry… iteration, I’m pretty pleased with this. Columns and headers being detected accurately despite lots of variation in the images.</p>
-<img src="uploads/2019/3a30c3c6e5.jpg" width="600" height="363" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/3a30c3c6e5.jpg" width="600" height="363" alt="" />
 
 		</div>
 	  </div>
@@ -9911,7 +10054,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>More updates! <a href="https://github.com/wragge/realface-data">Latest data and images</a> from The Real Face of White Australia transcription project are up on GitHub.  #dhhacks</p>
-<p><img src="uploads/2019/5bfb0939d4.jpg" width="352" height="348" alt="mp-photo-alt[]=mp-photo-alt[]=mp-photo-alt[]=" /><img src="uploads/2019/3af6f8347a.jpg" width="133" height="147" alt="" /><img src="uploads/2019/15f502e2f0.jpg" width="310" height="349" alt="" /><img src="uploads/2019/bad0aa4d13.jpg" width="281" height="355" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2019/5bfb0939d4.jpg" width="352" height="348" alt="mp-photo-alt[]=mp-photo-alt[]=mp-photo-alt[]=" /><img src="https://cdn.uploads.micro.blog/8371/2019/3af6f8347a.jpg" width="133" height="147" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2019/15f502e2f0.jpg" width="310" height="349" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2019/bad0aa4d13.jpg" width="281" height="355" alt="" /></p>
 
 		</div>
 	  </div>
@@ -9934,7 +10077,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Lots of exciting new stuff has been added to @TroveAustralia’s digitised journals in the last few months. To explore it all, <a href="https://trove-titles.herokuapp.com/">head here</a> and click on the ‘New titles’ button. #dhhacks</p>
-<p><img src="uploads/2019/23d923f38d.jpg" width="600" height="394" alt="mp-photo-alt[]=" /><img src="uploads/2019/d39855406a.jpg" width="600" height="401" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2019/23d923f38d.jpg" width="600" height="394" alt="mp-photo-alt[]=" /><img src="https://cdn.uploads.micro.blog/8371/2019/d39855406a.jpg" width="600" height="401" alt="" /></p>
 
 		</div>
 	  </div>
@@ -9946,7 +10089,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p><a href="http://nla.gov.au/nla.obj-815027576">Art &amp; Architecture: the journal of the Institute of Architects NSW</a>, 51 issues from 1905 to 1912 now on @TroveAustralia.</p>
-<p><img src="uploads/2019/81ada9412d.jpg" width="600" height="417" alt="mp-photo-alt[]=" /><img src="uploads/2019/53d78440cf.jpg" width="485" height="600" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2019/81ada9412d.jpg" width="600" height="417" alt="mp-photo-alt[]=" /><img src="https://cdn.uploads.micro.blog/8371/2019/53d78440cf.jpg" width="485" height="600" alt="" /></p>
 
 		</div>
 	  </div>
@@ -9958,7 +10101,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Only 12 issues, but check out the fabulous covers on <a href="http://nla.gov.au/nla.obj-788254980">The New Triad</a> from 1927-8. Now on @TroveAustralia.</p>
-<p><img src="uploads/2019/4642d023cc.jpg" width="453" height="600" alt="mp-photo-alt[]=mp-photo-alt[]=mp-photo-alt[]=" /><img src="uploads/2019/440d4bafb5.jpg" width="445" height="600" alt="" /><img src="uploads/2019/1fff975c06.jpg" width="455" height="600" alt="" /><img src="uploads/2019/7268e4805a.jpg" width="453" height="600" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2019/4642d023cc.jpg" width="453" height="600" alt="mp-photo-alt[]=mp-photo-alt[]=mp-photo-alt[]=" /><img src="https://cdn.uploads.micro.blog/8371/2019/440d4bafb5.jpg" width="445" height="600" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2019/1fff975c06.jpg" width="455" height="600" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2019/7268e4805a.jpg" width="453" height="600" alt="" /></p>
 
 		</div>
 	  </div>
@@ -9970,7 +10113,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Want some arts? 130 issues of <a href="http://nla.gov.au/nla.obj-733140625">RealTime</a> from 1994 to 2016 now on @TroveAustralia.</p>
-<p><img src="uploads/2019/dccb0b11cc.jpg" width="600" height="517" alt="mp-photo-alt[]=mp-photo-alt[]=mp-photo-alt[]=" /><img src="uploads/2019/8fc3bc802c.jpg" width="462" height="600" alt="" /><img src="uploads/2019/3a3b103cad.jpg" width="600" height="532" alt="" /><img src="uploads/2019/3dbb993af9.jpg" width="504" height="600" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2019/dccb0b11cc.jpg" width="600" height="517" alt="mp-photo-alt[]=mp-photo-alt[]=mp-photo-alt[]=" /><img src="https://cdn.uploads.micro.blog/8371/2019/8fc3bc802c.jpg" width="462" height="600" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2019/3a3b103cad.jpg" width="600" height="532" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2019/3dbb993af9.jpg" width="504" height="600" alt="" /></p>
 
 		</div>
 	  </div>
@@ -9982,7 +10125,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Hey #ozhist, 295 issues of the <a href="https://nla.gov.au/nla.obj-579216301">journal of the Royal Australian Historical Society</a> from 1918 to 1954 are now on @TroveAustralia.</p>
-<img src="uploads/2019/8d38efb5d6.jpg" width="600" height="510" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/8d38efb5d6.jpg" width="600" height="510" alt="" />
 
 		</div>
 	  </div>
@@ -9994,7 +10137,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Also amongst the latest batch of digitised journals on @TroveAustralia, 39 issues of <a href="http://nla.gov.au/nla.obj-757144341">Camp Ink</a> from 1970 to 1977.</p>
-<p><img src="uploads/2019/887cffd0dd.jpg" width="439" height="600" alt="mp-photo-alt[]=" /><img src="uploads/2019/473be184b8.jpg" width="446" height="600" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2019/887cffd0dd.jpg" width="439" height="600" alt="mp-photo-alt[]=" /><img src="https://cdn.uploads.micro.blog/8371/2019/473be184b8.jpg" width="446" height="600" alt="" /></p>
 
 		</div>
 	  </div>
@@ -10006,7 +10149,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>There&rsquo;s more literary journals digitised in @TroveAustralia as well. Including 18 issues of <a href="http://nla.gov.au/nla.obj-768260759">the Bookfellow</a> from 1907.</p>
-<p><img src="uploads/2019/f81802d917.jpg" width="403" height="600" alt="mp-photo-alt[]=" /><img src="uploads/2019/c3a5050350.jpg" width="586" height="600" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2019/f81802d917.jpg" width="403" height="600" alt="mp-photo-alt[]=" /><img src="https://cdn.uploads.micro.blog/8371/2019/c3a5050350.jpg" width="586" height="600" alt="" /></p>
 
 		</div>
 	  </div>
@@ -10018,7 +10161,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>But wait, there&rsquo;s more — the KCC Kennel Gazette was renamed, wait for it, Dogs. <a href="http://nla.gov.au/nla.obj-760030643">Another 94 issues</a> from 1962 to 1969 in @TroveAustralia here.</p>
-<p><img src="uploads/2019/a100e34e48.jpg" width="456" height="600" alt="mp-photo-alt[]=" /><img src="uploads/2019/f26300b394.jpg" width="450" height="600" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2019/a100e34e48.jpg" width="456" height="600" alt="mp-photo-alt[]=" /><img src="https://cdn.uploads.micro.blog/8371/2019/f26300b394.jpg" width="450" height="600" alt="" /></p>
 
 		</div>
 	  </div>
@@ -10030,7 +10173,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>People, you need to know that @TroveAustralia has digitised 360 issues of the <a href="https://nla.gov.au/nla.obj-760030452">KCC Kennel Gazette</a> from 1932 to 1962. 13/10 would browse.</p>
-<p><img src="uploads/2019/01cfbf25e2.jpg" width="600" height="335" alt="mp-photo-alt[]=" /><img src="uploads/2019/1a9dddc1a5.jpg" width="600" height="299" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2019/01cfbf25e2.jpg" width="600" height="335" alt="mp-photo-alt[]=" /><img src="https://cdn.uploads.micro.blog/8371/2019/1a9dddc1a5.jpg" width="600" height="299" alt="" /></p>
 
 		</div>
 	  </div>
@@ -10067,7 +10210,7 @@ images = download_images('107024751')
 		<div class="e-content">
 			 <p>So NSW State Archives has digitised the <a href="https://www.records.nsw.gov.au/archives/magazine/bubonic-plague">Register of Cases of Bubonic Plague 1900-1908</a>. Great work! Unfortunately though, they&rsquo;ve put the digitised page images in one of those annoying page-turnery things, without any obvious way of downloading them (please correct me if I&rsquo;m wrong!).</p>
 <p>Even more annoyingly, the page-turnery thing disables your browser&rsquo;s right click, so you can&rsquo;t view and save individual images that way either. However, if you&rsquo;re using Firefox there is an easy way to stop sites interfering with your mouse&rsquo;s normal behaviour and restore your right click.</p>
-<img src="uploads/2019/c999259a20.jpg" width="600" height="334" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/c999259a20.jpg" width="600" height="334" alt="" />
 <p>First enter <code>about:config</code> in your location bar and hit enter. That loads Firefox&rsquo;s configuration settings page. Then find the entry for <code>dom.event.contextMenu.enabled</code> and set it to <code>false</code> by double clicking it. That&rsquo;s it!</p>
 <p>Now go to any page in the register. Go to full screen and zoom in to get the biggest image. Right click, and select &lsquo;Save Image As&hellip;&rsquo;. Bingo!</p>
 <p>#dhhacks</p>
@@ -10082,7 +10225,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>I&rsquo;ve updated the notebook for harvesting records from @archivesnz&rsquo;s Archway database in <a href="https://glam-workbench.github.io/archway/">my GLAM Workbench</a>. I just used it to harvest more than 8,000 records from series 8333 relating to naturalisation. #dhhacks</p>
-<img src="uploads/2019/b97644687c.jpg" width="600" height="313" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/b97644687c.jpg" width="600" height="313" alt="" />
 
 		</div>
 	  </div>
@@ -10116,7 +10259,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p><a href="https://glam-workbench.github.io/qsa/">New section added</a> to my GLAM Workbench for the Queensland State Archives (@qsarchives). Includes a notebook to add series information into their Naturalisations 1851-1904 index. #dhhacks</p>
-<img src="uploads/2019/23a43eec3b.jpg" width="600" height="363" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/23a43eec3b.jpg" width="600" height="363" alt="" />
 
 		</div>
 	  </div>
@@ -10128,7 +10271,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>So in case you&rsquo;re wondering, the @qsarchives <a href="https://data.qld.gov.au/dataset/naturalisations-1851-to-1904">&lsquo;Naturalisations 1851 to 1904&rsquo;</a> index actually collates names from these 10 series (and therefore has multiple entries for a single person).</p>
-<img src="uploads/2019/9d1785fd59.jpg" width="600" height="302" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/9d1785fd59.jpg" width="600" height="302" alt="" />
 
 		</div>
 	  </div>
@@ -10151,7 +10294,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Here&rsquo;s the <a href="https://www.dropbox.com/s/5psknxk2v6dxsic/Screenshot%202019-02-19%2017.21.49.png?dl=0">full list</a> of countries of origin from the NSW naturalisations data, 1834-1903.</p>
-<img src="uploads/2019/cbdb51b71e.jpg" width="600" height="220" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/cbdb51b71e.jpg" width="600" height="220" alt="" />
 
 		</div>
 	  </div>
@@ -10163,7 +10306,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>NSW naturalisations 1834 to 1903. The sudden rise in Chinese naturalisations followed the introduction of the poll tax. More restrictions soon followed&hellip; Using (deduped) naturalisations data from @nswarchives.</p>
-<img src="uploads/2019/528ed5f0b6.jpg" width="600" height="252" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/528ed5f0b6.jpg" width="600" height="252" alt="" />
 
 		</div>
 	  </div>
@@ -10175,7 +10318,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p><a href="https://glam-workbench.github.io/suggest-a-topic/">Suggestions of new topics and collections</a> for my GLAM workbench are welcome!</p>
-<img src="uploads/2019/bc41952023.jpg" width="600" height="352" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/bc41952023.jpg" width="600" height="352" alt="" />
 
 		</div>
 	  </div>
@@ -10187,7 +10330,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Here&rsquo;s an example dataset harvested from Library and Archives Canada&rsquo;s naturalisation database. It&rsquo;s <a href="https://github.com/GLAM-Workbench/library-archives-canada/blob/master/lac-naturalisations-china-with-families.csv">all the people with &lsquo;China&rsquo; as their country of origin</a>, supplemented with wives and children (who are not included in a country search).</p>
-<img src="uploads/2019/fe10543b2f.jpg" width="600" height="411" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/fe10543b2f.jpg" width="600" height="411" alt="" />
 
 		</div>
 	  </div>
@@ -10199,7 +10342,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>I&rsquo;ve added a <a href="https://glam-workbench.github.io/lac/">section for Library and Archives Canada</a> to my GLAM workbench. The first notebook extracts records of people from a specific country from their naturalisations database and saves the results as a CSV file. #dhhacks</p>
-<img src="uploads/2019/6dac64955d.jpg" width="600" height="334" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/6dac64955d.jpg" width="600" height="334" alt="" />
 
 		</div>
 	  </div>
@@ -10211,7 +10354,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Current status — extracting data from Library and Archives Canada&rsquo;s 1915-1946 naturalisation database. Coming soon to my GLAM Workbench&hellip;</p>
-<img src="uploads/2019/a43f9aa170.jpg" width="600" height="479" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/a43f9aa170.jpg" width="600" height="479" alt="" />
 
 		</div>
 	  </div>
@@ -10234,7 +10377,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>My talk for #text2data at the National Library of Sweden looks at occurence of the words &lsquo;aliens&rsquo; &amp; &lsquo;immigrants&rsquo; in @TroveAustralia newspapers, The Bulletin, &amp; Hansard. The <a href="https://slides.com/wragge/who-belongs">slides</a>, code &amp; data are online. #dhhacks</p>
-<img src="uploads/2019/67cae888f6.jpg" width="600" height="364" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/67cae888f6.jpg" width="600" height="364" alt="" />
 
 		</div>
 	  </div>
@@ -10257,7 +10400,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Another slide for Sweden — this one comparing words appearing before &lsquo;aliens&rsquo; in The Bulletin and Commonwealth Hansard (1901-1980).</p>
-<img src="uploads/2019/b11d2464bc.jpg" width="600" height="474" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/b11d2464bc.jpg" width="600" height="474" alt="" />
 
 		</div>
 	  </div>
@@ -10269,7 +10412,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Working on my slides for <a href="http://www.delegia.com/app/netattm/attendee/page/81997">From Text to Data</a> in Stockholm this week&hellip;</p>
-<img src="uploads/2019/a50fbe3dab.jpg" width="600" height="390" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/a50fbe3dab.jpg" width="600" height="390" alt="" />
 
 		</div>
 	  </div>
@@ -10281,7 +10424,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>I&rsquo;ve added a &lsquo;save chart&rsquo; option to the <a href="https://glam-workbench.github.io/trove-newspapers/">QueryPic app in my GLAM Workbench</a>. Visualise your searches in @TroveAustralia newspapers, then save the results as HTML for easy download. #dhhacks</p>
-<img src="uploads/2019/7e313ccec9.jpg" width="600" height="545" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/7e313ccec9.jpg" width="600" height="545" alt="" />
 
 		</div>
 	  </div>
@@ -10293,7 +10436,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Pleased and proud to see the chapter @baibi &amp; I wrote on the Real Face of White Australia now published as part of an <a href="https://www.press.umich.edu/9964786/seeing_the_past_with_computers">awesome collection</a>. Buy now or read the CC-BY version online!</p>
-<p><img src="http://updates.timsherratt.org/uploads/2019/bcab589773.jpg" alt="5CBECBFE-75D3-400E-9274-C3BE0B2357F5.jpg"></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2019/bcab589773.jpg" alt="5CBECBFE-75D3-400E-9274-C3BE0B2357F5.jpg"></p>
 
 		</div>
 	  </div>
@@ -10305,7 +10448,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>In a bit over a week I&rsquo;ll be heading to Stockholm for the <a href="http://www.delegia.com/app/netattm/attendee/page/81997">&lsquo;From text to data&rsquo;</a> conference. Preparing myself for the 40 degree temperature difference&hellip;</p>
-<p><img src="http://updates.timsherratt.org/uploads/2019/9c6a7e2d2d.jpg" alt="BDAFC715-2AE0-4186-9211-ABA97D5E09DC.jpg"></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2019/9c6a7e2d2d.jpg" alt="BDAFC715-2AE0-4186-9211-ABA97D5E09DC.jpg"></p>
 
 		</div>
 	  </div>
@@ -10327,7 +10470,7 @@ images = download_images('107024751')
 <p>For my talk I&rsquo;ll be looking at words like &lsquo;undesirable&rsquo; and &lsquo;prohibited&rsquo;, but the thing that struck me last night were the words describing the ethnic origins of immigrants — &lsquo;Chinese&rsquo;, &lsquo;German&rsquo;, &lsquo;British&rsquo; etc. I thought I&rsquo;d have a go at visualising how the use of these terms varied over time. The chart below includes words with an overall frequency greater than 500. The only change I made to the categories was to merge &lsquo;scotch&rsquo; and &lsquo;scottish&rsquo;.</p>
 <p>It&rsquo;s important to remember that this isn&rsquo;t about the number of immigrants arriving in Australia, it&rsquo;s a reflection of <strong>which groups of immigrants were being talked about, and when</strong>. So, for example, &lsquo;Chinese immigrants&rsquo; feature prominently in newspapers of the 1880s as legislation is introduced to restrict their entry to the Australian colonies.</p>
 <p>If you&rsquo;d like a larger version of this chart, you can <a href="https://www.dropbox.com/s/nzfooyejep6anpb/words_before_immigrants.png?dl=0">download it here</a>.</p>
-<img src="uploads/2019/d121cf1ffb.jpg" width="600" height="309" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/d121cf1ffb.jpg" width="600" height="309" alt="" />
 
 		</div>
 	  </div>
@@ -10361,7 +10504,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>30,000+ <a href="https://gist.github.com/wragge/25cd3de75048c401efe618115fcb881d">occurences of the word &lsquo;Chinese&rsquo;</a> in the OCRd full text of The Bulletin, 1880-1968.</p>
-<img src="uploads/2019/db7a49b7e4.jpg" width="600" height="433" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/db7a49b7e4.jpg" width="600" height="433" alt="" />
 
 		</div>
 	  </div>
@@ -10384,7 +10527,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>I&rsquo;ve finished putting details of all the current GLAM Workbench repositories into the <a href="https://glam-workbench.github.io/">new documentation site</a>. Still a few notebooks to migrate from the original workbench, but getting there! There&rsquo;s about 50 Jupyter notebooks so far. #dhhacks</p>
-<img src="uploads/2019/d1161383c0.jpg" width="600" height="457" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/d1161383c0.jpg" width="600" height="457" alt="" />
 
 		</div>
 	  </div>
@@ -10429,7 +10572,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>So here&rsquo;s <a href="https://glam-workbench.github.io/trove-newspapers/">some fun things to do</a> with @TroveAustralia newspapers&hellip; (via GLAM Workbench)</p>
-<img src="uploads/2019/dca9e5a815.jpg" width="600" height="170" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/dca9e5a815.jpg" width="600" height="170" alt="" />
 
 		</div>
 	  </div>
@@ -10441,7 +10584,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Ok, <a href="https://glam-workbench.github.io/digitalnz/">more documentation</a> for you — page for the @DigitalNZ API in GLAM Workbench updated!</p>
-<img src="uploads/2019/47fb133507.jpg" width="600" height="231" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/47fb133507.jpg" width="600" height="231" alt="" />
 
 		</div>
 	  </div>
@@ -10475,7 +10618,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Updated list of the fifty most common words occuring before the word &lsquo;aliens&rsquo; in @TroveAustralia newspapers (with no capitalisation and stopwords removed). 274,157 occurances in 213,151 articles.</p>
-<img src="uploads/2019/a8c5779316.jpg" width="150" height="600" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/a8c5779316.jpg" width="150" height="600" alt="" />
 
 		</div>
 	  </div>
@@ -10487,7 +10630,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Just updated my harvest of metadata and full text from <em>The Bulletin</em> in @TroveAustralia. There&rsquo;s about 2gb of OCRd text from 4,534 issues (1880-1968). Full text for about 60 issues have been added since my last harvest. 111 have no OCRd text. <a href="https://github.com/wragge/trove-texts">Download it all from GitHub</a> #dhhacks</p>
-<img src="uploads/2019/ccdeca3336.jpg" width="600" height="284" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/ccdeca3336.jpg" width="600" height="284" alt="" />
 
 		</div>
 	  </div>
@@ -10499,7 +10642,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Fifty most common words occuring before the word &lsquo;aliens&rsquo; in @TroveAustralia newspapers (213,000 articles)&hellip;</p>
-<img src="uploads/2019/e98759c0dc.jpg" width="208" height="600" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/e98759c0dc.jpg" width="208" height="600" alt="" />
 
 		</div>
 	  </div>
@@ -10511,7 +10654,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>You want big data? I just harvested 213,340 newspaper articles (including full OCRd text) from @TroveAustralia in 82 minutes, at about 40 articles a second. <a href="https://mybinder.org/v2/gh/GLAM-Workbench/trove-newspaper-harvester/master?urlpath=%2Fapps%2Fnewspaper_harvester_app.ipynb">https://mybinder.org/v2/gh/GLAM-Workbench/trove-newspaper-harvester/master?urlpath=%2Fapps%2Fnewspaper_harvester_app.ipynb</a></p>
-<img src="uploads/2019/230eab3661.jpg" width="600" height="189" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/230eab3661.jpg" width="600" height="189" alt="" />
 
 		</div>
 	  </div>
@@ -10534,7 +10677,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Want an easy way to download @TroveAustralia newspaper articles in bulk? No installation? Point and click? I&rsquo;ve created a simple web app version of my TroveHarvester using a Jupyter notebook &amp; running on @mybinderteam. <a href="https://mybinder.org/v2/gh/GLAM-Workbench/trove-newspaper-harvester/master?urlpath=%2Fapps%2Fnewspaper_harvester_app.ipynb">Try it live!</a> #dhhacks</p>
-<img src="uploads/2019/822d96668e.jpg" width="600" height="366" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/822d96668e.jpg" width="600" height="366" alt="" />
 
 		</div>
 	  </div>
@@ -10591,7 +10734,7 @@ images = download_images('107024751')
 		<div class="e-content">
 			 <p>Uh, never come across one of these before from the @TroveAustralia API. Needless to say it causes the Newspaper Harvester to die.</p>
 <p>It&rsquo;s easy to check for these things once you know they exist, but&hellip;</p>
-<img src="uploads/2019/2bd44b41a3.jpg" width="600" height="98" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/2bd44b41a3.jpg" width="600" height="98" alt="" />
 
 		</div>
 	  </div>
@@ -10627,7 +10770,7 @@ images = download_images('107024751')
 		<div class="e-content">
 			 <p>Since I&rsquo;m updating the Trove Newspaper Harvester to work with version 2 of the @TroveAustralia API thought I might as well fix up a few other things as well&hellip;</p>
 <p>Now with added progress bars!</p>
-<img src="uploads/2019/f959673fa9.jpg" width="600" height="372" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/f959673fa9.jpg" width="600" height="372" alt="" />
 
 		</div>
 	  </div>
@@ -10673,7 +10816,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>And also &ldquo;coloured alien&rdquo; which, not suprisingly, peaks in 1901 when the Immigration Restriction Act is passed&hellip;</p>
-<img src="uploads/2019/f81186e6ab.jpg" width="600" height="311" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/f81186e6ab.jpg" width="600" height="311" alt="" />
 
 		</div>
 	  </div>
@@ -10686,7 +10829,7 @@ images = download_images('107024751')
 		<div class="e-content">
 			 <p>Exploring some of the adjectives attached to &lsquo;alien&rsquo; in @TroveAustralia newspapers&hellip;</p>
 <p>You can create these sorts of comparisons yourself <a href="https://mybinder.org/v2/gh/GLAM-Workbench/trove-newspapers/master?urlpath=%2Fapps%2FQueryPic_deconstructed.ipynb">using this app</a>. #dhhacks</p>
-<img src="uploads/2019/9ef0498078.jpg" width="600" height="492" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/9ef0498078.jpg" width="600" height="492" alt="" />
 
 		</div>
 	  </div>
@@ -10698,7 +10841,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Just to emphasise my point the other day about the impact of stemming on searches for naturalisation/naturalization in @TroveAustralia. Compare these — the stemming on/off results for &lsquo;naturalisation&rsquo; are pretty much in proportion, but not for &lsquo;naturalization&rsquo;&hellip;</p>
-<p><img src="uploads/2019/8553a28878.jpg" width="600" height="308" alt="" /><img src="uploads/2019/88ffdecf87.jpg" width="600" height="306" alt="" /></p>
+<p><img src="https://cdn.uploads.micro.blog/8371/2019/8553a28878.jpg" width="600" height="308" alt="" /><img src="https://cdn.uploads.micro.blog/8371/2019/88ffdecf87.jpg" width="600" height="306" alt="" /></p>
 
 		</div>
 	  </div>
@@ -10721,7 +10864,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>The Australian version of &lsquo;Who&rsquo;s responsible?&rsquo; is up! Just select a government function and explore the different agencies associated with it over time. It&rsquo;s built with data from @naagovau&rsquo;s RecordSearch. <a href="https://mybinder.org/v2/gh/GLAM-Workbench/recordsearch/master?urlpath=apps%2Fdisplay_agencies_by_function.ipynb">Try it live!</a> #dhhacks</p>
-<img src="uploads/2019/8b87ebb401.jpg" width="600" height="520" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/8b87ebb401.jpg" width="600" height="520" alt="" />
 
 		</div>
 	  </div>
@@ -10744,7 +10887,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>Hmm, wondering why the &lsquo;National Council of Women of the Australian Capital Territory&rsquo; is assigned the function &lsquo;CITIZENSHIP&rsquo; in @naagovau&rsquo;s RecordSearch&hellip;</p>
-<img src="uploads/2019/8185c131ff.jpg" width="600" height="291" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/8185c131ff.jpg" width="600" height="291" alt="" />
 
 		</div>
 	  </div>
@@ -10756,7 +10899,7 @@ images = download_images('107024751')
 
 		<div class="e-content">
 			 <p>As well as cross-posting updates to Twitter and Mastodon, I&rsquo;ve now set up IFTTT to keep an eye on <a href="http://updates.timsherratt.org/">my micro.blog feed</a> and post anything with the hashtag #dhhacks to my 101 DH Hacks FB page!</p>
-<img src="uploads/2019/d4f291023f.jpg" width="402" height="600" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/d4f291023f.jpg" width="402" height="600" alt="" />
 
 		</div>
 	  </div>
@@ -10773,7 +10916,7 @@ images = download_images('107024751')
 <p>Why does this matter? If you try <a href="https://trove.nla.gov.au/newspaper/result?q=naturalization">searching for &lsquo;naturalization&rsquo;</a> in Trove you get almost 14 million results, most of which aren&rsquo;t relevant because they&rsquo;re matching words like &lsquo;nature&rsquo;.</p>
 <p>Of course you can switch off stemming in Trove by using the <code>text:</code> modifier. A <a href="https://trove.nla.gov.au/newspaper/result?q=text%3Anaturalization">search for <code>text:naturalization</code></a> returns only 17,000 results. But now we&rsquo;ll be missing related terms such as &lsquo;naturalized&rsquo;, so we have to explicity include any forms of the word that we want.</p>
 <p>I&rsquo;m not sure if this applies to other s/z spellings, but given that historical sources (in Australia at least) often tend to use both forms it&rsquo;s something to keep in mind when you&rsquo;re constructing your searches. #dhhacks</p>
-<img src="uploads/2019/94c154b0ea.jpg" width="600" height="506" alt="" />
+<img src="https://cdn.uploads.micro.blog/8371/2019/94c154b0ea.jpg" width="600" height="506" alt="" />
 
 		</div>
 	  </div>
