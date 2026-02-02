@@ -24,6 +24,189 @@
 	
 	  <div class="h-entry">
 		
+			<h1><a href="https://updates.timsherratt.org/2026/02/02/my-place-exploring-slv-collections.html">my place – exploring SLV collections through a street address</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2026/02/02/my-place-exploring-slv-collections.html" class="u-url"><time class="dt-published" datetime="2026-02-02 22:43:20 &#43;1100">Feb 2, 2026</time></a>
+
+		<div class="e-content">
+			 <p><em>&lsquo;What can I find out about my house?'</em> My work as <a href="https://lab.slv.vic.gov.au/experiments/my-place-tim-sherratt">Creative Technologist-in-Residence at the SLV LAB</a> was inspired by questions like this that librarians at the SLV hear every day. I wanted to explore how the Library&rsquo;s place-based collections could be used to provide new entry points for discovery and navigation – entry points based not on words, but locations.At the end of my residency, I pulled all the different collections I&rsquo;d been working with into a single interface – <em><strong>my place</strong></em>. It&rsquo;s not polished or complete, but I think it&rsquo;s a useful starting point to think about the possibilities. You just type in an address, street name, or place name and my place shows you maps, photos, newspapers, and even extracts from the Sands &amp; MacDougall directories. <strong><a href="https://slv.wraggelabs.com/myplace/">Try it now!</a></strong><!-- raw HTML omitted --><!-- raw HTML omitted --><!-- raw HTML omitted --><!-- raw HTML omitted -->Try <!-- raw HTML omitted --><!-- raw HTML omitted -->my place!<!-- raw HTML omitted --><!-- raw HTML omitted --><!-- raw HTML omitted --> Just enter an address in the search box.<!-- raw HTML omitted --><!-- raw HTML omitted -->Search results in my place are bookmarkable. So save and share your discoveries!## The collections<em><strong>my place</strong></em> draws its data from a number of different place-based collections that I&rsquo;ve been working on during my residency.### OpenStreetMapWhen you enter an address in the search box, <em><strong>my place</strong></em> looks it up in <a href="https://www.openstreetmap.org">OpenStreetMap</a> to get its geospatial coordinates. It then places a marker and re-centres the map at the top of the app.<!-- raw HTML omitted --><!-- raw HTML omitted --><!-- raw HTML omitted -->Map centred on 149 Brunswick Street, Fitzroy<!-- raw HTML omitted --><!-- raw HTML omitted -->OpenStreetMap is also used to retrieve additional information about the suburb, including its boundaries.### Sands &amp; MacDougall&rsquo;s directories<em><strong>my place</strong></em> queries the <a href="https://updates.timsherratt.org/2025/11/12/a-new-way-of-searching.html">full-text searchable version of Sands &amp; Mac</a> for addresses. Results will vary based on the OCR quality and the nature of query, but it can give you a potted history of who has lived in your house. The search results are displayed in chronological order, and include an <a href="https://updates.timsherratt.org/2025/11/16/some-sands-mac-tweaks-thanks.html">image snippet</a> showing the actual printed entry as well as the text content and metadata. <!-- raw HTML omitted --><!-- raw HTML omitted --><!-- raw HTML omitted -->Occupants of 149 Brunswick Street, Fitzroy from 1875 to 1925<!-- raw HTML omitted --><!-- raw HTML omitted -->### Committee for Urban Action photographsIf you enter a full street address, <em><strong>my place</strong></em> will search <a href="https://updates.timsherratt.org/2026/01/29/geolocating-photos-from-the-slvs.html">the CUA collection</a> for photos associated with the segment of road that includes the current address. It then displays the individual images from any matching photosets.<!-- raw HTML omitted --><!-- raw HTML omitted --><!-- raw HTML omitted -->Photographs from CUA of the currently selected road<!-- raw HTML omitted --><!-- raw HTML omitted -->Otherwise <em><strong>my space</strong></em> will look for CUA photos that are near the current location, and display a randomly-selected image from each photoset.### Georeferenced maps<em><strong>my place</strong></em> searches through <a href="https://updates.timsherratt.org/2025/11/04/turning-the-slvs-maps-into.html">digitised maps from the SLV collection that have been georeferenced by the public</a>. It finds maps that either intersect with the currently selected location, or are nearby.If you enter a full street address, the first 6 georeferenced maps will be positioned on a modern basemap with a marker indicating the currently selected point. This means you can see your address on a historical map. The number of georeferenced maps that can be displayed in this way is determined by the browser – so I&rsquo;ve limited it to 6 to be safe.<!-- raw HTML omitted --><!-- raw HTML omitted --><!-- raw HTML omitted -->Georeferenced maps positioned on a modern basemap, showing the location of the currently selected address<!-- raw HTML omitted --><!-- raw HTML omitted -->### Parish maps<em><strong>my place</strong></em> searches through <a href="https://updates.timsherratt.org/2025/10/06/creating-bounding-boxes-for-parish.html">parish maps in the SLV collection that have geospatial coordinates or approximate bounding boxes</a>. It finds maps that either intersect with the currently selected location, or are nearby.### Newspapers<em><strong>my place</strong></em> searches through <a href="https://updates.timsherratt.org/2025/12/16/exploring-victorian-newspapers.html">my dataset of newspapers in the SLV collection</a> that have a place of publication documented in the &lsquo;Place newspaper published&rsquo; metadata field. It finds newspapers that are either associated with the current suburb/town, or a nearby suburb/town. This includes digitised and non-digitised titles. Digitised titles include a link to Trove.<!-- raw HTML omitted --><!-- raw HTML omitted --><!-- raw HTML omitted -->Newspapers from the SLV collection published in Fitzroy<!-- raw HTML omitted --><!-- raw HTML omitted -->### PhotographsI thought it would be cool to include a few photographs of the current suburb or town. To do this, I downloaded a list of place names from VicNames, then used the place names to <a href="https://github.com/StateLibraryVictoria-SLVLAB/geo-maps-residency/blob/main/download_place_images.ipynb">search the SLV catalogue for photographs with relevant subject headings</a>. A random selection of the harvested images is displayed in <em><strong>my place</strong></em>.<!-- raw HTML omitted --><!-- raw HTML omitted --><!-- raw HTML omitted -->A few images of Fitzroy, displayed alongside a map of Fitzroy&rsquo;s current boundaries using data from OpenStreetMap<!-- raw HTML omitted --><!-- raw HTML omitted -->## The interfaceThe interface is pretty simple. You type an address in the box and hit enter. If the geocoding process finds multiple matches, it&rsquo;ll give you a list to choose from. Once the location is found, a marker is added and the main map re-centres. Then related resources are displayed below the map.As you scroll down through the results you gradually zoom out from your initial starting point. This is reflected in the four bands or layers used to group resources: &lsquo;my house&rsquo;, &lsquo;my street&rsquo;, &lsquo;my suburb&rsquo;, and &lsquo;nearby&rsquo;. Each band contains a mix of resources from different collections.When I started working on <em><strong>my place</strong></em>, I was thinking about a project from around 2010 called <a href="https://wraggelabs.com/info/history-wall/">The History Wall</a>. Like <em><strong>my place</strong></em>, The History Wall pulled many different types of resources together into a rich exploratory interface. As you scrolled through The History Wall you moved through time, with randomly selected items appearing from a range of sources including Trove newspapers, the ADB, and museum collections.<!-- raw HTML omitted --><!-- raw HTML omitted --><!-- raw HTML omitted -->A version of The History Wall created for the National Museum of Australia&rsquo;s &lsquo;Irish in Australia&rsquo; exhibition<!-- raw HTML omitted --><!-- raw HTML omitted -->I originally thought I&rsquo;d inject some of the same randomness into <em><strong>my place</strong></em>, but I was worried it might just get too confusing. I thought it was important to keep the relationship between the starting point and the resources in focus even as you zoomed out. So my visual metaphor shifted to something more like a blast radius map, or a stratigraphic diagram, that displayed distinct groups and layers as you moved beyond the baseline. My limited CSS skills couldn&rsquo;t make the vision in my head a reality, but there are lots of headings and colours instead to highlight the transitions!The actual mix of groups and layers displayed depends on the nature of your query. If you&rsquo;ve entered a complete street address, and there are results for that address in Sands &amp; Mac, then you&rsquo;ll see &lsquo;my house&rsquo;, &lsquo;my suburb&rsquo;, and &lsquo;nearby&rsquo;. If you&rsquo;ve only entered a suburb or town, or your street address can&rsquo;t be found, you&rsquo;ll see two layers starting with &lsquo;my suburb&rsquo;.Here&rsquo;s an overview of what you might expect to see.### my house- Sands &amp; MacDougall extracts (text search on full address)- georeferenced maps (search for maps that contain the base point)- parish maps (search for maps that contain the base point)### my street - CUA photos (search for matching street identifiers)if there&rsquo;s no &lsquo;my house&rsquo; layer:- Sands &amp; MacDougall extracts (text search on street name and suburb)- georeferenced maps (search for intersections between maps and street)- parish maps (search for intersections between maps and street)### my suburb/town- suburb boundaries from OSM- images (search for suburb name in metadata)- newspapers (search for suburb name in metadata)if there&rsquo;s no &lsquo;my house&rsquo; or &lsquo;my street&rsquo; layer:- georeferenced maps (search for intersections between maps and suburb boundaries)- parish maps (search for intersections between maps and suburb boundaries)### nearby- CUA photos (search for photosets within 5km of the base point, filtered to remove current street)- georeferenced maps (search for maps within 10km of base point, ordered by distance, max of 24 displayed)- parish maps (search for maps within 10km of base point, ordered by distance, max of 24 displayed)- newspapers (search for newspapers within 100km of base point, ordered by distance, max of 24 displayed)## The dataMost of the data used in <em><strong>my place</strong></em> is stored in two SQLite databases – <a href="https://glam-workbench.net/state-library-victoria/sands-macdougall-directories/">one for Sands &amp; Mac</a>, and <a href="https://slv-places-481615284700.australia-southeast1.run.app/">the other for CUA, georeferenced maps, parish maps, and newspapers</a>. The metadata for the collection images is stored in <a href="https://raw.githubusercontent.com/StateLibraryVictoria-SLVLAB/geo-maps-residency/refs/heads/main/place_images.json">a JSON file</a> that is directly loaded by the interface.I&rsquo;ve published the SQLite databases online using <a href="https://datasette.io">Datasette</a> and <a href="https://www.gaia-gis.it/fossil/libspatialite/index">Spatialite</a>. Spatialite makes it possible to find geospatial features that intersect, or are near, a given point. For example, you could find maps that include a specific set of coordinates.Datasette has the ability to create <a href="https://docs.datasette.io/en/stable/sql_queries.html#canned-queries">&lsquo;canned queries&rsquo;</a> that feed url parameters into pre-defined SQL queries. This coupled with Datasette&rsquo;s <a href="https://docs.datasette.io/en/stable/json_api.html">built-in JSON API</a> makes it possible to construct query urls in <em><strong>my place</strong></em> and use them to retrieve JSON results data from my databases.When you enter an address in <em><strong>my place</strong></em>, multiple queries are fired off to find intersecting or nearby resources. For example, this url finds georeferenced maps within 10km of a point at the centre of Fitzroy: <a href="https://slv-places-481615284700.australia-southeast1.run.app/georeferenced_maps/maps_from_wkt.json?wkt=POINT(144.977468%20-37.803143)">slv-places-481615284700.australia-southeast1.run.app/georefere&hellip;</a>&amp;distance=10000&amp;_shape=array.In the case of Sands &amp; Mac, <em><strong>my place</strong></em> uses a canned query that runs a full-text search across the OCRd content of a volume. Suburb names are often abbreviated in Sands &amp; Mac, so the app first runs a query to find possible abbreviations, then adds them into the main query to inject a bit of fuzziness. This is repeated for all 24 digitised volumes.Once the metadata is retrieved from the databases, images are loaded from the SLV&rsquo;s IIIF service.## Next steps?I&rsquo;m not sure how much more work I&rsquo;ll do on <em><strong>my place</strong></em>, but there are a few things I&rsquo;d like to try. In particular, I&rsquo;d like to help the user understand more about what data is being presented, or not presented, and why. Not all digitised maps have been georeferenced, not all parish maps have coordinates, street numbers have changed, and the OCR in Sands &amp; Mac varies in quality. <em><strong>my place</strong></em> can only present a sample – a gesture towards the wealth of material available from the SLV. I feel that message needs to be made more explicit. Though I&rsquo;m not sure how without overloading the interface.There are additional data sources I&rsquo;d like to play around with. <em><strong>my place</strong></em> already includes some code to query <a href="https://www.wikidata.org/">Wikidata</a> for more information about a suburb. But I haven&rsquo;t had a chance to do anything with it. I&rsquo;d like to be able to provide additional contextual information from outside the SLV, such as electoral boundaries, populations, even election results. It would also be fun to display sightings of plants and animals from the <a href="https://www.ala.org.au">Atlas of Living Australia</a>.What can I find out about my house? It would be great if <em><strong>my place</strong></em> could answer that question by taking the user on an open ended journey through our cultural, historical, and environmental landscape.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
+			<h1><a href="https://updates.timsherratt.org/2026/01/29/geolocating-photos-from-the-slvs.html">Geolocating photos from the SLV&#39;s Committee for Urban Action collection</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2026/01/29/geolocating-photos-from-the-slvs.html" class="u-url"><time class="dt-published" datetime="2026-01-29 18:08:06 &#43;1100">Jan 29, 2026</time></a>
+
+		<div class="e-content">
+			 <p>Concerned about the loss of built heritage in the 1970s, the Committee for Urban Action photographed streetscapes across urban and regional Victoria. They compiled a remarkable collection of photographs that is <a href="https://find.slv.vic.gov.au/discovery/collectionDiscovery?vid=61SLV_INST:SLV&amp;collectionId=81271917420007636">now being digitised by the State Library of Victoria</a>. More than 20,000 images are already available online!</p>
+<p>The CUA worked systematically, capturing photos street by street, and recording the locations of each set of photographs. This information is used to prepare the title attached to each photo as it&rsquo;s uploaded to the SLV catalogue. In general, titles include the name of the road where the photo was taken, the name of the suburb or town, and the names of two intersecting roads that define the boundaries of the current road segment. They can also tell you which side of the road the photo was taken on. For example, the title <code>Gore Street, Fitzroy, from Gertrude Street to Webb Street - east side</code> tells us the photo was taken on the east side of Gore Street, Fitzroy between the intersections with Gertrude Street and Webb Street.</p>
+<!-- raw HTML omitted -->
+<p>It&rsquo;s great to have this sort of structured information linking photos to specific locations, but to navigate through the collection <em>in space</em> we need more. We need to link each photo to a set of geospatial coordinates by mapping each road segment. That was the challenge I took on as part of <a href="https://lab.slv.vic.gov.au/experiments/my-place-tim-sherratt">my residency in the SLV LAB</a>.</p>
+<p>When I started working on the collection I wasn&rsquo;t really sure what was possible. I had to learn a lot, and ended up revising my processes multiple times as I got deeper into the data. But my aim was always to create some sort of map-based interface, that would allow users to click on a street and see any associated CUA photos. It&rsquo;s still a bit buggy and incomplete, but here it is – <a href="https://slv.wraggelabs.com/cua/"><strong>explore the CUA collection street by street</strong></a>!</p>
+<!-- raw HTML omitted -->
+<h2 id="the-process">The process</h2>
+<p>My basic plan was to find the intersections using <a href="https://www.openstreetmap.org/">OpenStreetMap</a>, then extract geospatial information about the segment of road between the two intersections. This involved much trial and error, but eventually I ended up with a process that:</p>
+<ul>
+<li>parsed each item title to try and extract the names of the main road, the suburb, and the two intersecting roads</li>
+<li>queried <a href="https://nominatim.org">Nominatim</a> for the suburb bounding box</li>
+<li>for each intersecting road, queried OSM to find a node at, or around, its intersection with the main road, within the suburb bounding box</li>
+<li>created a new bounding box from the coordinates of the two intersections</li>
+<li>queried OSM for the main road within this bounding box</li>
+<li>extracted the coordinates of the main road segment, removing any points outside of the bounding box</li>
+</ul>
+<p>There&rsquo;s more details below and in these notebooks: <a href="https://github.com/StateLibraryVictoria-SLVLAB/geo-maps-residency/blob/main/cua_finding_intersections.ipynb">cua_finding_intersections.ipynb</a> and <a href="https://github.com/StateLibraryVictoria-SLVLAB/geo-maps-residency/blob/main/cua_data_processing.ipynb">cua_data_processing.ipynb</a>.</p>
+<h2 id="finding-intersections">Finding intersections</h2>
+<p>As described, the title of each photograph generally includes 4 pieces of information: the road, suburb, intersecting roads, and side. My plan was to find the intersections first to get the limits of the road segment. This is possible thanks to the awesome <a href="https://www.openstreetmap.org/">OpenStreetMap</a> and its <a href="https://wiki.openstreetmap.org/wiki/Overpass_API">Overpass API</a>. It took me a while to get my head around the Overpass query language, but there are lots of <a href="https://wiki.openstreetmap.org/wiki/Overpass_API/Overpass_API_by_Example">useful examples online</a>. The query to find the intersection between Gore Street and Gertrude Street in Fitzroy looks like this:</p>
+<pre tabindex="0"><code>[bbox:-37.8089071,144.9732006,-37.7929130,144.9851430];
+way['highway'][name=&quot;Gore Street&quot;];
+node(w)-&gt;.n1;
+way['highway'][name=&quot;Gertrude Street&quot;];
+node(w)-&gt;.n2;
+node.n1.n2; 
+out body;
+</code></pre><p>You can <a href="https://overpass-turbo.eu/s/2jq8">try it out</a> using Overpass Turbo&rsquo;s web interface.</p>
+<p>In OpenStreetMap, linear features, such as roads or rivers, are represented as <a href="https://wiki.openstreetmap.org/wiki/Way"><code>ways</code></a>. Each way is made up of a series of <code>nodes</code> or points with geospatial coordinates. Every way and node has its own unique identifier. Tags can be added to features to describe what type of things they are.</p>
+<p>The query above looks for <code>ways</code> named &lsquo;Gore Street&rsquo; and &lsquo;Gertrude Street&rsquo; that are tagged as <code>highway</code> (a <code>highway</code> in OpenStreetMap is any road-like feature including things bike paths and foot trails).</p>
+<pre tabindex="0"><code class="language-way['highway'][name="Gore" data-lang="way['highway'][name="Gore">way['highway'][name=&quot;Gore Street&quot;];
+</code></pre><p>It then extracts the nodes that make up each way and looks to see if there are any nodes in common between the two ways.  A node shared between two ways indicates an intersection.</p>
+<pre tabindex="0"><code>node(w)-&gt;.n2;
+node.n1.n2; 
+</code></pre><p>The query is limited using a bounding box that encloses the suburb of Fitzroy. This avoids false positives and keeps down the query load.</p>
+<pre tabindex="0"><code>[bbox:-37.8089071,144.9732006,-37.7929130,144.9851430];
+</code></pre><p>The JSON result of this query gives as the latitude and longitude of the node at the intersection of the two roads.</p>
+<pre tabindex="0"><code>{
+  &quot;version&quot;: 0.6,
+  &quot;generator&quot;: &quot;Overpass API 0.7.62.10 2d4cfc48&quot;,
+  &quot;osm3s&quot;: {
+    &quot;timestamp_osm_base&quot;: &quot;2026-01-27T03:11:45Z&quot;,
+    &quot;copyright&quot;: &quot;The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.&quot;
+  },
+  &quot;elements&quot;: [
+
+{
+  &quot;type&quot;: &quot;node&quot;,
+  &quot;id&quot;: 224750459,
+  &quot;lat&quot;: -37.8062302,
+  &quot;lon&quot;: 144.9817848
+}
+
+  ]
+}
+</code></pre><p>After a bit of testing, I found this worked pretty well, except for roundabouts&hellip; In OpenStreetMap, roads don&rsquo;t actually cross roundabouts – they end on one side, then begin anew on the other side. In cases like this, looking for shared nodes doesn&rsquo;t work. Instead you have to look to see if the two roads have nodes that are less than a given distance apart. The query is similar to the one above, but uses <code>around</code> when comparing the nodes. In this case I&rsquo;m looking for nodes that are within 20 metres of each other.</p>
+<pre tabindex="0"><code>node(w.w2)(around.w1:20);
+</code></pre><h2 id="finding-road-segments">Finding road segments</h2>
+<p>Once I had the coordinates of the two intersections, I could look for the segment of road between between them. To do this I created a bounding box using the coordinates of the intersections, and then searched for ways by name within that defined area.</p>
+<p>It&rsquo;s important to note that there&rsquo;s no one-to-one correspondence between roads and OSM ways. A single road might be represented in OSM as a series of separate, but connected, ways. For example, at a roundabout, or where a road divides, new ways might have been created to document the change. This means that when we query OSM for details of a road we often get back information about multiple ways. Some of these might be things like bike paths which we can filter using tags, but often they&rsquo;ll be sections of the road that we want. For example, this query for Gore Street, within the bounds of its intersections with Gertrude Street and Webb Street, returns details of two ways.</p>
+<pre tabindex="0"><code>way[&quot;highway&quot;~&quot;^(trunk|primary|secondary|tertiary|unclassified|residential|service|track|pedestrian|living_street)$&quot;][name=&quot;Gore Street&quot;](-37.8062302,144.98128480000003,-37.8040076,144.9826827);
+out body;
+&gt;;
+out body;
+</code></pre><p>You can <a href="https://overpass-turbo.eu/s/2jqi">view the result</a> in Overpass Turbo.</p>
+<p>However, that doesn&rsquo;t mean that the full extent of both ways is contained within the bounding box, just that some of the nodes of both ways are inside. Because of this, I filtered the results from all the ways and only kept nodes whose coordinates were within the desired region.</p>
+<h2 id="problems-finding-intersections">Problems finding intersections</h2>
+<p>The method described above works pretty well, and once I understood enough about the Overpass API to get out actual paths that I could display on a map, I fed all of the CUA photos through a script and got useful data for more than 80% of them.</p>
+<!-- raw HTML omitted -->
+<p>Then I spent a <em>lot of</em> time trying to understand where the remainder were failing.</p>
+<p>Some of them failed because the titles were missing information, or were formatted in a way I didn&rsquo;t expect. For example, instead of a second intersecting road, some titles just said &lsquo;to end&rsquo;. This makes perfect sense to a human looking at a map, but it&rsquo;s difficult to handle programmatically.</p>
+<p>Some photos either recorded the wrong suburb, or the boundaries of the suburb had moved since the photos were taken. For example, many of the photos described as being from Eaglehawk are now in California Gully.</p>
+<p>Similarly, some road names were wrong either because of documentation errors, or because the names have changed over time. There are also some variations in the way OSM records road names – in particular, I found that roads with hyphenated names sometimes had spaces around the hyphen and sometimes didn&rsquo;t. There were also a couple of cases where names weren&rsquo;t attached to the corresponding road segment in OSM, but I was able to edit these in OSM directly.</p>
+<p>Other roads had multiple names, or change names along their path. I mean, what&rsquo;s going on with Brunswick Street and St Georges Road in Fitzroy? Country towns seemed most prone to this – a highway might become &lsquo;Main Road&rsquo; within the town boundaries, or the order of hyphenated places in road names might change. I found one road in Clunes that had four different names within the space of a few hundred metres.</p>
+<!-- raw HTML omitted -->
+<p>Finally, the routes of some roads had changed – intersections no longer intersected, roads were closed, or new parks had popped up to split a road in two.</p>
+<p>My processing script logged the titles I couldn&rsquo;t locate and I worked through the list manually, trying to identify what each problem was. I suppose there&rsquo;s two ways I could&rsquo;ve handled these problems – building more fuzziness into the process to check for things like alternative names, or by compiling a list of &lsquo;corrected&rsquo; titles. I started off using the first approach, but as I worked through more and more anomalies, the checking logic became very complicated and inefficient. Just think about the knots you can tie yourself in trying to handle a title where the suburb is wrong and the main road changes names in between intersections.</p>
+<p>I refactored the code multiple times, but it&rsquo;s still pretty messy. In the end I created a list of &lsquo;corrected&rsquo; titles as well, so it was a bit of a hybrid approach. I suspect I could have saved myself a lot of pain if I&rsquo;d reversed the process – compiling &lsquo;corrected&rsquo; titles first, then adapting the logic as patterns emerged.</p>
+<p>There are still some photos I haven&rsquo;t located. In some cases I just don&rsquo;t have enough information. In others I need to manually record coordinates or way ids to feed into the process, and I haven&rsquo;t worked out the best way to do this yet. You can see the titles that I&rsquo;ve haven&rsquo;t geolocated yet in the files: <a href="https://github.com/StateLibraryVictoria-SLVLAB/geo-maps-residency/blob/main/cua-not-found.txt"><code>cua-not-found.txt</code></a> and <a href="https://github.com/StateLibraryVictoria-SLVLAB/geo-maps-residency/blob/main/cua-not-parsed.txt"><code>cua-not-parsed.txt</code></a>.</p>
+<p>In total, 18,603 out of 20,644 photos have been geolocated. That&rsquo;s over 90%!</p>
+<h2 id="assembling-the-data">Assembling the data</h2>
+<p>I processed the data in a couple of phases to get it in the shape I wanted.</p>
+<p>The first step was to group all the photos by title, so I could link each group to its location. But remember that titles often record which <em>side</em> of the road a photo was taken on. To bring all sides of a road segment together into a single group, I created a key from a normalised/slugified version of the title with the side value removed. I used this key to save information about each side within the same group.</p>
+<p>I ended up with a dataset with this sort of structure (a truncated example):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#e6db74">&#34;iffla-street-south-melbourne-coventry-street-normanby-street&#34;</span><span style="color:#960050;background-color:#1e0010">:</span>
+    {
+        <span style="color:#f92672">&#34;title&#34;</span>: <span style="color:#e6db74">&#34;Iffla Street, South Melbourne, from Coventry Street to Normanby Street&#34;</span>,
+        <span style="color:#f92672">&#34;sides&#34;</span>:
+        {
+            <span style="color:#f92672">&#34;east side&#34;</span>:
+            {
+                <span style="color:#f92672">&#34;title&#34;</span>: <span style="color:#e6db74">&#34;Iffla Street, South Melbourne, from Coventry Street to Normanby Street - east side.&#34;</span>,
+                <span style="color:#f92672">&#34;images&#34;</span>:
+                [
+                    {
+                        <span style="color:#f92672">&#34;ie_id&#34;</span>: <span style="color:#e6db74">&#34;IE20321667&#34;</span>,
+                        <span style="color:#f92672">&#34;alma_id&#34;</span>: <span style="color:#ae81ff">9939649155207636</span>
+                    }
+                    <span style="color:#960050;background-color:#1e0010">more</span> <span style="color:#960050;background-color:#1e0010">photos...</span>
+                ]
+            },
+            <span style="color:#f92672">&#34;west side&#34;</span>:
+            {
+                <span style="color:#f92672">&#34;title&#34;</span>: <span style="color:#e6db74">&#34;Iffla Street, South Melbourne, from Normanby Street to Coventry Street - west side.&#34;</span>,
+                <span style="color:#f92672">&#34;images&#34;</span>:
+                [
+                    {
+                        <span style="color:#f92672">&#34;ie_id&#34;</span>: <span style="color:#e6db74">&#34;IE20320072&#34;</span>,
+                        <span style="color:#f92672">&#34;alma_id&#34;</span>: <span style="color:#ae81ff">9939655629407636</span>
+                    },
+					<span style="color:#960050;background-color:#1e0010">more</span> <span style="color:#960050;background-color:#1e0010">photos...</span>
+                ]
+            }
+        },
+        <span style="color:#f92672">&#34;ways&#34;</span>:
+        {
+            <span style="color:#f92672">&#34;27631235&#34;</span>:
+            [
+                [
+                    <span style="color:#ae81ff">144.9503379</span>,
+                    <span style="color:#ae81ff">-37.835322</span>
+                ],
+                <span style="color:#960050;background-color:#1e0010">more</span> <span style="color:#960050;background-color:#1e0010">points...</span>
+            ]
+        }
+    }<span style="color:#960050;background-color:#1e0010">,</span>
+		
+</code></pre></div><p>You can see how the sides and matching ways have been brought together under the key value.</p>
+<p>This structure was useful for grouping and processing the data, but to create a map interface I needed to bring the geospatial information to the surface. The first version of the interface used one big GeoJSON file in which the features were <a href="https://geocrystal.github.io/geojson/GeoJSON/MultiLineString.html">MultiLineStrings</a> created from the paths of each road segment. The photo data was saved in the properties of each GeoJSON feature.</p>
+<p>It sort of worked. The roads with photos were highlighted, and clicking on the roads displayed the photos. It was only when I changed the opacity of the lines that I realised that, in many cases, different road segments were being piled on top of each other. When the lines were opaque these piles were invisible, but add a bit of transparency and you could see that some lines were darker than others. Clicking on the lines only displayed the top layer, so some groups of photos were effectively invisible.</p>
+<!-- raw HTML omitted -->
+<p>Why did this happen? I&rsquo;d wrongly assumed that each segment of road would only have one group of photos associated with it. But it&rsquo;s not hard to find cases where this is not true. Consider Moor Street, Fitzroy, between Nicholson Street and Brunswick Street. On the north side, there is a single group of photos that document the buildings between Nicholson Street and Brunswick Street. However, on the south side there&rsquo;s two groups of photos. One covers the section between Nicholson Street and Fitzroy Street, the other covers Fitzroy Street to Brunswick Street. One section of road, three groups of photos&hellip;</p>
+<!-- raw HTML omitted -->
+<p>To make these layered groups more easily accessible through the interface I had to change the way the data was organised – separating the GeoJSON from the photosets so that multiple photosets could be associated with a single geospatial feature. I decided to create a GeoJSON feature for every OSM way in the dataset. However, I needed to prune the way&rsquo;s coordinates to only include those that were part of the CUA road segments. To do this, I saved all the way data when I found the road segments. Then in the second processing phase, I grouped the way coordinates associated with the road segments and compared this list to the full way path. Any coordinate in the way path that wasn&rsquo;t in the road segments was removed. It seems unnecessarily complex, but I wanted to make sure that only the parts of roads associated with photos were highlighted in the interface.</p>
+<p>The result was two data files. The first, <a href="https://github.com/StateLibraryVictoria-SLVLAB/geo-maps-residency/blob/main/cua-ways.geojson"><code>cua-ways.geojson</code></a>, contains the pruned way paths and their OSM identifiers. The second, <a href="https://github.com/StateLibraryVictoria-SLVLAB/geo-maps-residency/blob/main/cua-photos.json"><code>cua-photos.json</code></a>, contains information about each photo set, including the sides, photos, paths, and associated way identifiers. The datasets are linked by the way identifiers.</p>
+<h2 id="constructing-the-interface">Constructing the interface</h2>
+<p>My plan for the interface was pretty simple. There&rsquo;d be a map on which all the road segments associated with CUA photos were highlighted. Clicking on a highlighted section would show the photos. I wanted to display the photos as if you were scanning the streetscape, so I decided to put them all side-by-side in a gallery that scrolled horizontally.</p>
+<p>The first version used Leaflet to display the maps and, as noted above, had some problems where there were multiple photosets associated with a segment of road.</p>
+<p>For the <a href="https://slv.wraggelabs.com/cua/">second version</a> I decided to switch to <a href="https://maplibre.org">MapLibre</a> because it seems a bit more active and up-to-date. I&rsquo;d already used MapLibre in the <a href="https://slv.wraggelabs.com/newspapers/">SLV Newspapers Explorer</a>.</p>
+<p>The interface first loads the  <code>cua-ways.geojson</code> file to highlight the relevant roads. When you click on one of the roads, the way id is passed to a function that looks for associated photo sets in the <code>cua-photos.json</code> data. If there&rsquo;s only one linked photoset, then the photos are displayed. However, if there&rsquo;s more than one linked photoset, they&rsquo;re displayed as a list. The user then selects from the list to display the related photos.</p>
+<p>A couple of other things happen when you click on a way or select a photoset:  the colour of the selected road segment changes, and the browser url is updated with the way or photoset identifier. You can bookmark or share these urls to go directly to a specific road or photoset. There&rsquo;s also a button to reverse the order of the images – they scroll left to right, but sometimes they seem to have been photographed right to left.</p>
+<h2 id="more-information-and-links">More information and links</h2>
+<ul>
+<li>
+<p><a href="https://slv.wraggelabs.com/cua/">CUA Browser</a></p>
+</li>
+<li>
+<p>CUA data is also used in the <a href="https://slv.wraggelabs.com/myplace/">my place</a> app</p>
+</li>
+<li>
+<p>CUA code and data is in the <a href="https://github.com/StateLibraryVictoria-SLVLAB/geo-maps-residency">geo-maps-residency</a> repository</p>
+</li>
+<li>
+<p>Code for the interface is in the <a href="https://github.com/wragge/slv-demo-apps">slv-demo-apps</a> repository</p>
+</li>
+<li>
+<p>all the outcomes of my SLV residency are listed on the <a href="https://slv.wraggelabs.com">Experiments with the State Library of Victoria’s collections</a> page</p>
+</li>
+</ul>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
 			<h1><a href="https://updates.timsherratt.org/2025/12/31/goodbye-a-brief-summary-of.html">Goodbye 2025! A brief summary of the highlights and lowlights…</a></h1>
 		
 
