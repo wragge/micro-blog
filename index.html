@@ -24,6 +24,86 @@
 	
 	  <div class="h-entry">
 		
+			<h1><a href="https://updates.timsherratt.org/2026/10/23/nla-mapsearch-data-rescue.html">NLA MapSearch data rescue</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2026/10/23/nla-mapsearch-data-rescue.html" class="u-url"><time class="dt-published" datetime="2026-10-23 15:55:49 &#43;1100">Oct 23, 2026</time></a>
+
+		<div class="e-content">
+			 <p>A researcher recently alerted me to the fact that the National Library of Australia&rsquo;s MapSearch service had been decommissioned. MapSearch was a standalone application that enabled users to find maps by location, and to georectify many of the Library&rsquo;s digitised maps, aligning them with modern geospatial coordinates.</p>
+<figure><img src="uploads/2026/mapsearch.png" width="600" height="340" alt=""><figcaption>MapSearch before the NLA pulled the plug</figcaption></figure>
+<p>The researcher who contacted me wondered what had happened to this user-generated data. The NLA offered little clarification, and so he was hoping I might have saved it somewhere. And indeed, much to my own surprise,  I had!</p>
+<p>Flashback to late 2024 / early 2025 – I was working on a new section about maps for the <a href="https://tdg.glam-workbench.net/home.html">Trove Data Guide</a>. To provide an overview of what digitised maps were available, I&rsquo;d updated and expanded my <a href="https://www.glam-workbench.net/trove-maps/single-maps-data/">harvest of Trove maps</a> and pulled together some related data. I&rsquo;d previously <a href="https://www.glam-workbench.net/trove-maps/single-maps-coordinates-data/">extracted bounding boxes</a> from the map metadata, but at some point I realised that I could query the MapSearch API using Trove identifiers to download additional geospatial data. But before I could finish my work on the maps, the <a href="https://updates.timsherratt.org/2025/05/07/farewell-trove.html">NLA took away my API access</a> and everything ground to a halt. I hadn&rsquo;t really looked at it since…</p>
+<p>Fortunately, sitting amongst the draft notebooks and data files I found a file called <code>map-search-data.ndjson</code> which contained all of the MapSearch API records I&rsquo;d accessed in August 2024, saved in newline-delimited JSON format. The API data included the name and email addresses of people who had georectified maps, so I removed those columns and uploaded the dataset to the <a href="https://github.com/GLAM-Workbench/trove-maps-data">trove-maps-data</a> repository as: <a href="https://github.com/GLAM-Workbench/trove-maps-data/blob/main/map-search-data-noemail.ndjson">map-search-data-noemail.ndjson</a> (it&rsquo;s about 20mb).</p>
+<p>Connecting the MapSearch data to the digitised maps in Trove is easy. The <code>objid</code> field in the dataset corresponds to Trove&rsquo;s <code>nla.obj</code> identifier, so if the <code>objid</code> is <code>233540719</code>, you can find the map at <a href="https://nla.gov.au/nla.obj-233540719">https://nla.gov.au/nla.obj-233540719</a>. See  the Trove Data Guide for <a href="https://tdg.glam-workbench.net/other-digitised-resources/how-to/download-images.html">methods of downloading the map images</a>, including high-resolution TIFF files.</p>
+<p>So while MapSearch is gone, the user-generated georectification data is available once more. I hope you find it useful!</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
+			<h1><a href="https://updates.timsherratt.org/2026/10/07/introducing-zprofile-a-simple-website.html">Introducing Z-Profile – a simple website builder for researchers</a></h1>
+		
+
+		<a href="https://updates.timsherratt.org/2026/10/07/introducing-zprofile-a-simple-website.html" class="u-url"><time class="dt-published" datetime="2026-10-07 15:19:18 &#43;1100">Oct 7, 2026</time></a>
+
+		<div class="e-content">
+			 <p>Have you ever wanted a simple website to publish your details and showcase your research? Good news! <a href="https://wraggelabs.com/z-profile-docs/">Z-Profile</a> is a new tool aimed at helping researchers create their own sites, manage their online identity, and share their publications.</p>
+<figure><img src="uploads/2026/screenshot-from-2026-10-05-18-06-06.png" width="600" height="768" alt=""><figcaption><a href="https://wragge.github.io">View the Z-Profile demo site</a></figcaption></figure>
+<p>Z-Profile gets data from a specially-prepared <a href="https://www.zotero.org/">Zotero</a> collection, does of bit of processing, then generates a static website using <a href="https://www.getzola.org/">Zola</a>. The site includes biographical details and a list of your publications. Once your site is built, you can publish it using any web host, or for free through GitHub Pages.</p>
+<p>There&rsquo;s a <a href="https://wraggelabs.com/z-profile-docs/">documentation site</a> with full details, but creating your own Z-Profile site can be as simple as:</p>
+<ol>
+<li><a href="https://wraggelabs.com/z-profile-docs/zotero/">create a Zotero collection</a> containing your publications and biographical details</li>
+<li>go to the <a href="https://wraggelabs.com/z-profile-docs/z-profile-builder/">Z-Profile Site Builder</a> and log on with Zotero – your site will be automatically built and packaged in a zip file</li>
+<li><a href="https://wraggelabs.com/z-profile-docs/web-host-publish/">upload the contents</a> of the zip file to the web host of your choice</li>
+</ol>
+<h2 id="why-did-i-create-z-profile">Why did I create Z-Profile?</h2>
+<p>I was thinking about updating the guide to open access publishing for Australian historians that I created several years ago, and got a bit sidetracked…</p>
+<p>The problem was explaining the green open access (sometimes called self-archiving) provisions in publisher agreements that enable you to share certain versions of your publications. It&rsquo;s fairly common for publishers to allow you to share the author <a href="https://en.wikipedia.org/wiki/Postprint">accepted manuscript version</a> (AAM) of your publication <em>immediately</em> (ie without any embargo) on your &lsquo;personal website&rsquo;.</p>
+<p>Obviously I wanted to say – &lsquo;just do it&rsquo;. Put your AAM on the web and tell everyone where to find it. But it&rsquo;s never that simple. The definition of a &lsquo;personal website&rsquo; is fuzzy, perhaps intentionally, adding to the uncertainty around what&rsquo;s permitted. And anyway, how many humanities researchers have the time, energy, and knowledge to create and maintain their own website? If I was going to encourage people to take advantage of this opportunity, I felt like I also needed to provide them with tools to make it easier.</p>
+<p>I also think it&rsquo;s important for researchers to have online profiles that are not wholly dependent on their employer or a company that wants to exploit their data – to have &lsquo;a domain of their own&rsquo; (in the words of the excellent folks at <a href="https://www.reclaimhosting.com/">Reclaim Hosting</a>). Of course, there are some other great options for building a research profile – in particular, I&rsquo;d strongly suggest you set yourself up on <a href="https://hcommons.org/">Knowledge Commons</a>. But having your own site, under your own domain, gives you extra control and flexibility.</p>
+<p>And so… <a href="https://wraggelabs.com/z-profile-docs/">Z-Profile</a>.</p>
+<h2 id="what-is-z-profile-good-for">What is Z-Profile good for?</h2>
+<p>Z-Profile is deliberately minimalist in design and function. It&rsquo;s intended for people who want to share their research, but aren&rsquo;t really interested in building websites. If you want more features, or more control, there are plenty of other tools around that could do the job.</p>
+<p>The Z-Profile home page displays your biographical details. You can include:</p>
+<ul>
+<li>a portrait photo</li>
+<li>a downloadable CV</li>
+<li>a brief biographical note (that can include links to other sites)</li>
+<li>a list of social media accounts or website links</li>
+<li>a list of selected publications</li>
+</ul>
+<p>All the publications in your Zotero collection are automatically listed on a publications page. This is linked to an individual page for each publication, providing additional details, and links to alternative versions.</p>
+<figure><img src="uploads/2026/screenshot-from-2026-10-07-14-56-30.png" width="600" height="910" alt=""><figcaption>Example of a publication page with the embedded PDF of an AAM version</figcaption></figure>
+<p>For example, perhaps you&rsquo;ve just published an exhibition review in <em>Australian Historical Studies</em> and want to share it online. Reviews aren&rsquo;t covered by the &lsquo;transformative agreements&rsquo; negotiated between Australian universities and Taylor &amp; Francis (the journal&rsquo;s publisher) that support open access publishing. However, under the publisher&rsquo;s <a href="https://authorservices.taylorandfrancis.com/research-impact/sharing-versions-of-journal-articles/">&lsquo;self-archiving&rsquo; policy</a> &lsquo;you can post your Accepted Manuscript (AM) on your personal website at any point after publication of your article&rsquo;.</p>
+<p>To share your review using Z-Profile, you&rsquo;d just:</p>
+<ul>
+<li>use Zotero to capture the publication details from the journal website</li>
+<li>attach a PDF of your AAM to the item record in Zotero</li>
+<li>tag the PDF with &lsquo;aam&rsquo; to tell Z-Profile what it is</li>
+</ul>
+<p>Then, when you build your site with Z-Profile, it&rsquo;ll create a page with the review, and embed the PDF for easy reading and download.</p>
+<h2 id="what-z-profile-is-not">What Z-Profile is not</h2>
+<p>Z-Profile is not a repository. Even if you use it to share your publications, you should also upload your AAMs and preprints to an appropriate repository where they&rsquo;ll be preserved and made available after any publisher-imposed embargoes. If you&rsquo;re in a university, talk to the local librarians about your institutional repository. Otherwise there are general-purpose repositories like <a href="https://works.hcommons.org">Knowledge Commons Works</a> and <a href="https://zenodo.org">Zenodo</a>. You don&rsquo;t have to limit yourself to a single option – remember LOCKSS (Lots Of Copies Keeps Stuff Safe)!</p>
+<h2 id="some-technical-details">Some technical details</h2>
+<p>Z-Profile is really just some templates and a bit of data plumbing. Here are the main components:</p>
+<ul>
+<li>a <a href="https://github.com/wragge/z-profile/blob/main/prepare_data.py">Python script</a> to get the data from Zotero and prepare the contents of your site for processing by Zola</li>
+<li>some <a href="https://github.com/wragge/z-profile/tree/main/templates">basic templates</a> for Zola to convert the data to HTML</li>
+<li>a <a href="https://wraggelabs.com/z-profile/">Python Flask app</a> that uses OAuth to request an API key from Zotero, then runs the Python script and the Zola build process</li>
+<li>a <a href="https://github.com/wragge/z-profile">GitHub template repository</a> that contains the Python script, the Zola templates, and a workflow to run the build process in a GitHub Action</li>
+<li>there&rsquo;s also a <a href="https://github.com/wragge/z-profile/discussions">discussion board</a> in GitHub where you can ask questions or suggest improvements</li>
+</ul>
+<h2 id="please-share">Please share!</h2>
+<p>Obviously I think Z-Profile could be useful, otherwise I wouldn&rsquo;t have been obsessing about it for the last few weeks. But I don&rsquo;t really know until it&rsquo;s out there in the world. So please let me know if you make use of it.</p>
+<p>I&rsquo;m also aware that the sort of people who follow my stuff are likely to have the skills and confidence to build their own websites from scratch, without the need for something like Z-Profile. As ever, it&rsquo;s hard to get information to the people who would benefit most. So please share Z-Profile with your less technically minded colleagues.</p>
+
+		</div>
+	  </div>
+	
+	  <div class="h-entry">
+		
 			<h1><a href="https://updates.timsherratt.org/2026/09/15/pm-transcripts-in-the-glam.html">PM Transcripts in the GLAM Workbench</a></h1>
 		
 
